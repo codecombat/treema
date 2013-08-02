@@ -42,7 +42,7 @@
         "uglify-js-brunch": "> 1.0 < 1.6",
         "clean-css-brunch": "> 1.0 < 1.6",
         "auto-reload-brunch": "> 1.0 < 1.6",
-        "brunch": "1.5.x",
+        "brunch": "1.7.x",
         "jasmine-node": "1.2.x"
     },
     "license": "Copyright © 2013 Scott Erickson",

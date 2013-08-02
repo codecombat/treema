@@ -5,26 +5,26 @@ exports.config =
     path: 'test/test_server.js'
   paths:
     'public': './'
-    watched: ['app', 'test']
+    watched: ['src', 'test']
   files:
     javascripts:
       defaultExtension: 'coffee'
       joinTo:
-        'treema.js': /^app/
-        'test/treema.js': /^app/
+        'treema.js': /^src/
+        'test/treema.js': /^src/
     stylesheets:
       defaultExtension: 'sass'
       joinTo:
-        'treema.css': /^app/
+        'treema.css': /^src/
     templates:
       defaultExtension: 'jade'
       joinTo:
-        'treema.js': /^app/
-        'test/treema.js': /^app/
+        'treema.js': /^src/
+        'test/treema.js': /^src/
 
   plugins:
     coffeelint:
-      pattern: /^app\/.*\.coffee$/
+      pattern: /^src\/.*\.coffee$/
       options:
         line_endings:
           value: "unix"
