@@ -1,0 +1,53 @@
+{
+    "name": "treema",
+    "version": "0.0.0",
+    "description": "jQuery plugin that generates HTML interfaces to edit JSON data defined by json-schema.",
+    "author": "Scott Erickson <sderickson@gmail.com>",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/sderickson/treema"
+    },
+    "contributors": [
+        {
+            "name": "Nick Winter",
+            "email": "livelily@gmail.com"
+        },
+        {
+            "name": "Scott Erickson",
+            "email": "sderickson@gmail.com"
+        }
+    ],
+    "scripts": {
+        "start": "node ./test/test_server.js",
+        "test": "brunch test"
+    },
+    "main": "test/test_server.js",
+    "keywords": [
+        "trees",
+        "json",
+        "json-schema",
+        "jquery"
+    ],
+    "dependencies": {
+        "express": "3.0.6"
+    },
+    "devDependencies": {
+        "jade": "0.28.x",
+        "javascript-brunch": "> 1.0 < 1.6",
+        "coffee-script-brunch": "> 1.0 < 1.6",
+        "coffeelint-brunch": "> 1.0 < 1.6",
+        "sass-brunch": "> 1.0 < 1.6",
+        "css-brunch": "> 1.0 < 1.6",
+        "jade-brunch": "> 1.0 < 1.6",
+        "uglify-js-brunch": "> 1.0 < 1.6",
+        "clean-css-brunch": "> 1.0 < 1.6",
+        "auto-reload-brunch": "> 1.0 < 1.6",
+        "brunch": "1.5.x",
+        "jasmine-node": "1.2.x"
+    },
+    "license": "Copyright © 2013 Scott Erickson",
+    "private": false,
+    "engines": {
+        "node": "0.8.x"
+    }
+}
