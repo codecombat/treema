@@ -24,12 +24,14 @@ class TreemaNode
   getMissing: -> tv4.validateMultiple(@getData(), @schema)['missing']
     
   nodeElement: -> $(@nodeString)
-  valueElement: -> $('<span>undefined</span>')
+  setValueForReading: (valEl) -> valEl.append($('<span>undefined</span>'))
+  setValueForEditing: (valEl) -> valEl.append($('<span>no edit</span>'))
+  saveChanges: (valEl) ->
     
   build: ->
     @$el = @nodeElement()
     valEl = $('.treema-value', @$el)
-    valEl.append(@valueElement())
+    @setValueForReading(valEl)
     valEl.addClass('read') unless @collection
     @$el.data('instance', @)
     @$el.addClass('treema-root') unless @child
@@ -43,19 +45,31 @@ class TreemaNode
       node = $(e.target).closest('.treema-node').data('instance').onClick(e)
     
   onClick: (e) ->
+    return if e.target.nodeName in ['INPUT', 'TEXTAREA']
     value = $(e.target).closest('.treema-value')
     if value.length
       if @collection then @open() else @toggleEdit()
-    console.log($(e.target).hasClass('treema-toggle'), e.target)
-    @toggle() if $(e.target).hasClass('treema-toggle')
+    @toggleOpen() if $(e.target).hasClass('treema-toggle')
     
+  toggleEdit: (toClass) ->
+    valEl = $('.treema-value', @$el)
+    wasEditing = valEl.hasClass('edit')
+    valEl.toggleClass('read edit') unless toClass and valEl.hasClass(toClass)
+    
+    if valEl.hasClass('read')
+      @saveChanges(valEl) if wasEditing
+      valEl.empty()
+      @setValueForReading(valEl)
       
-  toggleEdit: ->
-#    valEl = $('.treema-value', @$el)
-    
+    if valEl.hasClass('edit')
+      valEl.empty()
+      @setValueForEditing(valEl)
+      TreemaNode.lastEditing?.toggleEdit('read') if TreemaNode.lastEditing isnt @
+      TreemaNode.lastEditing = @
+
   getChildren: -> [] # should be list of key-value-schema tuples 
     
-  toggle: ->
+  toggleOpen: ->
     if @$el.hasClass('closed') then @open() else @close()
       
   open: ->
@@ -84,15 +98,22 @@ class StringTreemaNode extends TreemaNode
   Basic 'string' type node.
   """
 
-  valueElementString: '<pre class="treema-string"></pre>'
-  valueElementEditingString: '<input />'
-  
-  valueElement: ->
-    e = $(@valueElementString).text("'#{@data}'")#.append($('<hr />')).append($('<span>Sup!</span>'))
-    return e
+  setValueForReading: (valEl) ->
+    valEl.append(
+      $('<pre class="treema-string"></pre>')
+        .text("'#{@data}'"))
     
-  valueElementEditing: ->
-    return $(@valueElementEditingString).val(@data)
+  setValueForEditing: (valEl) ->
+    input = $('<input />').val(@data)
+    valEl.append(input)
+    input.focus()
+    input.blur =>
+      @.toggleEdit('read') if $('.treema-value', @$el).hasClass('edit')
+      
+    
+  saveChanges: (valEl) ->
+    window.what = valEl
+    @data = $('input', valEl).val()
   
 
 class ArrayTreemaNode extends TreemaNode
@@ -103,13 +124,11 @@ class ArrayTreemaNode extends TreemaNode
   collection: true
   ordered: true
   
-  valueElementString: '<span></span>'
-  
   getChildren: ->
     ([key, value, @schema.items] for value, key in @data)
 
-  valueElement: ->
-    return $(@valueElementString).text("[#{@data.length}]")
+  setValueForReading: (valEl) ->
+    valEl.append($('<span></span>').text("[#{@data.length}]"))
     
 class ObjectTreemaNode extends TreemaNode
   """
@@ -131,6 +150,7 @@ TreemaNodeMap =
   'string': StringTreemaNode
   'object': ObjectTreemaNode
 
+console.log('make treema!')
 
 makeTreema = (schema, data, options, child) ->
   NodeClass = TreemaNodeMap[schema.format]
@@ -141,4 +161,4 @@ makeTreema = (schema, data, options, child) ->
     
   return new NodeClass(schema, data, options, child)
   
-  
+console.log('done!')
