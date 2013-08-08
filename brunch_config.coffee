@@ -5,7 +5,7 @@ exports.config =
     path: 'test/test_server.js'
   paths:
     'public': './'
-    watched: ['src', 'test']
+    watched: ['src']
   files:
     javascripts:
       defaultExtension: 'coffee'
@@ -16,6 +16,7 @@ exports.config =
       defaultExtension: 'sass'
       joinTo:
         'treema.css': /^src/
+        'test/treema.css': /^src/
     templates:
       defaultExtension: 'jade'
       joinTo:

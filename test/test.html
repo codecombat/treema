@@ -3,14 +3,52 @@
   <script type="text/javascript" src="jquery-1.8.1.js"></script>
   <script type="text/javascript" src="tv4.js"></script>
   <script type="text/javascript" src="treema.js"></script>
+  <link rel="stylesheet" href="treema.css">
 </head>
 <body>
 
 <h1>Test</h1>
 
-<p>
-  Yes
-</p>
+<div id="test-area">
+  
+</div>
+
+<script type="text/javascript">
+
+  var jade = {};
+  $(document).ready(function () {
+    data = {
+      'street-address': '2338 1/2 Roosevelt Ave',
+      'locality': 'Berkeley',
+      'region': 'California',
+      'postal-code': '94703',
+      'country-name': 'USA',
+      'phone-numbers': ['1-800-938-3000', '1-234-567-8900\nex 1337']
+    };
+    schema = {
+      "description": "An Address following the convention of http://microformats.org/wiki/hcard",
+      "type": "object",
+      "properties": {
+        "post-office-box": { "type": "string" },
+        "extended-address": { "type": "string" },
+        "street-address": { "type": "string" },
+        "locality":{ "type": "string", "required": true },
+        "region": { "type": "string", "required": true },
+        "postal-code": { "type": "string" },
+        "country-name": { "type": "string", "required": true},
+        "phone-numbers": { "type": "array", items: { type: "string" } }
+      },
+      "dependencies": {
+        "post-office-box": "street-address",
+        "extended-address": "street-address"
+      }
+    };
+
+    treema = makeTreema(schema, data);
+    $('#test-area').append(treema.build())
+  });
+  
+</script>
 
 </body>
 </html>

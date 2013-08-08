@@ -2,7 +2,7 @@
 
 ulimit -n 10000
 cd ~/Desktop/treema
-until brunch w; do
+until brunch w -c brunch_config.coffee -s; do
     echo "Brunch Crashed. Recompiling entire project. Press Ctrl-C quickly to quit." >&2
     sleep 1
 done
