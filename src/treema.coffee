@@ -150,8 +150,6 @@ TreemaNodeMap =
   'string': StringTreemaNode
   'object': ObjectTreemaNode
 
-console.log('make treema!')
-
 makeTreema = (schema, data, options, child) ->
   NodeClass = TreemaNodeMap[schema.format]
   unless NodeClass
@@ -160,5 +158,3 @@ makeTreema = (schema, data, options, child) ->
     return null
     
   return new NodeClass(schema, data, options, child)
-  
-console.log('done!')
