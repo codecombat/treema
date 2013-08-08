@@ -11,37 +11,44 @@
 
 @media -sass-debug-info{filename{}line{font-family:\0000310}}
 .treema-children {
-  margin-top: 3px;
+  padding-top: 3px;
+  margin-left: 10px;
+  clear: both; }
+
+@media -sass-debug-info{filename{}line{font-family:\0000315}}
+.treema-value {
   margin-left: 10px; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000314}}
-.treema-value {
-  display: inline-block; }
-
-@media -sass-debug-info{filename{}line{font-family:\0000317}}
+@media -sass-debug-info{filename{}line{font-family:\0000318}}
 .treema-key {
-  color: darkblue; }
+  color: darkblue;
+  float: left;
+  margin-right: 7px; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000320}}
+@media -sass-debug-info{filename{}line{font-family:\0000323}}
 .treema-string {
   color: darkgoldenrod;
   margin: 0; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000324}}
+@media -sass-debug-info{filename{}line{font-family:\0000327}}
 .treema-grabber {
   color: darkblue;
-  background-color: darkblue; }
-
-@media -sass-debug-info{filename{}line{font-family:\0000328}}
-.treema-toggle {
-  color: #0b97c4;
-  background-color: #0b97c4; }
+  background-color: darkblue;
+  cursor: move; }
 
 @media -sass-debug-info{filename{}line{font-family:\0000332}}
+.treema-toggle {
+  color: #0b97c4;
+  background-color: #0b97c4;
+  cursor: pointer; }
+
+@media -sass-debug-info{filename{}line{font-family:\0000337}}
 .treema-grabber, .treema-toggle {
   margin-right: 4px;
   font-size: 9px;
-  cursor: pointer; }
+  float: left;
+  position: relative;
+  top: 3px; }
 
 
 /*@ sourceMappingURL=treema.css.map*/

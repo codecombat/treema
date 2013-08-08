@@ -88,7 +88,7 @@ class StringTreemaNode extends TreemaNode
   valueElementEditingString: '<input />'
   
   valueElement: ->
-    e = $(@valueElementString).text("'#{@data}'")
+    e = $(@valueElementString).text("'#{@data}'")#.append($('<hr />')).append($('<span>Sup!</span>'))
     return e
     
   valueElementEditing: ->
