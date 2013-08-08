@@ -108,7 +108,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.toggleEdit = function(toClass) {
-    var valEl, wasEditing, _ref;
+    var valEl, wasEditing;
     valEl = $('.treema-value', this.$el);
     wasEditing = valEl.hasClass('edit');
     if (!(toClass && valEl.hasClass(toClass))) {
@@ -118,23 +118,34 @@ TreemaNode = (function() {
       if (wasEditing) {
         this.saveChanges(valEl);
       }
+      this.propagateData();
       valEl.empty();
       this.setValueForReading(valEl);
     }
     if (valEl.hasClass('edit')) {
       valEl.empty();
       this.setValueForEditing(valEl);
-      if (TreemaNode.lastEditing !== this) {
-        if ((_ref = TreemaNode.lastEditing) != null) {
-          _ref.toggleEdit('read');
-        }
-      }
+      this.stopEdits();
       return TreemaNode.lastEditing = this;
     }
   };
 
   TreemaNode.prototype.getChildren = function() {
     return [];
+  };
+
+  TreemaNode.prototype.propagateData = function() {
+    if (!this.parent) {
+      return;
+    }
+    return this.parent.data[this.parentKey] = this.data;
+  };
+
+  TreemaNode.prototype.stopEdits = function() {
+    var _ref;
+    if (TreemaNode.lastEditing !== this) {
+      return (_ref = TreemaNode.lastEditing) != null ? _ref.toggleEdit('read') : void 0;
+    }
   };
 
   TreemaNode.prototype.toggleOpen = function() {
@@ -146,14 +157,17 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.open = function() {
-    var child, childNode, children, childrenContainer, key, schema, treema, value, _i, _len;
+    var childNode, childrenContainer, key, schema, treema, value, _i, _len, _ref, _ref1;
     childrenContainer = this.$el.find('.treema-children').detach();
     childrenContainer.empty();
-    children = this.getChildren();
-    for (_i = 0, _len = children.length; _i < _len; _i++) {
-      child = children[_i];
-      key = child[0], value = child[1], schema = child[2];
+    this.childrenTreemas = {};
+    _ref = this.getChildren();
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      _ref1 = _ref[_i], key = _ref1[0], value = _ref1[1], schema = _ref1[2];
       treema = makeTreema(schema, value, {}, true);
+      treema.parentKey = key;
+      treema.parent = this;
+      this.childrenTreemas[key] = treema;
       childNode = treema.build();
       if (this.keyed) {
         childNode.prepend($(this.keyString).text(key + ' : '));
@@ -170,6 +184,12 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.close = function() {
+    var key, treema, _ref;
+    _ref = this.childrenTreemas;
+    for (key in _ref) {
+      treema = _ref[key];
+      this.data[key] = treema.data;
+    }
     this.$el.find('.treema-children').empty();
     return this.$el.addClass('closed').removeClass('open');
   };
@@ -286,8 +306,6 @@ TreemaNodeMap = {
   'object': ObjectTreemaNode
 };
 
-console.log('make treema!');
-
 makeTreema = function(schema, data, options, child) {
   var NodeClass;
   NodeClass = TreemaNodeMap[schema.format];
@@ -299,7 +317,5 @@ makeTreema = function(schema, data, options, child) {
   }
   return new NodeClass(schema, data, options, child);
 };
-
-console.log('done!');
 
 //@ sourceMappingURL=treema.js.map

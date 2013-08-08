@@ -58,16 +58,24 @@ class TreemaNode
     
     if valEl.hasClass('read')
       @saveChanges(valEl) if wasEditing
+      @propagateData()
       valEl.empty()
       @setValueForReading(valEl)
       
     if valEl.hasClass('edit')
       valEl.empty()
       @setValueForEditing(valEl)
-      TreemaNode.lastEditing?.toggleEdit('read') if TreemaNode.lastEditing isnt @
+      @stopEdits()
       TreemaNode.lastEditing = @
 
-  getChildren: -> [] # should be list of key-value-schema tuples 
+  getChildren: -> [] # should be list of key-value-schema tuples
+
+  propagateData: ->
+    return unless @parent
+    @parent.data[@parentKey] = @data
+  
+  stopEdits: ->
+    TreemaNode.lastEditing?.toggleEdit('read') if TreemaNode.lastEditing isnt @
     
   toggleOpen: ->
     if @$el.hasClass('closed') then @open() else @close()
@@ -75,10 +83,12 @@ class TreemaNode
   open: ->
     childrenContainer = @$el.find('.treema-children').detach()
     childrenContainer.empty()
-    children = @getChildren()
-    for child in children
-      [key, value, schema] = child
+    @childrenTreemas = {}
+    for [key, value, schema] in @getChildren()
       treema = makeTreema(schema, value, {}, true)
+      treema.parentKey = key
+      treema.parent = @
+      @childrenTreemas[key] = treema
       childNode = treema.build()
       childNode.prepend($(@keyString).text(key + ' : ')) if @keyed
       childNode.prepend($(@toggleString)) if treema.collection
@@ -87,10 +97,9 @@ class TreemaNode
     @$el.append(childrenContainer).removeClass('closed').addClass('open')
     
   close: ->
+    @data[key] = treema.data for key, treema of @childrenTreemas
     @$el.find('.treema-children').empty()
     @$el.addClass('closed').removeClass('open')
-  
-
 
 
 class StringTreemaNode extends TreemaNode
@@ -129,6 +138,7 @@ class ArrayTreemaNode extends TreemaNode
 
   setValueForReading: (valEl) ->
     valEl.append($('<span></span>').text("[#{@data.length}]"))
+
     
 class ObjectTreemaNode extends TreemaNode
   """
