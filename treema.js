@@ -128,6 +128,9 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.onKeyDown = function(e) {
     var dir, instance, nextChild, target, _ref;
+    if (e.which === 27) {
+      $(e.target).data('escaped', true).blur();
+    }
     if (e.which === 9) {
       dir = e.shiftKey ? 'prev' : 'next';
       target = $(e.target);
@@ -210,9 +213,13 @@ TreemaNode = (function() {
       this.$el.find('.treema-add-child').before(keyInput);
       keyInput.focus();
       return keyInput.blur(function(e) {
-        var key;
+        var escaped, key;
         key = keyInput.val();
+        escaped = keyInput.data('escaped');
         keyInput.remove();
+        if (escaped) {
+          return;
+        }
         if (!(key.length && !_this.childrenTreemas[key])) {
           return;
         }

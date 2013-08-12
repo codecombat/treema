@@ -66,6 +66,9 @@ class TreemaNode
     @addNewChild() if value.length and @collection
     
   onKeyDown: (e) ->
+    if e.which is 27 # ESC
+      $(e.target).data('escaped', true).blur()
+    
     if e.which is 9 # TAB
       dir = if e.shiftKey then 'prev' else 'next'
       target = $(e.target)
@@ -134,7 +137,9 @@ class TreemaNode
       keyInput.focus()
       keyInput.blur (e) =>
         key = keyInput.val()
+        escaped = keyInput.data('escaped')
         keyInput.remove()
+        return if escaped
         return unless key.length and not @childrenTreemas[key]
         
         schema = @getChildSchema(key)
