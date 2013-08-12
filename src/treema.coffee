@@ -118,22 +118,24 @@ class TreemaNode
       @setValueForEditing(valEl)
       
   getChildren: -> [] # should be list of key-value-schema tuples
+  
+  getMyAddButton: ->
+    @$el.find('> .treema-children > .treema-add-child')
 
   addNewChild: ->
-    
     if @ordered # array
       new_index = Object.keys(@childrenTreemas).length
       schema = @getChildSchema()
       newTreema = @addChildTreema(new_index, undefined, schema)
       childNode = @createChildNode(newTreema)
-      @$el.find('.treema-add-child').before(childNode)
+      @getMyAddButton().before(childNode)
       newTreema.toggleEdit('edit')
     
     if @keyed # object
       properties = @childPropertiesAvailable()
       keyInput = $(@newPropertyString)
       keyInput.autocomplete?(source: properties)
-      @$el.find('.treema-add-child').before(keyInput)
+      @getMyAddButton().before(keyInput)
       keyInput.focus()
       keyInput.blur (e) =>
         key = keyInput.val()
@@ -145,7 +147,7 @@ class TreemaNode
         schema = @getChildSchema(key)
         newTreema = @addChildTreema(key, null, schema)
         childNode = @createChildNode(newTreema)
-        @$el.find('.treema-add-child').before(childNode)
+        @getMyAddButton().before(childNode)
         newTreema.toggleEdit('edit')
     
   childPropertiesAvailable: ->

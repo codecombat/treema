@@ -191,6 +191,10 @@ TreemaNode = (function() {
     return [];
   };
 
+  TreemaNode.prototype.getMyAddButton = function() {
+    return this.$el.find('> .treema-children > .treema-add-child');
+  };
+
   TreemaNode.prototype.addNewChild = function() {
     var childNode, keyInput, newTreema, new_index, properties, schema,
       _this = this;
@@ -199,7 +203,7 @@ TreemaNode = (function() {
       schema = this.getChildSchema();
       newTreema = this.addChildTreema(new_index, void 0, schema);
       childNode = this.createChildNode(newTreema);
-      this.$el.find('.treema-add-child').before(childNode);
+      this.getMyAddButton().before(childNode);
       newTreema.toggleEdit('edit');
     }
     if (this.keyed) {
@@ -210,7 +214,7 @@ TreemaNode = (function() {
           source: properties
         });
       }
-      this.$el.find('.treema-add-child').before(keyInput);
+      this.getMyAddButton().before(keyInput);
       keyInput.focus();
       return keyInput.blur(function(e) {
         var escaped, key;
@@ -226,7 +230,7 @@ TreemaNode = (function() {
         schema = _this.getChildSchema(key);
         newTreema = _this.addChildTreema(key, null, schema);
         childNode = _this.createChildNode(newTreema);
-        _this.$el.find('.treema-add-child').before(childNode);
+        _this.getMyAddButton().before(childNode);
         return newTreema.toggleEdit('edit');
       });
     }
