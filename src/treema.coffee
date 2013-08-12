@@ -21,6 +21,7 @@ class TreemaNode
   ordered: false
   keyed: false
   editable: true
+  skipTab: false
   
   constructor: (@schema, @data, options, @child) ->
     @options = options or {}
@@ -76,11 +77,15 @@ class TreemaNode
       return if nextInput.length > 0 # go to next input as normal
 
       nextChild = @$el.find('+ .treema-node:first')
-      if nextChild.length > 0
-        instance = nextChild.data('instance')
-        return if instance.collection # TODO: what should the behavior be here exactly?
-        instance.toggleEdit('edit')
-        return e.preventDefault()
+      while true
+        if nextChild.length > 0
+          instance = nextChild.data('instance')
+          if instance.collection or instance.skipTab
+            nextChild = nextChild.find('+ .treema-node:first')
+            continue
+          instance.toggleEdit('edit')
+          return e.preventDefault()
+        break
         
       if @parent?.collection
         @parent.addNewChild()
@@ -273,16 +278,24 @@ class BooleanTreemaNode extends TreemaNode
   """
   Basic 'boolean' type node.
   """
+  
+  skipTab: true
 
-  toggleEdit: ->
+  onClick: (e) ->
     '''
-    Override the normal behavior, just flip the value instead.
+    Override the normal behavior for clicking the value, just flip the value instead.
     '''
-    @data = not @data
-    valEl = $('.treema-value', @$el)
-    valEl.empty()
-    @setValueForReading(valEl)
 
+    value = $(e.target).closest('.treema-value')
+    if value.length
+      @data = not @data
+      valEl = $('.treema-value', @$el)
+      valEl.empty()
+      @setValueForReading(valEl)
+      return
+      
+    super(e)
+  
   setValueForReading: (valEl) ->
     valEl.append(
       $('<pre class="treema-boolean"></pre>')

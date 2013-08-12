@@ -33,6 +33,8 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.editable = true;
 
+  TreemaNode.prototype.skipTab = false;
+
   function TreemaNode(schema, data, options, child) {
     this.schema = schema;
     this.data = data;
@@ -137,13 +139,17 @@ TreemaNode = (function() {
         return;
       }
       nextChild = this.$el.find('+ .treema-node:first');
-      if (nextChild.length > 0) {
-        instance = nextChild.data('instance');
-        if (instance.collection) {
-          return;
+      while (true) {
+        if (nextChild.length > 0) {
+          instance = nextChild.data('instance');
+          if (instance.collection || instance.skipTab) {
+            nextChild = nextChild.find('+ .treema-node:first');
+            continue;
+          }
+          instance.toggleEdit('edit');
+          return e.preventDefault();
         }
-        instance.toggleEdit('edit');
-        return e.preventDefault();
+        break;
       }
       if ((_ref = this.parent) != null ? _ref.collection : void 0) {
         this.parent.addNewChild();
@@ -459,13 +465,20 @@ BooleanTreemaNode = (function(_super) {
     return _ref3;
   }
 
-  BooleanTreemaNode.prototype.toggleEdit = function() {
-    'Override the normal behavior, just flip the value instead.';
-    var valEl;
-    this.data = !this.data;
-    valEl = $('.treema-value', this.$el);
-    valEl.empty();
-    return this.setValueForReading(valEl);
+  BooleanTreemaNode.prototype.skipTab = true;
+
+  BooleanTreemaNode.prototype.onClick = function(e) {
+    'Override the normal behavior for clicking the value, just flip the value instead.';
+    var valEl, value;
+    value = $(e.target).closest('.treema-value');
+    if (value.length) {
+      this.data = !this.data;
+      valEl = $('.treema-value', this.$el);
+      valEl.empty();
+      this.setValueForReading(valEl);
+      return;
+    }
+    return BooleanTreemaNode.__super__.onClick.call(this, e);
   };
 
   BooleanTreemaNode.prototype.setValueForReading = function(valEl) {
