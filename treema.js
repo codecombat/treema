@@ -202,6 +202,11 @@ TreemaNode = (function() {
     if (this.keyed) {
       properties = this.childPropertiesAvailable();
       keyInput = $(this.newPropertyString);
+      if (typeof keyInput.autocomplete === "function") {
+        keyInput.autocomplete({
+          source: properties
+        });
+      }
       this.$el.find('.treema-add-child').before(keyInput);
       keyInput.focus();
       return keyInput.blur(function(e) {

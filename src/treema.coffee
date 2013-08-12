@@ -129,6 +129,7 @@ class TreemaNode
     if @keyed # object
       properties = @childPropertiesAvailable()
       keyInput = $(@newPropertyString)
+      keyInput.autocomplete?(source: properties)
       @$el.find('.treema-add-child').before(keyInput)
       keyInput.focus()
       keyInput.blur (e) =>
