@@ -127,23 +127,20 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.onKeyDown = function(e) {
-    var instance, nextChild, nextInput, target, _ref;
+    var dir, instance, nextChild, target, _ref;
     if (e.which === 9) {
+      dir = e.shiftKey ? 'prev' : 'next';
       target = $(e.target);
       if (target.hasClass('treema-new-prop')) {
         e.preventDefault();
         target.blur();
       }
-      nextInput = target.find('+ input, + textarea');
-      if (nextInput.length > 0) {
-        return;
-      }
-      nextChild = this.$el.find('+ .treema-node:first');
+      nextChild = this.$el[dir]();
       while (true) {
         if (nextChild.length > 0) {
           instance = nextChild.data('instance');
           if (instance.collection || instance.skipTab) {
-            nextChild = nextChild.find('+ .treema-node:first');
+            nextChild = nextChild[dir]();
             continue;
           }
           instance.toggleEdit('edit');

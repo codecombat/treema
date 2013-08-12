@@ -67,21 +67,23 @@ class TreemaNode
     
   onKeyDown: (e) ->
     if e.which is 9 # TAB
+      dir = if e.shiftKey then 'prev' else 'next'
       target = $(e.target)
       
       if target.hasClass('treema-new-prop')
         e.preventDefault()
         target.blur()
         
-      nextInput = target.find('+ input, + textarea')
-      return if nextInput.length > 0 # go to next input as normal
+      # figure this out later
+#      nextInput = target.find('+ input, + textarea')
+#      return if nextInput.length > 0 # go to next input as normal
 
-      nextChild = @$el.find('+ .treema-node:first')
+      nextChild = @$el[dir]()
       while true
         if nextChild.length > 0
           instance = nextChild.data('instance')
           if instance.collection or instance.skipTab
-            nextChild = nextChild.find('+ .treema-node:first')
+            nextChild = nextChild[dir]()
             continue
           instance.toggleEdit('edit')
           return e.preventDefault()
