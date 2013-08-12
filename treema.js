@@ -139,6 +139,9 @@ TreemaNode = (function() {
       while (true) {
         if (nextChild.length > 0) {
           instance = nextChild.data('instance');
+          if (!instance) {
+            break;
+          }
           if (instance.collection || instance.skipTab) {
             nextChild = nextChild[dir]();
             continue;
@@ -204,11 +207,14 @@ TreemaNode = (function() {
       return keyInput.blur(function(e) {
         var key;
         key = keyInput.val();
+        keyInput.remove();
+        if (!key.length) {
+          return;
+        }
         schema = _this.getChildSchema(key);
         newTreema = _this.addChildTreema(key, null, schema);
         childNode = _this.createChildNode(newTreema);
         _this.$el.find('.treema-add-child').before(childNode);
-        keyInput.remove();
         return newTreema.toggleEdit('edit');
       });
     }

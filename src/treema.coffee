@@ -82,6 +82,7 @@ class TreemaNode
       while true
         if nextChild.length > 0
           instance = nextChild.data('instance')
+          break unless instance
           if instance.collection or instance.skipTab
             nextChild = nextChild[dir]()
             continue
@@ -132,11 +133,13 @@ class TreemaNode
       keyInput.focus()
       keyInput.blur (e) =>
         key = keyInput.val()
+        keyInput.remove()
+        return unless key.length
+        
         schema = @getChildSchema(key)
         newTreema = @addChildTreema(key, null, schema)
         childNode = @createChildNode(newTreema)
         @$el.find('.treema-add-child').before(childNode)
-        keyInput.remove()
         newTreema.toggleEdit('edit')
     
   childPropertiesAvailable: ->
