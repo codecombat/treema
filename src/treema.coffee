@@ -11,6 +11,7 @@ class TreemaNode
   </div>'''
   childrenString: '<div class="treema-children"></div>'
   addChildString: '<div class="treema-add-child">+</div>'
+  newPropertyString: '<input class="treema-new-prop" />'
   grabberString: '<span class="treema-grabber"> G </span>'
   toggleString: '<span class="treema-toggle"> T </span>'
   keyString: '<span class="treema-key"></span>'
@@ -47,9 +48,9 @@ class TreemaNode
     
   setUpEvents: ->
     @$el.click (e) =>
-      node = $(e.target).closest('.treema-node').data('instance').onClick(e)
+      node = $(e.target).closest('.treema-node').data('instance')?.onClick(e)
     @$el.keydown (e) =>
-      node = $(e.target).closest('.treema-node').data('instance').onKeyDown(e)
+      node = $(e.target).closest('.treema-node').data('instance')?.onKeyDown(e)
     
   onClick: (e) ->
     return if e.target.nodeName in ['INPUT', 'TEXTAREA']
@@ -65,9 +66,15 @@ class TreemaNode
     
   onKeyDown: (e) ->
     if e.which is 9 # TAB
-      nextInput = $(e.target).find('+ input, + textarea')
-      return if nextInput.length > 0 # go to next input as normal
+      target = $(e.target)
       
+      if target.hasClass('treema-new-prop')
+        e.preventDefault()
+        target.blur()
+        
+      nextInput = target.find('+ input, + textarea')
+      return if nextInput.length > 0 # go to next input as normal
+
       nextChild = @$el.find('+ .treema-node:first')
       if nextChild.length > 0
         instance = nextChild.data('instance')
@@ -98,9 +105,7 @@ class TreemaNode
     if valEl.hasClass('edit')
       valEl.empty()
       @setValueForEditing(valEl)
-      @stopEdits()
-      TreemaNode.lastEditing = @
-
+      
   getChildren: -> [] # should be list of key-value-schema tuples
 
   addNewChild: ->
@@ -115,9 +120,17 @@ class TreemaNode
     
     if @keyed # object
       properties = @childPropertiesAvailable()
-      
-      #  create textbox
-      #  if we have a list of possible properties, and autocomplete is available, set it up
+      keyInput = $(@newPropertyString)
+      @$el.find('.treema-add-child').before(keyInput)
+      keyInput.focus()
+      keyInput.blur (e) =>
+        key = keyInput.val()
+        schema = @getChildSchema(key)
+        newTreema = @addChildTreema(key, null, schema)
+        childNode = @createChildNode(newTreema)
+        @$el.find('.treema-add-child').before(childNode)
+        keyInput.remove()
+        newTreema.toggleEdit('edit')
     
   childPropertiesAvailable: ->
     return [] unless @schema.properties
@@ -131,9 +144,6 @@ class TreemaNode
     return unless @parent
     @parent.data[@parentKey] = @data
   
-  stopEdits: ->
-    TreemaNode.lastEditing?.toggleEdit('read') if TreemaNode.lastEditing isnt @
-    
   toggleOpen: ->
     if @$el.hasClass('closed') then @open() else @close()
       
@@ -213,9 +223,11 @@ class StringTreemaNode extends TreemaNode
         .text("'#{@data}'"))
     
   setValueForEditing: (valEl) ->
-    input = $('<input />').val(@data)
+    input = $('<input />')
+    input.val(@data) unless @data is null
     valEl.append(input)
     input.focus()
+    input.select()
     input.blur =>
       @.toggleEdit('read') if $('.treema-value', @$el).hasClass('edit')
       
@@ -234,9 +246,11 @@ class NumberTreemaNode extends TreemaNode
         .text("#{@data}"))
 
   setValueForEditing: (valEl) ->
-    input = $('<input />').val(JSON.stringify(@data))
+    input = $('<input />')
+    input.val(JSON.stringify(@data)) unless @data is null
     valEl.append(input)
     input.focus()
+    input.select()
     input.blur =>
       @.toggleEdit('read') if $('.treema-value', @$el).hasClass('edit')
 
@@ -334,9 +348,12 @@ class AnyTreemaNode extends TreemaNode
     helperNode.setValueForReading(valEl)
 
   setValueForEditing: (valEl) ->
-    input = $('<input />').val(JSON.stringify(@data))
+    input = $('<input id="what" />').val(JSON.stringify(@data))
     valEl.append(input)
+    valEl.find('input').focus()
+    
     input.focus()
+    input.select()
     input.blur =>
       @.toggleEdit('read') if $('.treema-value', @$el).hasClass('edit')
 
@@ -354,7 +371,7 @@ class AnyTreemaNode extends TreemaNode
       try
         @data = JSON.parse(@data)
       catch e
-        pass
+        return
 
 
 TreemaNodeMap =
