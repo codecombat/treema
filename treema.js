@@ -507,6 +507,12 @@ ObjectTreemaNode = (function(_super) {
     return $(this.valueElementString).text("{" + this.data.length + "}");
   };
 
+  ObjectTreemaNode.prototype.setValueForReading = function(valEl) {
+    var size;
+    size = Object.keys(this.data).length;
+    return valEl.append($('<span></span>').text("{" + size + "}"));
+  };
+
   return ObjectTreemaNode;
 
 })(TreemaNode);
@@ -514,7 +520,7 @@ ObjectTreemaNode = (function(_super) {
 AnyTreemaNode = (function(_super) {
   __extends(AnyTreemaNode, _super);
 
-  "Super flexible input, can handle inputs like:\n\n  true      (Boolean)\n  'true     (string \"true\", anything that starts with ' or \" is treated as a string, like in spreadsheet programs)\n  1.2       (number)\n  [         (empty array)\n  {         (empty object)\n  [1,2,3]   (array with tree values)\n  null\n  undefined";
+  "Super flexible input, can handle inputs like:\n  true      (Boolean)\n  'true     (string \"true\", anything that starts with ' or \" is treated as a string, like in spreadsheet programs)\n  1.2       (number)\n  [         (empty array)\n  {         (empty object)\n  [1,2,3]   (array with tree values)\n  null";
 
   function AnyTreemaNode() {
     _ref5 = AnyTreemaNode.__super__.constructor.apply(this, arguments);
@@ -545,11 +551,21 @@ AnyTreemaNode = (function(_super) {
   AnyTreemaNode.prototype.saveChanges = function(valEl) {
     var e;
     this.data = $('input', valEl).val();
-    try {
-      return this.data = JSON.parse(this.data);
-    } catch (_error) {
-      e = _error;
-      return pass;
+    if (this.data[0] === "'" && this.data[this.data.length - 1] !== "'") {
+      return this.data = this.data.slice(1);
+    } else if (this.data[0] === '"' && this.data[this.data.length - 1] !== '"') {
+      return this.data = this.data.slice(1);
+    } else if (this.data.trim() === '[') {
+      return this.data = [];
+    } else if (this.data.trim() === '{') {
+      return this.data = {};
+    } else {
+      try {
+        return this.data = JSON.parse(this.data);
+      } catch (_error) {
+        e = _error;
+        return pass;
+      }
     }
   };
 

@@ -291,12 +291,14 @@ class ObjectTreemaNode extends TreemaNode
     
   valueElement: ->
     return $(@valueElementString).text("{#{@data.length}}")
-    
+
+  setValueForReading: (valEl) ->
+    size = Object.keys(@data).length
+    valEl.append($('<span></span>').text("{#{size}}"))
     
 class AnyTreemaNode extends TreemaNode
   """
   Super flexible input, can handle inputs like:
-  
     true      (Boolean)
     'true     (string "true", anything that starts with ' or " is treated as a string, like in spreadsheet programs)
     1.2       (number)
@@ -304,7 +306,6 @@ class AnyTreemaNode extends TreemaNode
     {         (empty object)
     [1,2,3]   (array with tree values)
     null
-    undefined
   """
 
   setValueForReading: (valEl) ->
@@ -322,10 +323,19 @@ class AnyTreemaNode extends TreemaNode
 
   saveChanges: (valEl) ->
     @data =$('input', valEl).val()
-    try
-      @data = JSON.parse(@data)
-    catch e
-      pass
+    if @data[0] is "'" and @data[@data.length-1] isnt "'"
+      @data = @data[1..]
+    else if @data[0] is '"' and @data[@data.length-1] isnt '"'
+      @data = @data[1..]
+    else if @data.trim() is '['
+      @data = []
+    else if @data.trim() is '{'
+      @data = {}
+    else
+      try
+        @data = JSON.parse(@data)
+      catch e
+        pass
 
 
 TreemaNodeMap =
