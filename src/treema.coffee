@@ -134,7 +134,7 @@ class TreemaNode
       keyInput.blur (e) =>
         key = keyInput.val()
         keyInput.remove()
-        return unless key.length
+        return unless key.length and not @childrenTreemas[key]
         
         schema = @getChildSchema(key)
         newTreema = @addChildTreema(key, null, schema)

@@ -208,7 +208,7 @@ TreemaNode = (function() {
         var key;
         key = keyInput.val();
         keyInput.remove();
-        if (!key.length) {
+        if (!(key.length && !_this.childrenTreemas[key])) {
           return;
         }
         schema = _this.getChildSchema(key);
