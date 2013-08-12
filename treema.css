@@ -14,43 +14,53 @@
   clear: both; }
 
 @media -sass-debug-info{filename{}line{font-family:\0000317}}
+.treema-add-child {
+  background-color: lightblue;
+  border: 1px solid blue;
+  text-align: center;
+  cursor: pointer;
+  display: inline-block;
+  padding: 0px 5px;
+  font-weight: bold; }
+
+@media -sass-debug-info{filename{}line{font-family:\0000326}}
 .treema-value {
   margin-left: 10px;
   cursor: pointer;
   padding: 2px 0 2px 2px; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000322}}
+@media -sass-debug-info{filename{}line{font-family:\0000331}}
 .treema-key {
   color: darkblue;
   float: left;
   margin-right: 7px;
   padding: 2px 0 2px 2px; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000328}}
+@media -sass-debug-info{filename{}line{font-family:\0000337}}
 .treema-error {
   float: right;
   color: darkred;
   margin-top: 5px;
   margin-bottom: 10px; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000334}}
+@media -sass-debug-info{filename{}line{font-family:\0000343}}
 .treema-has-error {
   background-color: lightpink;
   border: 1px solid red; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000340}}
+@media -sass-debug-info{filename{}line{font-family:\0000349}}
 .treema-grabber {
   color: darkblue;
   background-color: darkblue;
   cursor: move; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000345}}
+@media -sass-debug-info{filename{}line{font-family:\0000354}}
 .treema-toggle {
   color: #0b97c4;
   background-color: #0b97c4;
   cursor: pointer; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000350}}
+@media -sass-debug-info{filename{}line{font-family:\0000359}}
 .treema-grabber, .treema-toggle {
   margin-right: 4px;
   font-size: 9px;
@@ -58,12 +68,12 @@
   position: relative;
   top: 3px; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000360}}
+@media -sass-debug-info{filename{}line{font-family:\0000369}}
 .treema-string {
   color: darkgoldenrod;
   margin: 0; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000364}}
+@media -sass-debug-info{filename{}line{font-family:\0000373}}
 .treema-clearfix:after {
   content: ".";
   display: block;

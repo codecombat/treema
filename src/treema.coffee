@@ -10,6 +10,7 @@ class TreemaNode
     <div class="treema-value"></div>
   </div>'''
   childrenString: '<div class="treema-children"></div>'
+  addChildString: '<div class="treema-add-child">+</div>'
   grabberString: '<span class="treema-grabber"> G </span>'
   toggleString: '<span class="treema-toggle"> T </span>'
   keyString: '<span class="treema-key"></span>'
@@ -46,13 +47,36 @@ class TreemaNode
   setUpEvents: ->
     @$el.click (e) =>
       node = $(e.target).closest('.treema-node').data('instance').onClick(e)
+    @$el.keydown (e) =>
+      node = $(e.target).closest('.treema-node').data('instance').onKeyDown(e)
     
   onClick: (e) ->
     return if e.target.nodeName in ['INPUT', 'TEXTAREA']
+
     value = $(e.target).closest('.treema-value')
     if value.length
       if @collection then @open() else @toggleEdit()
+
     @toggleOpen() if $(e.target).hasClass('treema-toggle')
+
+    value = $(e.target).closest('.treema-add-child')
+    @addNewChild() if value.length and @collection
+    
+  onKeyDown: (e) ->
+    if e.which is 9 # TAB
+      nextInput = $(e.target).find('+ input, + textarea')
+      return if nextInput.length > 0 # go to next input as normal
+      
+      nextChild = @$el.find('+ .treema-node:first')
+      if nextChild.length > 0
+        instance = nextChild.data('instance')
+        return if instance.collection # TODO: what should the behavior be here exactly?
+        instance.toggleEdit('edit')
+        return e.preventDefault()
+        
+      if @parent?.collection
+        @parent.addNewChild()
+        return e.preventDefault()
     
   toggleEdit: (toClass) ->
     valEl = $('.treema-value', @$el)
@@ -77,6 +101,32 @@ class TreemaNode
 
   getChildren: -> [] # should be list of key-value-schema tuples
 
+  addNewChild: ->
+    
+    if @ordered # array
+      new_index = @childrenTreemas.length
+      schema = @getChildSchema()
+      newTreema = @addChildTreema(new_index, undefined, schema)
+      childNode = @createChildNode(newTreema)
+      @$el.find('.treema-add-child').before(childNode)
+      newTreema.toggleEdit('edit')
+    
+    # if object
+    
+    #   if properties
+    
+    #     create list of possible properties
+    
+    #   if additionalproperties is false, and no patternproperties, create select box using list
+    
+    #   else
+    
+    #     create textbox
+    
+    #     if we have a list of possible properties, and autocomplete is available, set it up
+    
+    
+
   propagateData: ->
     return unless @parent
     @parent.data[@parentKey] = @data
@@ -92,17 +142,26 @@ class TreemaNode
     childrenContainer.empty()
     @childrenTreemas = {}
     for [key, value, schema] in @getChildren()
-      treema = makeTreema(schema, value, {}, true)
-      treema.parentKey = key
-      treema.parent = @
-      @childrenTreemas[key] = treema
-      childNode = treema.build()
-      childNode.prepend($(@keyString).text(key + ' : ')) if @keyed
-      childNode.prepend($(@toggleString)) if treema.collection
-      childNode.prepend($(@grabberString)) if @ordered
+      treema = @addChildTreema(key, value, schema)
+      childNode = @createChildNode(treema)
       childrenContainer.append(childNode)
     @$el.append(childrenContainer).removeClass('closed').addClass('open')
+    childrenContainer.append($(@addChildString))
     
+  addChildTreema: (key, value, schema) ->
+    treema = makeTreema(schema, value, {}, true)
+    treema.parentKey = key
+    treema.parent = @
+    @childrenTreemas[key] = treema
+    treema
+    
+  createChildNode: (treema) ->
+    childNode = treema.build()
+    childNode.prepend($(@keyString).text(treema.parentKey + ' : ')) if @keyed
+    childNode.prepend($(@toggleString)) if treema.collection
+    childNode.prepend($(@grabberString)) if @ordered
+    childNode
+
   close: ->
     @data[key] = treema.data for key, treema of @childrenTreemas
     @$el.find('.treema-children').empty()
@@ -111,7 +170,6 @@ class TreemaNode
     
   showErrors: ->
     errors = @getErrors()
-    console.log('errors', errors)
     erroredTreemas = []
     for error in errors
       path = error.dataPath.split('/').slice(1)
@@ -120,12 +178,9 @@ class TreemaNode
         break unless deepestTreema.childrenTreemas
         subpath = parseInt(subpath) if deepestTreema.ordered
         deepestTreema = deepestTreema.childrenTreemas[subpath]
-        console.error('could not find subpath', subpath, 'in treema children', deepestTreema.childrenTreemas) if not deepestTreema
       deepestTreema._errors = [] unless deepestTreema._errors and deepestTreema in erroredTreemas
       deepestTreema._errors.push(error)
       erroredTreemas.push(deepestTreema)
-      
-    console.log('errored treemas?', erroredTreemas)
       
     for treema in erroredTreemas
       if treema._errors.length > 1
@@ -134,7 +189,6 @@ class TreemaNode
         treema.showError(treema._errors[0].message)
     
   showError: (message) ->
-    console.log('SHOW ERROR', message, @)
     @$el.append($(@errorString))    
     @$el.find('> .treema-error').text(message).show()
     @$el.addClass('treema-has-error')
@@ -175,7 +229,10 @@ class ArrayTreemaNode extends TreemaNode
   ordered: true
   
   getChildren: ->
-    ([key, value, @schema.items] for value, key in @data)
+    ([key, value, @getChildSchema()] for value, key in @data)
+    
+  getChildSchema: ->
+    @schema.items or {}
 
   setValueForReading: (valEl) ->
     valEl.append($('<span></span>').text("[#{@data.length}]"))
@@ -190,7 +247,12 @@ class ObjectTreemaNode extends TreemaNode
   keyed: true
   
   getChildren: ->
-    ([key, value, @schema.properties[key]] for key, value of @data)
+    ([key, value, @getChildSchema(key)] for key, value of @data)
+    
+  getChildSchema: (key_or_title) ->
+    for key, child_schema of @schema.properties
+      return child_schema if key is key_or_title or child_schema.title is key_or_title
+    {}
     
   valueElement: ->
     return $(@valueElementString).text("{#{@data.length}}")
