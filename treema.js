@@ -1,4 +1,4 @@
-var AnyTreemaNode, ArrayTreemaNode, NullTreemaNode, NumberTreemaNode, ObjectTreemaNode, StringTreemaNode, TreemaNode, TreemaNodeMap, makeTreema, _ref, _ref1, _ref2, _ref3, _ref4, _ref5,
+var AnyTreemaNode, ArrayTreemaNode, BooleanTreemaNode, NullTreemaNode, NumberTreemaNode, ObjectTreemaNode, StringTreemaNode, TreemaNode, TreemaNodeMap, makeTreema, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6,
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -429,14 +429,41 @@ NullTreemaNode = (function(_super) {
 
 })(TreemaNode);
 
+BooleanTreemaNode = (function(_super) {
+  __extends(BooleanTreemaNode, _super);
+
+  "Basic 'boolean' type node.";
+
+  function BooleanTreemaNode() {
+    _ref3 = BooleanTreemaNode.__super__.constructor.apply(this, arguments);
+    return _ref3;
+  }
+
+  BooleanTreemaNode.prototype.toggleEdit = function() {
+    'Override the normal behavior, just flip the value instead.';
+    var valEl;
+    this.data = !this.data;
+    valEl = $('.treema-value', this.$el);
+    valEl.empty();
+    return this.setValueForReading(valEl);
+  };
+
+  BooleanTreemaNode.prototype.setValueForReading = function(valEl) {
+    return valEl.append($('<pre class="treema-boolean"></pre>').text("" + this.data));
+  };
+
+  return BooleanTreemaNode;
+
+})(TreemaNode);
+
 ArrayTreemaNode = (function(_super) {
   __extends(ArrayTreemaNode, _super);
 
   "Basic 'array' type node.";
 
   function ArrayTreemaNode() {
-    _ref3 = ArrayTreemaNode.__super__.constructor.apply(this, arguments);
-    return _ref3;
+    _ref4 = ArrayTreemaNode.__super__.constructor.apply(this, arguments);
+    return _ref4;
   }
 
   ArrayTreemaNode.prototype.collection = true;
@@ -444,11 +471,11 @@ ArrayTreemaNode = (function(_super) {
   ArrayTreemaNode.prototype.ordered = true;
 
   ArrayTreemaNode.prototype.getChildren = function() {
-    var key, value, _i, _len, _ref4, _results;
-    _ref4 = this.data;
+    var key, value, _i, _len, _ref5, _results;
+    _ref5 = this.data;
     _results = [];
-    for (key = _i = 0, _len = _ref4.length; _i < _len; key = ++_i) {
-      value = _ref4[key];
+    for (key = _i = 0, _len = _ref5.length; _i < _len; key = ++_i) {
+      value = _ref5[key];
       _results.push([key, value, this.getChildSchema()]);
     }
     return _results;
@@ -472,8 +499,8 @@ ObjectTreemaNode = (function(_super) {
   "Basic 'object' type node.";
 
   function ObjectTreemaNode() {
-    _ref4 = ObjectTreemaNode.__super__.constructor.apply(this, arguments);
-    return _ref4;
+    _ref5 = ObjectTreemaNode.__super__.constructor.apply(this, arguments);
+    return _ref5;
   }
 
   ObjectTreemaNode.prototype.collection = true;
@@ -481,21 +508,21 @@ ObjectTreemaNode = (function(_super) {
   ObjectTreemaNode.prototype.keyed = true;
 
   ObjectTreemaNode.prototype.getChildren = function() {
-    var key, value, _ref5, _results;
-    _ref5 = this.data;
+    var key, value, _ref6, _results;
+    _ref6 = this.data;
     _results = [];
-    for (key in _ref5) {
-      value = _ref5[key];
+    for (key in _ref6) {
+      value = _ref6[key];
       _results.push([key, value, this.getChildSchema(key)]);
     }
     return _results;
   };
 
   ObjectTreemaNode.prototype.getChildSchema = function(key_or_title) {
-    var child_schema, key, _ref5;
-    _ref5 = this.schema.properties;
-    for (key in _ref5) {
-      child_schema = _ref5[key];
+    var child_schema, key, _ref6;
+    _ref6 = this.schema.properties;
+    for (key in _ref6) {
+      child_schema = _ref6[key];
       if (key === key_or_title || child_schema.title === key_or_title) {
         return child_schema;
       }
@@ -523,8 +550,8 @@ AnyTreemaNode = (function(_super) {
   "Super flexible input, can handle inputs like:\n  true      (Boolean)\n  'true     (string \"true\", anything that starts with ' or \" is treated as a string, like in spreadsheet programs)\n  1.2       (number)\n  [         (empty array)\n  {         (empty object)\n  [1,2,3]   (array with tree values)\n  null";
 
   function AnyTreemaNode() {
-    _ref5 = AnyTreemaNode.__super__.constructor.apply(this, arguments);
-    return _ref5;
+    _ref6 = AnyTreemaNode.__super__.constructor.apply(this, arguments);
+    return _ref6;
   }
 
   AnyTreemaNode.prototype.setValueForReading = function(valEl) {
@@ -579,6 +606,7 @@ TreemaNodeMap = {
   'object': ObjectTreemaNode,
   'number': NumberTreemaNode,
   'null': NullTreemaNode,
+  'boolean': BooleanTreemaNode,
   'any': AnyTreemaNode
 };
 

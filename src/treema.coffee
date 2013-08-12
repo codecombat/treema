@@ -255,6 +255,25 @@ class NullTreemaNode extends TreemaNode
     valEl.append($('<pre class="treema-null">null</pre>'))
 
     
+class BooleanTreemaNode extends TreemaNode
+  """
+  Basic 'boolean' type node.
+  """
+
+  toggleEdit: ->
+    '''
+    Override the normal behavior, just flip the value instead.
+    '''
+    @data = not @data
+    valEl = $('.treema-value', @$el)
+    valEl.empty()
+    @setValueForReading(valEl)
+
+  setValueForReading: (valEl) ->
+    valEl.append(
+      $('<pre class="treema-boolean"></pre>')
+        .text("#{@data}"))
+
 class ArrayTreemaNode extends TreemaNode
   """
   Basic 'array' type node.
@@ -344,6 +363,7 @@ TreemaNodeMap =
   'object': ObjectTreemaNode
   'number': NumberTreemaNode
   'null': NullTreemaNode
+  'boolean': BooleanTreemaNode
   'any': AnyTreemaNode
 
 makeTreema = (schema, data, options, child) ->

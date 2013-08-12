@@ -21,6 +21,7 @@
       'street-address': '2338 1/2 Roosevelt Ave',
       'locality': 'Berkeley',
       'region': 'C',
+      'is-home-address': true,
       'postal-code': 94703.14,
       'country-name': 'USA',
       'phone-numbers': ['1-800-938-3000', '1-234-567-8900\nex 1337'],
@@ -30,6 +31,7 @@
       "description": "An Address following the convention of http://microformats.org/wiki/hcard",
       "type": "object",
       "properties": {
+        "is-home-address": { type: 'boolean' },
         "post-office-box": { },
         "extended-address": { },
         "street-address": { "type": "string", title: "Street Address", description: "Don't forget the number." },
