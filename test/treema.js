@@ -1,4 +1,5 @@
 var ArrayTreemaNode, ObjectTreemaNode, StringTreemaNode, TreemaNode, TreemaNodeMap, makeTreema, _ref, _ref1, _ref2,
+  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -8,7 +9,7 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.lastOutput = null;
 
-  TreemaNode.prototype.nodeString = '<div class="treema-node"><div class="treema-value"></div></div>';
+  TreemaNode.prototype.nodeString = '<div class="treema-node treema-clearfix">\n  <div class="treema-value"></div>\n</div>';
 
   TreemaNode.prototype.childrenString = '<div class="treema-children"></div>';
 
@@ -17,6 +18,8 @@ TreemaNode = (function() {
   TreemaNode.prototype.toggleString = '<span class="treema-toggle"> T </span>';
 
   TreemaNode.prototype.keyString = '<span class="treema-key"></span>';
+
+  TreemaNode.prototype.errorString = '<div class="treema-error"></div>';
 
   TreemaNode.prototype.collection = false;
 
@@ -32,15 +35,15 @@ TreemaNode = (function() {
   }
 
   TreemaNode.prototype.isValid = function() {
-    return tv4.validate(this.getData(), this.schema);
+    return tv4.validate(this.data, this.schema);
   };
 
   TreemaNode.prototype.getErrors = function() {
-    return tv4.validateMultiple(this.getData(), this.schema)['errors'];
+    return tv4.validateMultiple(this.data, this.schema)['errors'];
   };
 
   TreemaNode.prototype.getMissing = function() {
-    return tv4.validateMultiple(this.getData(), this.schema)['missing'];
+    return tv4.validateMultiple(this.data, this.schema)['missing'];
   };
 
   TreemaNode.prototype.nodeElement = function() {
@@ -117,6 +120,8 @@ TreemaNode = (function() {
     if (valEl.hasClass('read')) {
       if (wasEditing) {
         this.saveChanges(valEl);
+        this.removeError();
+        this.showErrors();
       }
       this.propagateData();
       valEl.empty();
@@ -191,7 +196,61 @@ TreemaNode = (function() {
       this.data[key] = treema.data;
     }
     this.$el.find('.treema-children').empty();
-    return this.$el.addClass('closed').removeClass('open');
+    this.$el.addClass('closed').removeClass('open');
+    return this.childrenTreemas = null;
+  };
+
+  TreemaNode.prototype.showErrors = function() {
+    var deepestTreema, error, erroredTreemas, errors, path, subpath, treema, _i, _j, _k, _len, _len1, _len2, _results;
+    errors = this.getErrors();
+    console.log('errors', errors);
+    erroredTreemas = [];
+    for (_i = 0, _len = errors.length; _i < _len; _i++) {
+      error = errors[_i];
+      path = error.dataPath.split('/').slice(1);
+      deepestTreema = this;
+      for (_j = 0, _len1 = path.length; _j < _len1; _j++) {
+        subpath = path[_j];
+        if (!deepestTreema.childrenTreemas) {
+          break;
+        }
+        if (deepestTreema.ordered) {
+          subpath = parseInt(subpath);
+        }
+        deepestTreema = deepestTreema.childrenTreemas[subpath];
+        if (!deepestTreema) {
+          console.error('could not find subpath', subpath, 'in treema children', deepestTreema.childrenTreemas);
+        }
+      }
+      if (!(deepestTreema._errors && __indexOf.call(erroredTreemas, deepestTreema) >= 0)) {
+        deepestTreema._errors = [];
+      }
+      deepestTreema._errors.push(error);
+      erroredTreemas.push(deepestTreema);
+    }
+    console.log('errored treemas?', erroredTreemas);
+    _results = [];
+    for (_k = 0, _len2 = erroredTreemas.length; _k < _len2; _k++) {
+      treema = erroredTreemas[_k];
+      if (treema._errors.length > 1) {
+        _results.push(treema.showError("[" + treema._errors.length + " errors]"));
+      } else {
+        _results.push(treema.showError(treema._errors[0].message));
+      }
+    }
+    return _results;
+  };
+
+  TreemaNode.prototype.showError = function(message) {
+    console.log('SHOW ERROR', message, this);
+    this.$el.append($(this.errorString));
+    this.$el.find('> .treema-error').text(message).show();
+    return this.$el.addClass('treema-has-error');
+  };
+
+  TreemaNode.prototype.removeError = function() {
+    this.$el.find('.treema-error').remove();
+    return this.$el.removeClass('treema-has-error');
   };
 
   return TreemaNode;

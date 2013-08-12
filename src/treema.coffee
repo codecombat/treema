@@ -6,11 +6,14 @@ class TreemaNode
   schema: {}
   lastOutput: null
   
-  nodeString: '<div class="treema-node"><div class="treema-value"></div></div>'
+  nodeString: '''<div class="treema-node treema-clearfix">
+    <div class="treema-value"></div>
+  </div>'''
   childrenString: '<div class="treema-children"></div>'
   grabberString: '<span class="treema-grabber"> G </span>'
   toggleString: '<span class="treema-toggle"> T </span>'
   keyString: '<span class="treema-key"></span>'
+  errorString: '<div class="treema-error"></div>'
   
   collection: false
   ordered: false
@@ -19,9 +22,9 @@ class TreemaNode
   constructor: (@schema, @data, options, @child) ->
     @options = options or {}
     
-  isValid: -> tv4.validate(@getData(), @schema)
-  getErrors: -> tv4.validateMultiple(@getData(), @schema)['errors']
-  getMissing: -> tv4.validateMultiple(@getData(), @schema)['missing']
+  isValid: -> tv4.validate(@data, @schema)
+  getErrors: -> tv4.validateMultiple(@data, @schema)['errors']
+  getMissing: -> tv4.validateMultiple(@data, @schema)['missing']
     
   nodeElement: -> $(@nodeString)
   setValueForReading: (valEl) -> valEl.append($('<span>undefined</span>'))
@@ -57,7 +60,11 @@ class TreemaNode
     valEl.toggleClass('read edit') unless toClass and valEl.hasClass(toClass)
     
     if valEl.hasClass('read')
-      @saveChanges(valEl) if wasEditing
+      if wasEditing
+        @saveChanges(valEl)
+        @removeError()
+        @showErrors()
+
       @propagateData()
       valEl.empty()
       @setValueForReading(valEl)
@@ -100,6 +107,41 @@ class TreemaNode
     @data[key] = treema.data for key, treema of @childrenTreemas
     @$el.find('.treema-children').empty()
     @$el.addClass('closed').removeClass('open')
+    @childrenTreemas = null
+    
+  showErrors: ->
+    errors = @getErrors()
+    console.log('errors', errors)
+    erroredTreemas = []
+    for error in errors
+      path = error.dataPath.split('/').slice(1)
+      deepestTreema = @
+      for subpath in path
+        break unless deepestTreema.childrenTreemas
+        subpath = parseInt(subpath) if deepestTreema.ordered
+        deepestTreema = deepestTreema.childrenTreemas[subpath]
+        console.error('could not find subpath', subpath, 'in treema children', deepestTreema.childrenTreemas) if not deepestTreema
+      deepestTreema._errors = [] unless deepestTreema._errors and deepestTreema in erroredTreemas
+      deepestTreema._errors.push(error)
+      erroredTreemas.push(deepestTreema)
+      
+    console.log('errored treemas?', erroredTreemas)
+      
+    for treema in erroredTreemas
+      if treema._errors.length > 1
+        treema.showError("[#{treema._errors.length} errors]")
+      else
+        treema.showError(treema._errors[0].message)
+    
+  showError: (message) ->
+    console.log('SHOW ERROR', message, @)
+    @$el.append($(@errorString))    
+    @$el.find('> .treema-error').text(message).show()
+    @$el.addClass('treema-has-error')
+    
+  removeError: ->
+    @$el.find('.treema-error').remove()
+    @$el.removeClass('treema-has-error')
 
 
 class StringTreemaNode extends TreemaNode
@@ -119,7 +161,6 @@ class StringTreemaNode extends TreemaNode
     input.blur =>
       @.toggleEdit('read') if $('.treema-value', @$el).hasClass('edit')
       
-    
   saveChanges: (valEl) ->
     window.what = valEl
     @data = $('input', valEl).val()

@@ -20,7 +20,7 @@
     data = {
       'street-address': '2338 1/2 Roosevelt Ave',
       'locality': 'Berkeley',
-      'region': 'California',
+      'region': 'C',
       'postal-code': '94703',
       'country-name': 'USA',
       'phone-numbers': ['1-800-938-3000', '1-234-567-8900\nex 1337']
@@ -32,12 +32,13 @@
         "post-office-box": { "type": "string" },
         "extended-address": { "type": "string" },
         "street-address": { "type": "string" },
-        "locality":{ "type": "string", "required": true },
-        "region": { "type": "string", "required": true },
+        "locality":{ "type": "string" },
+        "region": { "type": "string", minLength: 2 },
         "postal-code": { "type": "string" },
-        "country-name": { "type": "string", "required": true},
+        "country-name": { "type": "string"},
         "phone-numbers": { "type": "array", items: { type: "string" } }
       },
+      "required": ['locality', 'region', 'country-name'],
       "dependencies": {
         "post-office-box": "street-address",
         "extended-address": "street-address"
@@ -46,6 +47,7 @@
 
     treema = makeTreema(schema, data);
     $('#test-area').append(treema.build())
+    treema.showErrors()
     //window.treema = treema
   });
   

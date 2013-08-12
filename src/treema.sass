@@ -1,7 +1,11 @@
+// Base styles
+
 .treema-node
   font-family: monospace
   margin: 3px 0
+  clear: both
   
+  // hide collection short strings when open
   &.open > .treema-value
     display: none
 
@@ -13,16 +17,26 @@
 .treema-value
   margin-left: 10px
   cursor: pointer
+  padding: 2px 0 2px 2px
 
 .treema-key
   color: #00008b
   float: left
   margin-right: 7px
-
-.treema-string
-  color: #b8860b
-  margin: 0
+  padding: 2px 0 2px 2px
   
+.treema-error
+  float: right
+  color: #8b0000
+  margin-top: 5px
+  margin-bottom: 10px
+  
+.treema-has-error
+  background-color: #ffb6c1
+  border: 1px solid red
+  
+// Collection controls (placeholders for icons)
+
 .treema-grabber
   color: #00008b
   background-color: #00008b
@@ -39,4 +53,18 @@
   float: left
   position: relative
   top: 3px
+
   
+// Element value styles
+
+.treema-string
+  color: #b8860b
+  margin: 0
+
+.treema-clearfix:after
+  content: "."
+  display: block
+  height: 0
+  clear: both
+  visibility: hidden
+ 
