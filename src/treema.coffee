@@ -19,6 +19,7 @@ class TreemaNode
   collection: false
   ordered: false
   keyed: false
+  editable: true
   
   constructor: (@schema, @data, options, @child) ->
     @options = options or {}
@@ -79,6 +80,7 @@ class TreemaNode
         return e.preventDefault()
     
   toggleEdit: (toClass) ->
+    return unless @editable
     valEl = $('.treema-value', @$el)
     wasEditing = valEl.hasClass('edit')
     valEl.toggleClass('read edit') unless toClass and valEl.hasClass(toClass)
@@ -111,21 +113,19 @@ class TreemaNode
       @$el.find('.treema-add-child').before(childNode)
       newTreema.toggleEdit('edit')
     
-    # if object
+    if @keyed # object
+      properties = @childPropertiesAvailable()
+      
+      #  create textbox
+      #  if we have a list of possible properties, and autocomplete is available, set it up
     
-    #   if properties
-    
-    #     create list of possible properties
-    
-    #   if additionalproperties is false, and no patternproperties, create select box using list
-    
-    #   else
-    
-    #     create textbox
-    
-    #     if we have a list of possible properties, and autocomplete is available, set it up
-    
-    
+  childPropertiesAvailable: ->
+    return [] unless @schema.properties
+    properties = []
+    for property, childSchema of @schema.properties
+      continue if @childrenTreemas[property]?
+      properties.append(childSchema.title or property)
+    properties.sort()
 
   propagateData: ->
     return unless @parent
@@ -157,7 +157,11 @@ class TreemaNode
     
   createChildNode: (treema) ->
     childNode = treema.build()
-    childNode.prepend($(@keyString).text(treema.parentKey + ' : ')) if @keyed
+    if @keyed
+      name = treema.schema.title or treema.parentKey
+      keyEl = $(@keyString).text(name + ' : ')
+      keyEl.attr('title', treema.schema.description) if treema.schema.description
+      childNode.prepend(keyEl)
     childNode.prepend($(@toggleString)) if treema.collection
     childNode.prepend($(@grabberString)) if @ordered
     childNode
@@ -216,10 +220,41 @@ class StringTreemaNode extends TreemaNode
       @.toggleEdit('read') if $('.treema-value', @$el).hasClass('edit')
       
   saveChanges: (valEl) ->
-    window.what = valEl
     @data = $('input', valEl).val()
-  
 
+    
+class NumberTreemaNode extends TreemaNode
+  """
+  Basic 'number' type node.
+  """
+  
+  setValueForReading: (valEl) ->
+    valEl.append(
+      $('<pre class="treema-number"></pre>')
+        .text("#{@data}"))
+
+  setValueForEditing: (valEl) ->
+    input = $('<input />').val(JSON.stringify(@data))
+    valEl.append(input)
+    input.focus()
+    input.blur =>
+      @.toggleEdit('read') if $('.treema-value', @$el).hasClass('edit')
+
+  saveChanges: (valEl) ->
+    @data = parseFloat($('input', valEl).val())
+
+    
+class NullTreemaNode extends TreemaNode
+  """
+  Basic 'number' type node.
+  """
+
+  editable: false
+
+  setValueForReading: (valEl) ->
+    valEl.append($('<pre class="treema-null">null</pre>'))
+
+    
 class ArrayTreemaNode extends TreemaNode
   """
   Basic 'array' type node.
@@ -256,18 +291,56 @@ class ObjectTreemaNode extends TreemaNode
     
   valueElement: ->
     return $(@valueElementString).text("{#{@data.length}}")
+    
+    
+class AnyTreemaNode extends TreemaNode
+  """
+  Super flexible input, can handle inputs like:
+  
+    true      (Boolean)
+    'true     (string "true", anything that starts with ' or " is treated as a string, like in spreadsheet programs)
+    1.2       (number)
+    [         (empty array)
+    {         (empty object)
+    [1,2,3]   (array with tree values)
+    null
+    undefined
+  """
+
+  setValueForReading: (valEl) ->
+    dataType = $.type(@data)
+    NodeClass = TreemaNodeMap[dataType]
+    helperNode = new NodeClass(@schema, @data, @options, @child)
+    helperNode.setValueForReading(valEl)
+
+  setValueForEditing: (valEl) ->
+    input = $('<input />').val(JSON.stringify(@data))
+    valEl.append(input)
+    input.focus()
+    input.blur =>
+      @.toggleEdit('read') if $('.treema-value', @$el).hasClass('edit')
+
+  saveChanges: (valEl) ->
+    @data =$('input', valEl).val()
+    try
+      @data = JSON.parse(@data)
+    catch e
+      pass
 
 
 TreemaNodeMap =
   'array': ArrayTreemaNode
   'string': StringTreemaNode
   'object': ObjectTreemaNode
+  'number': NumberTreemaNode
+  'null': NullTreemaNode
+  'any': AnyTreemaNode
 
 makeTreema = (schema, data, options, child) ->
   NodeClass = TreemaNodeMap[schema.format]
   unless NodeClass
     NodeClass = TreemaNodeMap[schema.type]
   unless NodeClass
-    return null
+    NodeClass = TreemaNodeMap['any']
     
   return new NodeClass(schema, data, options, child)
