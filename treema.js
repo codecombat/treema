@@ -204,7 +204,7 @@ TreemaNode = (function() {
       if (this.childrenTreemas[property] != null) {
         continue;
       }
-      properties.append(childSchema.title || property);
+      properties.push(childSchema.title || property);
     }
     return properties.sort();
   };

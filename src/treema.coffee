@@ -124,7 +124,7 @@ class TreemaNode
     properties = []
     for property, childSchema of @schema.properties
       continue if @childrenTreemas[property]?
-      properties.append(childSchema.title or property)
+      properties.push(childSchema.title or property)
     properties.sort()
 
   propagateData: ->
