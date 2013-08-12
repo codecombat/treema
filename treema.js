@@ -192,7 +192,7 @@ TreemaNode = (function() {
     var childNode, keyInput, newTreema, new_index, properties, schema,
       _this = this;
     if (this.ordered) {
-      new_index = this.childrenTreemas.length;
+      new_index = Object.keys(this.childrenTreemas).length;
       schema = this.getChildSchema();
       newTreema = this.addChildTreema(new_index, void 0, schema);
       childNode = this.createChildNode(newTreema);
@@ -258,7 +258,8 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.open = function() {
-    var childNode, childrenContainer, key, schema, treema, value, _i, _len, _ref, _ref1;
+    var childNode, childrenContainer, key, onchange, schema, treema, value, _base, _i, _len, _ref, _ref1,
+      _this = this;
     childrenContainer = this.$el.find('.treema-children').detach();
     childrenContainer.empty();
     this.childrenTreemas = {};
@@ -270,7 +271,35 @@ TreemaNode = (function() {
       childrenContainer.append(childNode);
     }
     this.$el.append(childrenContainer).removeClass('closed').addClass('open');
-    return childrenContainer.append($(this.addChildString));
+    childrenContainer.append($(this.addChildString));
+    if (this.ordered && childrenContainer.sortable) {
+      onchange = function() {
+        return _this.sortFromUI();
+      };
+      return typeof childrenContainer.sortable === "function" ? typeof (_base = childrenContainer.sortable({
+        deactivate: onchange
+      })).disableSelection === "function" ? _base.disableSelection() : void 0 : void 0;
+    }
+  };
+
+  TreemaNode.prototype.sortFromUI = function() {
+    var child, children_wrapper, index, treema, _i, _len, _ref, _results;
+    children_wrapper = this.$el.find('> .treema-children');
+    index = 0;
+    _ref = children_wrapper[0].children;
+    _results = [];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      child = _ref[_i];
+      treema = $(child).data('instance');
+      if (!treema) {
+        continue;
+      }
+      treema.parentKey = index;
+      this.childrenTreemas[index] = treema;
+      this.data[index] = treema.data;
+      _results.push(index += 1);
+    }
+    return _results;
   };
 
   TreemaNode.prototype.addChildTreema = function(key, value, schema) {

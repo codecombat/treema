@@ -119,7 +119,7 @@ class TreemaNode
   addNewChild: ->
     
     if @ordered # array
-      new_index = @childrenTreemas.length
+      new_index = Object.keys(@childrenTreemas).length
       schema = @getChildSchema()
       newTreema = @addChildTreema(new_index, undefined, schema)
       childNode = @createChildNode(newTreema)
@@ -168,7 +168,22 @@ class TreemaNode
       childrenContainer.append(childNode)
     @$el.append(childrenContainer).removeClass('closed').addClass('open')
     childrenContainer.append($(@addChildString))
+    if @ordered and childrenContainer.sortable
+      onchange = => @sortFromUI()
+      childrenContainer.sortable?(deactivate: onchange).disableSelection?()
+
+  sortFromUI: ->
+    children_wrapper = @$el.find('> .treema-children')
+    index = 0
+    for child in children_wrapper[0].children
+      treema = $(child).data('instance')
+      continue unless treema
+      treema.parentKey = index
+      @childrenTreemas[index] = treema
+      @data[index] = treema.data
+      index += 1
     
+
   addChildTreema: (key, value, schema) ->
     treema = makeTreema(schema, value, {}, true)
     treema.parentKey = key
