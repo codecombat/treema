@@ -1,38 +1,44 @@
 // Base styles
 
 .treema-node
-  font-family: monospace
+  position: relative
+  font-family: Helvetica
   margin: 3px 0
   clear: both
   
   // hide collection short strings when open
   &.treema-open > .treema-value
     display: none
+    
+  &.treema-open > .treema-children
+    padding-top: 1px
 
   &.treema-selected
     background-color: rgba(64, 128, 255, 0.25)
 
 .treema-children
-  padding-top: 3px
-  margin-left: 10px
+  margin-left: 15px
   clear: both
   
 .treema-add-child
-  background-color: lightblue
-  border: 1px solid blue
-  text-align: center
+  background-color: #eef
+  border: 1px solid #aaf
   cursor: pointer
   display: inline-block
   padding: 0px 5px
   font-weight: bold
-
+  
+  &:hover
+    background-color: #ccf
+ 
 .treema-value
-  margin-left: 10px
   cursor: pointer
   padding: 2px 0 2px 2px
+  display: inline-block
   
   pre
     margin: 0
+    font-family: Helvetica
 
 .treema-key
   color: #00008b
@@ -44,32 +50,34 @@
 .treema-error
   float: right
   color: #8b0000
-  margin-top: 5px
-  margin-bottom: 10px
+  margin: 5px 10px
   
 .treema-has-error
   background-color: #ffb6c1
   border: 1px solid red
   
 // Collection controls (placeholders for icons)
-
-.treema-grabber
-  color: #00008b
-  background-color: #00008b
-  cursor: move
+// http://css-tricks.com/snippets/css/css-triangle/
 
 .treema-toggle
-  color: #0b97c4
-  background-color: #0b97c4
   cursor: pointer
-
-.treema-grabber, .treema-toggle
-  margin-right: 4px
-  font-size: 9px
+  width: 0
+  height: 0
   float: left
-  position: relative
-  top: 3px
+  position: absolute
+  left: -10px
 
+.treema-closed > .treema-toggle
+  border-top: 4px solid transparent
+  border-bottom: 4px solid transparent
+  border-left: 8px solid #0b97c4
+  top: 6px
+
+.treema-open > .treema-toggle
+  border-left: 4px solid transparent
+  border-right: 4px solid transparent
+  border-top: 8px solid #0b97c4
+  top: 6px
   
 // Element value styles
 
@@ -83,6 +91,7 @@
   color: #483d8b
   font-weight: bold
 
+// http://www.positioniseverything.net/easyclearing.html
 .treema-clearfix:after
   content: "."
   display: block

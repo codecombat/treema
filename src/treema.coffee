@@ -12,8 +12,7 @@ class TreemaNode
   childrenTemplate: '<div class="treema-children"></div>'
   addChildTemplate: '<div class="treema-add-child">+</div>'
   newPropertyTemplate: '<input class="treema-new-prop" />'
-  grabberTemplate: '<span class="treema-grabber"> G </span>'
-  toggleTemplate: '<span class="treema-toggle"> T </span>'
+  toggleTemplate: '<span class="treema-toggle"></span>'
   keyTemplate: '<span class="treema-key"></span>'
   templateString: '<div class="treema-error"></div>'
 
@@ -47,6 +46,10 @@ class TreemaNode
     valEl.append(input)
     input.focus().select().blur =>
       @.toggleEdit('treema-read') if $('.treema-value', @$el).hasClass('treema-edit')
+    input.keydown (e) =>
+      if e.which is 8 and not $(input).val()
+        @remove()
+        e.preventDefault()
 
   # Initialization ------------------------------------------------------------
   constructor: (@schema, @data, options, @isChild) ->
@@ -67,6 +70,7 @@ class TreemaNode
 
   # Event handling ------------------------------------------------------------
   setUpEvents: ->
+    @$el.dblclick (e) => $(e.target).closest('.treema-node').data('instance')?.onDoubleClick(e)
     @$el.click (e) => $(e.target).closest('.treema-node').data('instance')?.onClick(e)
     @$el.keydown (e) =>
       if e.which is 8 and not (e.target.nodeName in ['INPUT', 'TEXTAREA'])  # Delete
@@ -84,6 +88,13 @@ class TreemaNode
     return @toggleOpen() if clickedToggle or (clickedValue and @collection)
     return @addNewChild() if $(e.target).closest('.treema-add-child').length and @collection
     return @toggleSelect() if clickedKey
+
+  onDoubleClick: (e) ->
+    return unless @collection
+    clickedKey = $(e.target).hasClass('treema-key')
+    return unless clickedKey
+    @open() if @$el.hasClass('treema-closed')
+    @addNewChild()
 
   onKeyDown: (e) ->
     @onEscapePressed(e) if e.which is 27
@@ -185,10 +196,19 @@ class TreemaNode
       keyInput.autocomplete?(source: properties)
       @getMyAddButton().before(keyInput)
       keyInput.focus()
+
+      keyInput.keydown (e) =>
+        if e.which is 8 and not keyInput.val()
+          keyInput.remove()
+          e.preventDefault()
+
       keyInput.blur (e) =>
         key = keyInput.val()
         escaped = keyInput.data('escaped')
         keyInput.remove()
+        if @schema.properties
+          for child_key, child_schema of @schema.properties
+            key = child_key if child_schema.title is key
         return if escaped
         return unless key.length and not @childrenTreemas[key]
 
@@ -219,7 +239,7 @@ class TreemaNode
     return unless @parent?
     delete @parent.childrenTreemas[@keyForParent]
     delete @parent.data[@keyForParent]
-    @parent.sortFromUI()
+    @parent.sortFromUI() if @parent.ordered
     @parent.refreshErrors()
 
   # Opening/closing collections -----------------------------------------------
@@ -283,7 +303,6 @@ class TreemaNode
       keyEl.attr('title', treema.schema.description) if treema.schema.description
       childNode.prepend(keyEl)
     childNode.prepend($(@toggleTemplate)) if treema.collection
-    childNode.prepend($(@grabberTemplate)) if @ordered
     childNode
 
   # Displaying validation errors ----------------------------------------------
@@ -305,15 +324,13 @@ class TreemaNode
       deepestTreema._errors.push(error)
       erroredTreemas.push(deepestTreema)
 
-    for treema in erroredTreemas
-      if treema._errors.length > 1
-        treema.showError("[#{treema._errors.length} errors]")
-      else
-        treema.showError(treema._errors[0].message)
+    for treema in $.unique(erroredTreemas)
+      messages = (e.message for e in treema._errors)
+      treema.showError(messages.join('<br />'))
 
   showError: (message) ->
     @$el.append($(@templateString))
-    @$el.find('> .treema-error').text(message).show()
+    @$el.find('> .treema-error').html(message).show()
     @$el.addClass('treema-has-error')
 
   removeErrors: ->
