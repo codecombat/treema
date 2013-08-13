@@ -355,13 +355,26 @@ TreemaNode = (function() {
     return nextTreema;
   };
 
-  TreemaNode.prototype.onEnterPressed = function(e) {
-    var selected;
-    selected = this.getSelectedTreemas();
-    if (selected.length !== 1) {
+  TreemaNode.prototype.onEnterPressed = function(e, selected) {
+    if (selected == null) {
+      selected = null;
+    }
+    if (!selected) {
+      selected = this.getSelectedTreemas();
+      if (selected.length !== 1) {
+        return;
+      }
+      selected = selected[0];
+      if (selected !== this) {
+        return selected.onEnterPressed(e, selected);
+      }
+    }
+    if (!selected.editable) {
       return;
     }
-    selected = selected[0];
+    if (selected.collection) {
+      return selected.toggleOpen();
+    }
     selected.toggleSelect();
     return selected.toggleEdit('treema-edit');
   };
@@ -747,6 +760,12 @@ BooleanTreemaNode = (function(_super) {
 
   BooleanTreemaNode.prototype.setValueForReading = function(valEl) {
     return this.setValueForReadingSimply(valEl, 'treema-boolean', JSON.stringify(this.data));
+  };
+
+  BooleanTreemaNode.prototype.onEnterPressed = function(e) {
+    console.log('on enter pressed?', e);
+    this.data = !this.data;
+    return this.setValueForReading($('.treema-value', this.$el).empty());
   };
 
   BooleanTreemaNode.prototype.onClick = function(e) {

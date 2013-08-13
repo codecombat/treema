@@ -187,10 +187,15 @@ class TreemaNode
       nextTreema.toggleEdit 'treema-edit'
     nextTreema
 
-  onEnterPressed: (e) ->
-    selected = @getSelectedTreemas()
-    return unless selected.length is 1
-    selected = selected[0]
+  onEnterPressed: (e, selected=null) ->
+    if not selected
+      selected = @getSelectedTreemas()
+      return unless selected.length is 1
+      selected = selected[0]
+      return selected.onEnterPressed(e, selected) if selected isnt @
+      
+    return unless selected.editable
+    return selected.toggleOpen() if selected.collection
     selected.toggleSelect()
     selected.toggleEdit('treema-edit')
 
@@ -400,6 +405,11 @@ class NullTreemaNode extends TreemaNode
 class BooleanTreemaNode extends TreemaNode
   skipTab: true
   setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, 'treema-boolean', JSON.stringify(@data))
+  
+  onEnterPressed: (e) ->
+    @data = not @data
+    @setValueForReading($('.treema-value', @$el).empty())
+    
   onClick: (e) ->
     # Override the normal behavior for clicking the value, just flip the value instead.
     value = $(e.target).closest('.treema-value')
