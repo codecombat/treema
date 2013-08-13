@@ -57,10 +57,10 @@
 
 @media -sass-debug-info{filename{}line{font-family:\0000358}}
 .treema-key {
-  color: darkblue;
+  color: #1c0099;
   float: left;
   margin-right: 3px;
-  padding: 2px 0 2px 2px;
+  padding: 2px;
   cursor: pointer; }
 
 @media -sass-debug-info{filename{}line{font-family:\0000365}}
@@ -100,18 +100,25 @@
 
 @media -sass-debug-info{filename{}line{font-family:\00003100}}
 .treema-string {
-  color: darkgoldenrod; }
+  color: #991f00; }
 
 @media -sass-debug-info{filename{}line{font-family:\00003103}}
 .treema-number {
-  color: darkolivegreen; }
+  color: #009908; }
 
 @media -sass-debug-info{filename{}line{font-family:\00003106}}
 .treema-null {
-  color: darkslateblue;
-  font-weight: bold; }
+  color: #007599; }
 
-@media -sass-debug-info{filename{}line{font-family:\00003111}}
+@media -sass-debug-info{filename{}line{font-family:\00003109}}
+.treema-array {
+  color: #998500; }
+
+@media -sass-debug-info{filename{}line{font-family:\00003112}}
+.treema-object {
+  color: #990061; }
+
+@media -sass-debug-info{filename{}line{font-family:\00003116}}
 .treema-clearfix:after {
   content: ".";
   display: block;
