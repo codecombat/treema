@@ -190,7 +190,6 @@ class TreemaNode
       @data[index] = treema.data
       index += 1
     
-
   addChildTreema: (key, value, schema) ->
     treema = makeTreema(schema, value, {}, true)
     treema.parentKey = key
@@ -382,12 +381,12 @@ class AnyTreemaNode extends TreemaNode
     null
   """
 
-  setValueForReading: (valEl) ->
-    dataType = $.type(@data)
-    NodeClass = TreemaNodeMap[dataType]
-    helperNode = new NodeClass(@schema, @data, @options, @child)
-    helperNode.setValueForReading(valEl)
-
+  helper: null
+  
+  constructor: (splat...) ->
+    super(splat...)
+    @updateShadowMethods()
+  
   setValueForEditing: (valEl) ->
     input = $('<input id="what" />').val(JSON.stringify(@data))
     valEl.append(input)
@@ -412,7 +411,25 @@ class AnyTreemaNode extends TreemaNode
       try
         @data = JSON.parse(@data)
       catch e
-        return
+        console.log('could not parse data', @data)
+    @updateShadowMethods()
+    @rebuild()
+
+  updateShadowMethods: ->
+    dataType = $.type(@data)
+    NodeClass = TreemaNodeMap[dataType]
+    @helper = new NodeClass(@schema, @data, @options, @child)
+    for prop in ['collection', 'ordered', 'keyed', 'getChildSchema', 'getChildren', 'getChildSchema', 'setValueForReading']
+      @[prop] = @helper[prop]
+
+  rebuild: ->
+    oldEl = @$el
+    if @parent
+      newNode = @parent.createChildNode(@)
+    else
+      newNode = @build()
+
+    oldEl.replaceWith(newNode)
 
 
 TreemaNodeMap =

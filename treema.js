@@ -1,7 +1,8 @@
-var AnyTreemaNode, ArrayTreemaNode, BooleanTreemaNode, NullTreemaNode, NumberTreemaNode, ObjectTreemaNode, StringTreemaNode, TreemaNode, TreemaNodeMap, makeTreema, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6,
+var AnyTreemaNode, ArrayTreemaNode, BooleanTreemaNode, NullTreemaNode, NumberTreemaNode, ObjectTreemaNode, StringTreemaNode, TreemaNode, TreemaNodeMap, makeTreema, _ref, _ref1, _ref2, _ref3, _ref4, _ref5,
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
   __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  __slice = [].slice;
 
 TreemaNode = (function() {
   "Base class for a single node in the Treema.";
@@ -630,18 +631,14 @@ AnyTreemaNode = (function(_super) {
 
   "Super flexible input, can handle inputs like:\n  true      (Boolean)\n  'true     (string \"true\", anything that starts with ' or \" is treated as a string, like in spreadsheet programs)\n  1.2       (number)\n  [         (empty array)\n  {         (empty object)\n  [1,2,3]   (array with tree values)\n  null";
 
-  function AnyTreemaNode() {
-    _ref6 = AnyTreemaNode.__super__.constructor.apply(this, arguments);
-    return _ref6;
-  }
+  AnyTreemaNode.prototype.helper = null;
 
-  AnyTreemaNode.prototype.setValueForReading = function(valEl) {
-    var NodeClass, dataType, helperNode;
-    dataType = $.type(this.data);
-    NodeClass = TreemaNodeMap[dataType];
-    helperNode = new NodeClass(this.schema, this.data, this.options, this.child);
-    return helperNode.setValueForReading(valEl);
-  };
+  function AnyTreemaNode() {
+    var splat;
+    splat = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    AnyTreemaNode.__super__.constructor.apply(this, splat);
+    this.updateShadowMethods();
+  }
 
   AnyTreemaNode.prototype.setValueForEditing = function(valEl) {
     var input,
@@ -662,20 +659,48 @@ AnyTreemaNode = (function(_super) {
     var e;
     this.data = $('input', valEl).val();
     if (this.data[0] === "'" && this.data[this.data.length - 1] !== "'") {
-      return this.data = this.data.slice(1);
+      this.data = this.data.slice(1);
     } else if (this.data[0] === '"' && this.data[this.data.length - 1] !== '"') {
-      return this.data = this.data.slice(1);
+      this.data = this.data.slice(1);
     } else if (this.data.trim() === '[') {
-      return this.data = [];
+      this.data = [];
     } else if (this.data.trim() === '{') {
-      return this.data = {};
+      this.data = {};
     } else {
       try {
-        return this.data = JSON.parse(this.data);
+        this.data = JSON.parse(this.data);
       } catch (_error) {
         e = _error;
+        console.log('could not parse data', this.data);
       }
     }
+    this.updateShadowMethods();
+    return this.rebuild();
+  };
+
+  AnyTreemaNode.prototype.updateShadowMethods = function() {
+    var NodeClass, dataType, prop, _i, _len, _ref6, _results;
+    dataType = $.type(this.data);
+    NodeClass = TreemaNodeMap[dataType];
+    this.helper = new NodeClass(this.schema, this.data, this.options, this.child);
+    _ref6 = ['collection', 'ordered', 'keyed', 'getChildSchema', 'getChildren', 'getChildSchema', 'setValueForReading'];
+    _results = [];
+    for (_i = 0, _len = _ref6.length; _i < _len; _i++) {
+      prop = _ref6[_i];
+      _results.push(this[prop] = this.helper[prop]);
+    }
+    return _results;
+  };
+
+  AnyTreemaNode.prototype.rebuild = function() {
+    var newNode, oldEl;
+    oldEl = this.$el;
+    if (this.parent) {
+      newNode = this.parent.createChildNode(this);
+    } else {
+      newNode = this.build();
+    }
+    return oldEl.replaceWith(newNode);
   };
 
   return AnyTreemaNode;
