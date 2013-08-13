@@ -463,7 +463,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.showErrors = function() {
-    var deepestTreema, error, erroredTreemas, errors, path, subpath, treema, _i, _j, _k, _len, _len1, _len2, _results;
+    var deepestTreema, e, error, erroredTreemas, errors, messages, path, subpath, treema, _i, _j, _k, _len, _len1, _len2, _ref, _results;
     errors = this.getErrors();
     erroredTreemas = [];
     for (_i = 0, _len = errors.length; _i < _len; _i++) {
@@ -486,21 +486,28 @@ TreemaNode = (function() {
       deepestTreema._errors.push(error);
       erroredTreemas.push(deepestTreema);
     }
+    _ref = $.unique(erroredTreemas);
     _results = [];
-    for (_k = 0, _len2 = erroredTreemas.length; _k < _len2; _k++) {
-      treema = erroredTreemas[_k];
-      if (treema._errors.length > 1) {
-        _results.push(treema.showError("[" + treema._errors.length + " errors]"));
-      } else {
-        _results.push(treema.showError(treema._errors[0].message));
-      }
+    for (_k = 0, _len2 = _ref.length; _k < _len2; _k++) {
+      treema = _ref[_k];
+      messages = (function() {
+        var _l, _len3, _ref1, _results1;
+        _ref1 = treema._errors;
+        _results1 = [];
+        for (_l = 0, _len3 = _ref1.length; _l < _len3; _l++) {
+          e = _ref1[_l];
+          _results1.push(e.message);
+        }
+        return _results1;
+      })();
+      _results.push(treema.showError(messages.join('<br />')));
     }
     return _results;
   };
 
   TreemaNode.prototype.showError = function(message) {
     this.$el.append($(this.templateString));
-    this.$el.find('> .treema-error').text(message).show();
+    this.$el.find('> .treema-error').html(message).show();
     return this.$el.addClass('treema-has-error');
   };
 

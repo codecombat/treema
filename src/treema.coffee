@@ -292,15 +292,13 @@ class TreemaNode
       deepestTreema._errors.push(error)
       erroredTreemas.push(deepestTreema)
 
-    for treema in erroredTreemas
-      if treema._errors.length > 1
-        treema.showError("[#{treema._errors.length} errors]")
-      else
-        treema.showError(treema._errors[0].message)
+    for treema in $.unique(erroredTreemas)
+      messages = (e.message for e in treema._errors)
+      treema.showError(messages.join('<br />'))
 
   showError: (message) ->
     @$el.append($(@templateString))
-    @$el.find('> .treema-error').text(message).show()
+    @$el.find('> .treema-error').html(message).show()
     @$el.addClass('treema-has-error')
 
   removeErrors: ->
