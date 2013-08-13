@@ -76,7 +76,7 @@ class TreemaNode
         e.preventDefault()
         target.blur()
         
-      # figure this out later
+      # TODO: figure this out later
 #      nextInput = target.find('+ input, + textarea')
 #      return if nextInput.length > 0 # go to next input as normal
 
@@ -251,7 +251,7 @@ class StringTreemaNode extends TreemaNode
   setValueForReading: (valEl) ->
     valEl.append(
       $('<pre class="treema-string"></pre>')
-        .text("'#{@data}'"))
+        .text("\"#{@data}\""))
     
   setValueForEditing: (valEl) ->
     input = $('<input />')

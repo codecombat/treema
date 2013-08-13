@@ -413,7 +413,7 @@ StringTreemaNode = (function(_super) {
   }
 
   StringTreemaNode.prototype.setValueForReading = function(valEl) {
-    return valEl.append($('<pre class="treema-string"></pre>').text("'" + this.data + "'"));
+    return valEl.append($('<pre class="treema-string"></pre>').text("\"" + this.data + "\""));
   };
 
   StringTreemaNode.prototype.setValueForEditing = function(valEl) {
