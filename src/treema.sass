@@ -1,6 +1,7 @@
 // Base styles
 
 .treema-node
+  position: relative
   font-family: monospace
   margin: 3px 0
   clear: both
@@ -51,24 +52,27 @@
   border: 1px solid red
   
 // Collection controls (placeholders for icons)
-
-.treema-grabber
-  color: #00008b
-  background-color: #00008b
-  cursor: move
+// http://css-tricks.com/snippets/css/css-triangle/
 
 .treema-toggle
-  color: #0b97c4
-  background-color: #0b97c4
   cursor: pointer
-
-.treema-grabber, .treema-toggle
-  margin-right: 4px
-  font-size: 9px
+  width: 0
+  height: 0
   float: left
-  position: relative
-  top: 3px
+  position: absolute
+  left: -10px
 
+.treema-closed > .treema-toggle
+  border-top: 4px solid transparent
+  border-bottom: 4px solid transparent
+  border-left: 8px solid #0b97c4
+  top: 6px
+
+.treema-open > .treema-toggle
+  border-left: 4px solid transparent
+  border-right: 4px solid transparent
+  border-top: 8px solid #0b97c4
+  top: 6px
   
 // Element value styles
 

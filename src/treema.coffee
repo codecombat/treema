@@ -12,8 +12,7 @@ class TreemaNode
   childrenTemplate: '<div class="treema-children"></div>'
   addChildTemplate: '<div class="treema-add-child">+</div>'
   newPropertyTemplate: '<input class="treema-new-prop" />'
-  grabberTemplate: '<span class="treema-grabber"> G </span>'
-  toggleTemplate: '<span class="treema-toggle"> T </span>'
+  toggleTemplate: '<span class="treema-toggle"></span>'
   keyTemplate: '<span class="treema-key"></span>'
   templateString: '<div class="treema-error"></div>'
 
@@ -274,7 +273,6 @@ class TreemaNode
       keyEl.attr('title', treema.schema.description) if treema.schema.description
       childNode.prepend(keyEl)
     childNode.prepend($(@toggleTemplate)) if treema.collection
-    childNode.prepend($(@grabberTemplate)) if @ordered
     childNode
 
   # Displaying validation errors ----------------------------------------------

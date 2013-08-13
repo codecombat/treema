@@ -22,9 +22,7 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.newPropertyTemplate = '<input class="treema-new-prop" />';
 
-  TreemaNode.prototype.grabberTemplate = '<span class="treema-grabber"> G </span>';
-
-  TreemaNode.prototype.toggleTemplate = '<span class="treema-toggle"> T </span>';
+  TreemaNode.prototype.toggleTemplate = '<span class="treema-toggle"></span>';
 
   TreemaNode.prototype.keyTemplate = '<span class="treema-key"></span>';
 
@@ -457,9 +455,6 @@ TreemaNode = (function() {
     }
     if (treema.collection) {
       childNode.prepend($(this.toggleTemplate));
-    }
-    if (this.ordered) {
-      childNode.prepend($(this.grabberTemplate));
     }
     return childNode;
   };
