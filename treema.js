@@ -431,7 +431,7 @@ TreemaNode = (function() {
           return;
         }
         if (instance.collection || instance.skipTab) {
-          nextChild = nextChild[dir]();
+          nextChild = nextChild[direction]();
           continue;
         }
       }
@@ -536,14 +536,13 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.removeSelectedNodes = function() {
     var _this = this;
-    return this.$el.find('.treema-selected').each(elem)(function() {
+    return this.$el.find('.treema-selected').each(function(i, elem) {
       var _ref;
-      console.log("Removing", elem, "with instance", $(elem).data('instance'));
-      return (_ref = $(elem).data('instance')) != null ? _ref.removeNode() : void 0;
+      return (_ref = $(elem).data('instance')) != null ? _ref.remove() : void 0;
     });
   };
 
-  TreemaNode.prototype.removeChild = function() {
+  TreemaNode.prototype.remove = function() {
     this.$el.remove();
     if (this.parent == null) {
       return;
