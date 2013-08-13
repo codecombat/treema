@@ -59,6 +59,7 @@ class TreemaNode
     valEl.addClass('treema-read') unless @collection
     @$el.data('instance', @)
     @$el.addClass('treema-root') unless @isChild
+    @$el.attr('tabindex', 9001) unless @isChild
     @$el.append($(@childrenTemplate)).addClass('treema-closed') if @collection
     @open() if @collection and not @isChild
     @setUpEvents() unless @isChild
@@ -67,13 +68,18 @@ class TreemaNode
   # Event handling ------------------------------------------------------------
   setUpEvents: ->
     @$el.click (e) => $(e.target).closest('.treema-node').data('instance')?.onClick(e)
-    @$el.keydown (e) => $(e.target).closest('.treema-node').data('instance')?.onKeyDown(e)
+    @$el.keydown (e) =>
+      if e.which is 8  # Delete
+        e.preventDefault()
+        @removeSelectedNodes()
+      $(e.target).closest('.treema-node').data('instance')?.onKeyDown(e)
 
   onClick: (e) ->
     return if e.target.nodeName in ['INPUT', 'TEXTAREA']
     clickedValue = $(e.target).closest('.treema-value').length  # Clicks are in children of .treema-value nodes
     clickedToggle = $(e.target).hasClass('treema-toggle')
     clickedKey = $(e.target).hasClass('treema-key')
+    @$el.closest('.treema-root').focus() unless clickedValue and not @collection
     return @toggleEdit() if clickedValue and not @collection
     return @toggleOpen() if clickedToggle or (clickedValue and @collection)
     return @addNewChild() if $(e.target).closest('.treema-add-child').length and @collection
@@ -137,7 +143,7 @@ class TreemaNode
 
   propagateData: ->
     return unless @parent
-    @parent.data[@parentKey] = @data
+    @parent.data[@keyForParent] = @data
     @parent.refreshErrors()
 
   # Adding elemements to collections ------------------------------------------
@@ -180,6 +186,20 @@ class TreemaNode
       properties.push(childSchema.title or property)
     properties.sort()
 
+  # Removing nodes ------------------------------------------------------------
+  removeSelectedNodes: ->
+    @$el.find('.treema-selected').each(elem) =>
+      console.log "Removing", elem, "with instance", $(elem).data('instance')
+      $(elem).data('instance')?.removeNode()
+
+  removeChild: ->
+    @$el.remove()
+    return unless @parent?
+    delete @parent.childrenTreemas[@keyForParent]
+    delete @parent.data[@keyForParent]
+    @parent.sortFromUI()
+    @parent.refreshErrors()
+
   # Opening/closing collections -----------------------------------------------
   toggleOpen: ->
     if @$el.hasClass('treema-closed') then @open() else @close()
@@ -201,10 +221,12 @@ class TreemaNode
   sortFromUI: =>
     children_wrapper = @$el.find('> .treema-children')
     index = 0
+    @childrenTreemas = {}  # rebuild it
+    @data = if $.isArray(@data) then [] else {}
     for child in children_wrapper[0].children
       treema = $(child).data('instance')
       continue unless treema
-      treema.parentKey = index
+      treema.keyForParent = index
       @childrenTreemas[index] = treema
       @data[index] = treema.data
       index += 1
@@ -226,7 +248,7 @@ class TreemaNode
   # Child node utilities ------------------------------------------------------
   addChildTreema: (key, value, schema) ->
     treema = makeTreema(schema, value, {}, true)
-    treema.parentKey = key
+    treema.keyForParent = key
     treema.parent = @
     @childrenTreemas[key] = treema
     treema
@@ -234,7 +256,7 @@ class TreemaNode
   createChildNode: (treema) ->
     childNode = treema.build()
     if @keyed
-      name = treema.schema.title or treema.parentKey
+      name = treema.schema.title or treema.keyForParent
       keyEl = $(@keyTemplate).text(name + ' : ')
       keyEl.attr('title', treema.schema.description) if treema.schema.description
       childNode.prepend(keyEl)
