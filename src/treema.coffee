@@ -105,8 +105,7 @@ class TreemaNode
     if valEl.hasClass('read')
       if wasEditing
         @saveChanges(valEl)
-        @removeError()
-        @showErrors()
+        @refreshErrors()
 
       @propagateData()
       valEl.empty()
@@ -160,6 +159,7 @@ class TreemaNode
   propagateData: ->
     return unless @parent
     @parent.data[@parentKey] = @data
+    @parent.refreshErrors()
   
   toggleOpen: ->
     if @$el.hasClass('closed') then @open() else @close()
@@ -177,6 +177,7 @@ class TreemaNode
     if @ordered and childrenContainer.sortable
       onchange = => @sortFromUI()
       childrenContainer.sortable?(deactivate: onchange).disableSelection?()
+    @refreshErrors()
 
   sortFromUI: ->
     children_wrapper = @$el.find('> .treema-children')
@@ -212,6 +213,7 @@ class TreemaNode
     @$el.find('.treema-children').empty()
     @$el.addClass('closed').removeClass('open')
     @childrenTreemas = null
+    @refreshErrors()
     
   showErrors: ->
     errors = @getErrors()
@@ -238,9 +240,13 @@ class TreemaNode
     @$el.find('> .treema-error').text(message).show()
     @$el.addClass('treema-has-error')
     
-  removeError: ->
+  removeErrors: ->
     @$el.find('.treema-error').remove()
     @$el.removeClass('treema-has-error')
+    
+  refreshErrors: ->
+    @removeErrors()
+    @showErrors()
 
 
 class StringTreemaNode extends TreemaNode

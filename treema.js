@@ -171,8 +171,7 @@ TreemaNode = (function() {
     if (valEl.hasClass('read')) {
       if (wasEditing) {
         this.saveChanges(valEl);
-        this.removeError();
-        this.showErrors();
+        this.refreshErrors();
       }
       this.propagateData();
       valEl.empty();
@@ -254,7 +253,8 @@ TreemaNode = (function() {
     if (!this.parent) {
       return;
     }
-    return this.parent.data[this.parentKey] = this.data;
+    this.parent.data[this.parentKey] = this.data;
+    return this.parent.refreshErrors();
   };
 
   TreemaNode.prototype.toggleOpen = function() {
@@ -284,10 +284,15 @@ TreemaNode = (function() {
       onchange = function() {
         return _this.sortFromUI();
       };
-      return typeof childrenContainer.sortable === "function" ? typeof (_base = childrenContainer.sortable({
-        deactivate: onchange
-      })).disableSelection === "function" ? _base.disableSelection() : void 0 : void 0;
+      if (typeof childrenContainer.sortable === "function") {
+        if (typeof (_base = childrenContainer.sortable({
+          deactivate: onchange
+        })).disableSelection === "function") {
+          _base.disableSelection();
+        }
+      }
     }
+    return this.refreshErrors();
   };
 
   TreemaNode.prototype.sortFromUI = function() {
@@ -348,7 +353,8 @@ TreemaNode = (function() {
     }
     this.$el.find('.treema-children').empty();
     this.$el.addClass('closed').removeClass('open');
-    return this.childrenTreemas = null;
+    this.childrenTreemas = null;
+    return this.refreshErrors();
   };
 
   TreemaNode.prototype.showErrors = function() {
@@ -393,9 +399,14 @@ TreemaNode = (function() {
     return this.$el.addClass('treema-has-error');
   };
 
-  TreemaNode.prototype.removeError = function() {
+  TreemaNode.prototype.removeErrors = function() {
     this.$el.find('.treema-error').remove();
     return this.$el.removeClass('treema-has-error');
+  };
+
+  TreemaNode.prototype.refreshErrors = function() {
+    this.removeErrors();
+    return this.showErrors();
   };
 
   return TreemaNode;
