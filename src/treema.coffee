@@ -125,7 +125,7 @@ class TreemaNode
         instance = nextChild.data('instance')
         return unless instance
         if instance.collection or instance.skipTab
-          nextChild = nextChild[dir]()
+          nextChild = nextChild[direction]()
           continue
       return instance
 
@@ -196,11 +196,10 @@ class TreemaNode
 
   # Removing nodes ------------------------------------------------------------
   removeSelectedNodes: ->
-    @$el.find('.treema-selected').each(elem) =>
-      console.log "Removing", elem, "with instance", $(elem).data('instance')
-      $(elem).data('instance')?.removeNode()
+    @$el.find('.treema-selected').each (i, elem) =>
+      $(elem).data('instance')?.remove()
 
-  removeChild: ->
+  remove: ->
     @$el.remove()
     return unless @parent?
     delete @parent.childrenTreemas[@keyForParent]
