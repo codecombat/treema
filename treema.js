@@ -1,226 +1,4 @@
-(function() {
-  var WebSocket = window.WebSocket || window.MozWebSocket;
-  var br = window.brunch = (window.brunch || {});
-  var ar = br['auto-reload'] = (br['auto-reload'] || {});
-  if (!WebSocket || ar.disabled) return;
-
-  var cacheBuster = function(url){
-    var date = Math.round(Date.now() / 1000).toString();
-    url = url.replace(/(\&|\\?)cacheBuster=\d*/, '');
-    return url + (url.indexOf('?') >= 0 ? '&' : '?') +'cacheBuster=' + date;
-  };
-
-  var reloaders = {
-    page: function(){
-      window.location.reload(true);
-    },
-
-    stylesheet: function(){
-      [].slice
-        .call(document.querySelectorAll('link[rel="stylesheet"]'))
-        .filter(function(link){
-          return (link != null && link.href != null);
-        })
-        .forEach(function(link) {
-          link.href = cacheBuster(link.href);
-        });
-    }
-  };
-  var port = ar.port || 9485;
-  var host = (!br['server']) ? window.location.hostname : br['server'];
-  var connection = new WebSocket('ws://' + host + ':' + port);
-  connection.onmessage = function(event) {
-    var message = event.data;
-    if (ar.disabled) return;
-    if (reloaders[message] != null) {
-      reloaders[message]();
-    } else {
-      reloaders.page();
-    }
-  };
-})();
-
-;
-jade = (function(exports){
-/*!
- * Jade - runtime
- * Copyright(c) 2010 TJ Holowaychuk <tj@vision-media.ca>
- * MIT Licensed
- */
-
-/**
- * Lame Array.isArray() polyfill for now.
- */
-
-if (!Array.isArray) {
-  Array.isArray = function(arr){
-    return '[object Array]' == Object.prototype.toString.call(arr);
-  };
-}
-
-/**
- * Lame Object.keys() polyfill for now.
- */
-
-if (!Object.keys) {
-  Object.keys = function(obj){
-    var arr = [];
-    for (var key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        arr.push(key);
-      }
-    }
-    return arr;
-  }
-}
-
-/**
- * Merge two attribute objects giving precedence
- * to values in object `b`. Classes are special-cased
- * allowing for arrays and merging/joining appropriately
- * resulting in a string.
- *
- * @param {Object} a
- * @param {Object} b
- * @return {Object} a
- * @api private
- */
-
-exports.merge = function merge(a, b) {
-  var ac = a['class'];
-  var bc = b['class'];
-
-  if (ac || bc) {
-    ac = ac || [];
-    bc = bc || [];
-    if (!Array.isArray(ac)) ac = [ac];
-    if (!Array.isArray(bc)) bc = [bc];
-    ac = ac.filter(nulls);
-    bc = bc.filter(nulls);
-    a['class'] = ac.concat(bc).join(' ');
-  }
-
-  for (var key in b) {
-    if (key != 'class') {
-      a[key] = b[key];
-    }
-  }
-
-  return a;
-};
-
-/**
- * Filter null `val`s.
- *
- * @param {Mixed} val
- * @return {Mixed}
- * @api private
- */
-
-function nulls(val) {
-  return val != null;
-}
-
-/**
- * Render the given attributes object.
- *
- * @param {Object} obj
- * @param {Object} escaped
- * @return {String}
- * @api private
- */
-
-exports.attrs = function attrs(obj, escaped){
-  var buf = []
-    , terse = obj.terse;
-
-  delete obj.terse;
-  var keys = Object.keys(obj)
-    , len = keys.length;
-
-  if (len) {
-    buf.push('');
-    for (var i = 0; i < len; ++i) {
-      var key = keys[i]
-        , val = obj[key];
-
-      if ('boolean' == typeof val || null == val) {
-        if (val) {
-          terse
-            ? buf.push(key)
-            : buf.push(key + '="' + key + '"');
-        }
-      } else if (0 == key.indexOf('data') && 'string' != typeof val) {
-        buf.push(key + "='" + JSON.stringify(val) + "'");
-      } else if ('class' == key && Array.isArray(val)) {
-        buf.push(key + '="' + exports.escape(val.join(' ')) + '"');
-      } else if (escaped && escaped[key]) {
-        buf.push(key + '="' + exports.escape(val) + '"');
-      } else {
-        buf.push(key + '="' + val + '"');
-      }
-    }
-  }
-
-  return buf.join(' ');
-};
-
-/**
- * Escape the given string of `html`.
- *
- * @param {String} html
- * @return {String}
- * @api private
- */
-
-exports.escape = function escape(html){
-  return String(html)
-    .replace(/&(?!(\w+|\#\d+);)/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-};
-
-/**
- * Re-throw the given `err` in context to the
- * the jade in `filename` at the given `lineno`.
- *
- * @param {Error} err
- * @param {String} filename
- * @param {String} lineno
- * @api private
- */
-
-exports.rethrow = function rethrow(err, filename, lineno){
-  if (!filename) throw err;
-
-  var context = 3
-    , str = require('fs').readFileSync(filename, 'utf8')
-    , lines = str.split('\n')
-    , start = Math.max(lineno - context, 0)
-    , end = Math.min(lines.length, lineno + context);
-
-  // Error context
-  var context = lines.slice(start, end).map(function(line, i){
-    var curr = i + start + 1;
-    return (curr == lineno ? '  > ' : '    ')
-      + curr
-      + '| '
-      + line;
-  }).join('\n');
-
-  // Alter exception message
-  err.path = filename;
-  err.message = (filename || 'Jade') + ':' + lineno
-    + '\n' + context + '\n\n' + err.message;
-  throw err;
-};
-
-  return exports;
-
-})({});
-
-;var AnyTreemaNode, ArrayTreemaNode, BooleanTreemaNode, NullTreemaNode, NumberTreemaNode, ObjectTreemaNode, StringTreemaNode, TreemaNode, TreemaNodeMap, makeTreema, _ref, _ref1, _ref2, _ref3, _ref4, _ref5,
+var AnyTreemaNode, ArrayTreemaNode, BooleanTreemaNode, NullTreemaNode, NumberTreemaNode, ObjectTreemaNode, StringTreemaNode, TreemaNode, TreemaNodeMap, makeTreema, _ref, _ref1, _ref2, _ref3, _ref4, _ref5,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
   __hasProp = {}.hasOwnProperty,
@@ -307,8 +85,8 @@ TreemaNode = (function() {
     }
     valEl.append(input);
     return input.focus().select().blur(function() {
-      if ($('.treema-value', _this.$el).hasClass('edit')) {
-        return _this.toggleEdit('read');
+      if ($('.treema-value', _this.$el).hasClass('treema-edit')) {
+        return _this.toggleEdit('treema-read');
       }
     });
   };
@@ -327,14 +105,14 @@ TreemaNode = (function() {
     valEl = $('.treema-value', this.$el);
     this.setValueForReading(valEl);
     if (!this.collection) {
-      valEl.addClass('read');
+      valEl.addClass('treema-read');
     }
     this.$el.data('instance', this);
     if (!this.isChild) {
       this.$el.addClass('treema-root');
     }
     if (this.collection) {
-      this.$el.append($(this.childrenTemplate)).addClass('closed');
+      this.$el.append($(this.childrenTemplate)).addClass('treema-closed');
     }
     if (this.collection && !this.isChild) {
       this.open();
@@ -402,7 +180,7 @@ TreemaNode = (function() {
     }
     nextTreema = this.getNextTreema(direction);
     if (nextTreema) {
-      nextTreema.toggleEdit('edit');
+      nextTreema.toggleEdit('treema-edit');
       return e.preventDefault();
     }
     if ((_ref = this.parent) != null ? _ref.collection : void 0) {
@@ -435,11 +213,11 @@ TreemaNode = (function() {
       return;
     }
     valEl = $('.treema-value', this.$el);
-    wasEditing = valEl.hasClass('edit');
+    wasEditing = valEl.hasClass('treema-edit');
     if (!(toClass && valEl.hasClass(toClass))) {
-      valEl.toggleClass('read edit');
+      valEl.toggleClass('treema-read treema-edit');
     }
-    if (valEl.hasClass('read')) {
+    if (valEl.hasClass('treema-read')) {
       if (wasEditing) {
         this.saveChanges(valEl);
         this.refreshErrors();
@@ -448,7 +226,7 @@ TreemaNode = (function() {
       valEl.empty();
       this.setValueForReading(valEl);
     }
-    if (valEl.hasClass('edit')) {
+    if (valEl.hasClass('treema-edit')) {
       valEl.empty();
       return this.setValueForEditing(valEl);
     }
@@ -471,7 +249,7 @@ TreemaNode = (function() {
       newTreema = this.addChildTreema(new_index, void 0, schema);
       childNode = this.createChildNode(newTreema);
       this.getMyAddButton().before(childNode);
-      newTreema.toggleEdit('edit');
+      newTreema.toggleEdit('treema-edit');
     }
     if (this.keyed) {
       properties = this.childPropertiesAvailable();
@@ -498,7 +276,7 @@ TreemaNode = (function() {
         newTreema = _this.addChildTreema(key, null, schema);
         childNode = _this.createChildNode(newTreema);
         _this.getMyAddButton().before(childNode);
-        return newTreema.toggleEdit('edit');
+        return newTreema.toggleEdit('treema-edit');
       });
     }
   };
@@ -525,7 +303,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.toggleOpen = function() {
-    if (this.$el.hasClass('closed')) {
+    if (this.$el.hasClass('treema-closed')) {
       return this.open();
     } else {
       return this.close();
@@ -544,7 +322,7 @@ TreemaNode = (function() {
       childNode = this.createChildNode(treema);
       childrenContainer.append(childNode);
     }
-    this.$el.append(childrenContainer).removeClass('closed').addClass('open');
+    this.$el.append(childrenContainer).removeClass('treema-closed').addClass('treema-open');
     childrenContainer.append($(this.addChildTemplate));
     if (this.ordered && childrenContainer.sortable) {
       if (typeof childrenContainer.sortable === "function") {
@@ -586,7 +364,7 @@ TreemaNode = (function() {
       this.data[key] = treema.data;
     }
     this.$el.find('.treema-children').empty();
-    this.$el.addClass('closed').removeClass('open');
+    this.$el.addClass('treema-closed').removeClass('treema-open');
     this.childrenTreemas = null;
     return this.refreshErrors();
   };
@@ -954,5 +732,5 @@ makeTreema = function(schema, data, options, child) {
   }
   return new NodeClass(schema, data, options, child);
 };
-;
+
 //@ sourceMappingURL=treema.js.map
