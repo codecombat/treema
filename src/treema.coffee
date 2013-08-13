@@ -103,6 +103,7 @@ class TreemaNode
     @onUpArrowPressed(e) if e.which is 38
     @onRightArrowPressed(e) if e.which is 39
     @onDownArrowPressed(e) if e.which is 40
+    @onEnterPressed(e) if e.which is 13
 
   onLeftArrowPressed: (e) ->
     treemas = @getSelectedTreemas()
@@ -145,7 +146,10 @@ class TreemaNode
     lastChild = prevSibling?.$el.find('.treema-node:last').data('instance')
     return lastChild or prevSibling or @parent
 
-  onEscapePressed: (e) -> $(e.target).data('escaped', true).blur()
+  onEscapePressed: (e) -> 
+    $(e.target).data('escaped', true).blur()
+    @$el.addClass('treema-selected')
+    @$el.closest('.treema-root').focus()
 
   onTabPressed: (e) ->
     direction = if e.shiftKey then 'prev' else 'next'
@@ -182,6 +186,13 @@ class TreemaNode
       nextTreema = tabbableChildren[nextIndex]
       nextTreema.toggleEdit 'treema-edit'
     nextTreema
+
+  onEnterPressed: (e) ->
+    selected = @getSelectedTreemas()
+    return unless selected.length is 1
+    selected = selected[0]
+    selected.toggleSelect()
+    selected.toggleEdit('treema-edit')
 
   # Editing values ------------------------------------------------------------
   toggleEdit: (toClass) ->

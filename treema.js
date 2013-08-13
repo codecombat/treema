@@ -207,7 +207,10 @@ TreemaNode = (function() {
       this.onRightArrowPressed(e);
     }
     if (e.which === 40) {
-      return this.onDownArrowPressed(e);
+      this.onDownArrowPressed(e);
+    }
+    if (e.which === 13) {
+      return this.onEnterPressed(e);
     }
   };
 
@@ -297,7 +300,9 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.onEscapePressed = function(e) {
-    return $(e.target).data('escaped', true).blur();
+    $(e.target).data('escaped', true).blur();
+    this.$el.addClass('treema-selected');
+    return this.$el.closest('.treema-root').focus();
   };
 
   TreemaNode.prototype.onTabPressed = function(e) {
@@ -348,6 +353,17 @@ TreemaNode = (function() {
       nextTreema.toggleEdit('treema-edit');
     }
     return nextTreema;
+  };
+
+  TreemaNode.prototype.onEnterPressed = function(e) {
+    var selected;
+    selected = this.getSelectedTreemas();
+    if (selected.length !== 1) {
+      return;
+    }
+    selected = selected[0];
+    selected.toggleSelect();
+    return selected.toggleEdit('treema-edit');
   };
 
   TreemaNode.prototype.toggleEdit = function(toClass) {
