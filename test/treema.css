@@ -4,7 +4,7 @@
   margin: 3px 0;
   clear: both; }
 @media -sass-debug-info{filename{}line{font-family:\000039}}
-  .treema-node.open > .treema-value {
+  .treema-node.treema-open > .treema-value {
     display: none; }
 
 @media -sass-debug-info{filename{}line{font-family:\0000312}}
