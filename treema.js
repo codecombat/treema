@@ -196,8 +196,8 @@ TreemaNode = (function() {
           nextChild = nextChild[dir]();
           continue;
         }
-        return instance;
       }
+      return instance;
     }
   };
 
@@ -235,7 +235,8 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.addNewChild = function() {
-    var childNode, keyInput, newTreema, new_index, properties, schema;
+    var childNode, keyInput, newTreema, new_index, properties, schema,
+      _this = this;
     if (this.ordered) {
       new_index = Object.keys(this.childrenTreemas).length;
       schema = this.getChildSchema();
@@ -253,7 +254,25 @@ TreemaNode = (function() {
         });
       }
       this.getMyAddButton().before(keyInput);
-      return keyInput.focus();
+      keyInput.focus();
+      return keyInput.blur(function(e) {
+        var escaped, key;
+        console.log('blur');
+        key = keyInput.val();
+        escaped = keyInput.data('escaped');
+        keyInput.remove();
+        if (escaped) {
+          return;
+        }
+        if (!(key.length && !_this.childrenTreemas[key])) {
+          return;
+        }
+        schema = _this.getChildSchema(key);
+        newTreema = _this.addChildTreema(key, null, schema);
+        childNode = _this.createChildNode(newTreema);
+        _this.getMyAddButton().before(childNode);
+        return newTreema.toggleEdit('edit');
+      });
     }
   };
 

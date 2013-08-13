@@ -109,7 +109,7 @@ class TreemaNode
         if instance.collection or instance.skipTab
           nextChild = nextChild[dir]()
           continue
-        return instance
+      return instance
     
   # Editing values ------------------------------------------------------------
   toggleEdit: (toClass) ->
@@ -152,19 +152,19 @@ class TreemaNode
       keyInput.autocomplete?(source: properties)
       @getMyAddButton().before(keyInput)
       keyInput.focus()
-#      keyInput.blur (e) =>
-#        console.log('blur')
-#        key = keyInput.val()
-#        escaped = keyInput.data('escaped')
-#        keyInput.remove()
-#        return if escaped
-#        return unless key.length and not @childrenTreemas[key]
-#        
-#        schema = @getChildSchema(key)
-#        newTreema = @addChildTreema(key, null, schema)
-#        childNode = @createChildNode(newTreema)
-#        @getMyAddButton().before(childNode)
-#        newTreema.toggleEdit('edit')
+      keyInput.blur (e) =>
+        console.log('blur')
+        key = keyInput.val()
+        escaped = keyInput.data('escaped')
+        keyInput.remove()
+        return if escaped
+        return unless key.length and not @childrenTreemas[key]
+        
+        schema = @getChildSchema(key)
+        newTreema = @addChildTreema(key, null, schema)
+        childNode = @createChildNode(newTreema)
+        @getMyAddButton().before(childNode)
+        newTreema.toggleEdit('edit')
 
   getMyAddButton: ->
     @$el.find('> .treema-children > .treema-add-child')
