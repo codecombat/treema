@@ -172,6 +172,10 @@ class TreemaNode
       keyInput.autocomplete?(source: properties)
       @getMyAddButton().before(keyInput)
       keyInput.focus()
+      
+      keyInput.keydown (e) =>
+        keyInput.remove() if e.which is 8 and not keyInput.val()
+        
       keyInput.blur (e) =>
         key = keyInput.val()
         escaped = keyInput.data('escaped')

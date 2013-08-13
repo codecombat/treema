@@ -295,6 +295,11 @@ TreemaNode = (function() {
       }
       this.getMyAddButton().before(keyInput);
       keyInput.focus();
+      keyInput.keydown(function(e) {
+        if (e.which === 8 && !keyInput.val()) {
+          return keyInput.remove();
+        }
+      });
       return keyInput.blur(function(e) {
         var escaped, key;
         key = keyInput.val();
