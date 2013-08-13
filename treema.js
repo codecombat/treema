@@ -304,10 +304,19 @@ TreemaNode = (function() {
         }
       });
       return keyInput.blur(function(e) {
-        var escaped, key;
+        var child_key, child_schema, escaped, key, _ref;
         key = keyInput.val();
         escaped = keyInput.data('escaped');
         keyInput.remove();
+        if (_this.schema.properties) {
+          _ref = _this.schema.properties;
+          for (child_key in _ref) {
+            child_schema = _ref[child_key];
+            if (child_schema.title === key) {
+              key = child_key;
+            }
+          }
+        }
         if (escaped) {
           return;
         }

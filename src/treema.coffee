@@ -184,6 +184,9 @@ class TreemaNode
         key = keyInput.val()
         escaped = keyInput.data('escaped')
         keyInput.remove()
+        if @schema.properties
+          for child_key, child_schema of @schema.properties
+            key = child_key if child_schema.title is key
         return if escaped
         return unless key.length and not @childrenTreemas[key]
 
