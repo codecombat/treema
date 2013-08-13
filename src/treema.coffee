@@ -47,6 +47,8 @@ class TreemaNode
     valEl.append(input)
     input.focus().select().blur =>
       @.toggleEdit('treema-read') if $('.treema-value', @$el).hasClass('treema-edit')
+    input.keydown (e) =>
+      @remove() if e.which is 8 and not $(input).val()
 
   # Initialization ------------------------------------------------------------
   constructor: (@schema, @data, options, @isChild) ->

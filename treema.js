@@ -84,9 +84,14 @@ TreemaNode = (function() {
       input.val(value);
     }
     valEl.append(input);
-    return input.focus().select().blur(function() {
+    input.focus().select().blur(function() {
       if ($('.treema-value', _this.$el).hasClass('treema-edit')) {
         return _this.toggleEdit('treema-read');
+      }
+    });
+    return input.keydown(function(e) {
+      if (e.which === 8 && !$(input).val()) {
+        return _this.remove();
       }
     });
   };
