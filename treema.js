@@ -89,7 +89,8 @@ TreemaNode = (function() {
     });
     return input.keydown(function(e) {
       if (e.which === 8 && !$(input).val()) {
-        return _this.remove();
+        _this.remove();
+        return e.preventDefault();
       }
     });
   };
@@ -140,12 +141,15 @@ TreemaNode = (function() {
       return (_ref = $(e.target).closest('.treema-node').data('instance')) != null ? _ref.onClick(e) : void 0;
     });
     return this.$el.keydown(function(e) {
-      var _ref;
+      var _ref, _ref1;
       if (e.which === 8) {
+        if ((_ref = e.target.nodeName) === 'INPUT' || _ref === 'TEXTAREA') {
+          return;
+        }
         e.preventDefault();
         _this.removeSelectedNodes();
       }
-      return (_ref = $(e.target).closest('.treema-node').data('instance')) != null ? _ref.onKeyDown(e) : void 0;
+      return (_ref1 = $(e.target).closest('.treema-node').data('instance')) != null ? _ref1.onKeyDown(e) : void 0;
     });
   };
 
@@ -295,7 +299,8 @@ TreemaNode = (function() {
       keyInput.focus();
       keyInput.keydown(function(e) {
         if (e.which === 8 && !keyInput.val()) {
-          return keyInput.remove();
+          keyInput.remove();
+          return e.preventDefault();
         }
       });
       return keyInput.blur(function(e) {

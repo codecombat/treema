@@ -47,7 +47,9 @@ class TreemaNode
     input.focus().select().blur =>
       @.toggleEdit('treema-read') if $('.treema-value', @$el).hasClass('treema-edit')
     input.keydown (e) =>
-      @remove() if e.which is 8 and not $(input).val()
+      if e.which is 8 and not $(input).val()
+        @remove()
+        e.preventDefault()
 
   # Initialization ------------------------------------------------------------
   constructor: (@schema, @data, options, @isChild) ->
@@ -72,6 +74,7 @@ class TreemaNode
     @$el.click (e) => $(e.target).closest('.treema-node').data('instance')?.onClick(e)
     @$el.keydown (e) =>
       if e.which is 8  # Delete
+        return if e.target.nodeName in ['INPUT', 'TEXTAREA']
         e.preventDefault()
         @removeSelectedNodes()
       $(e.target).closest('.treema-node').data('instance')?.onKeyDown(e)
@@ -173,7 +176,9 @@ class TreemaNode
       keyInput.focus()
       
       keyInput.keydown (e) =>
-        keyInput.remove() if e.which is 8 and not keyInput.val()
+        if e.which is 8 and not keyInput.val()
+          keyInput.remove() 
+          e.preventDefault()
         
       keyInput.blur (e) =>
         key = keyInput.val()
