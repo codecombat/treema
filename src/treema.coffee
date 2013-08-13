@@ -46,7 +46,7 @@ class TreemaNode
     input.val(value) unless value is null
     valEl.append(input)
     input.focus().select().blur =>
-      @.toggleEdit('read') if $('.treema-value', @$el).hasClass('edit')
+      @.toggleEdit('treema-read') if $('.treema-value', @$el).hasClass('treema-edit')
 
   # Initialization ------------------------------------------------------------
   constructor: (@schema, @data, options, @isChild) ->
@@ -56,10 +56,10 @@ class TreemaNode
     @$el = $(@nodeTemplate)
     valEl = $('.treema-value', @$el)
     @setValueForReading(valEl)
-    valEl.addClass('read') unless @collection
+    valEl.addClass('treema-read') unless @collection
     @$el.data('instance', @)
     @$el.addClass('treema-root') unless @isChild
-    @$el.append($(@childrenTemplate)).addClass('closed') if @collection
+    @$el.append($(@childrenTemplate)).addClass('treema-closed') if @collection
     @open() if @collection and not @isChild
     @setUpEvents() unless @isChild
     @$el
@@ -95,7 +95,7 @@ class TreemaNode
 
     nextTreema = @getNextTreema(direction)
     if nextTreema
-      nextTreema.toggleEdit('edit')
+      nextTreema.toggleEdit('treema-edit')
       return e.preventDefault()
 
     if @parent?.collection
@@ -117,10 +117,10 @@ class TreemaNode
   toggleEdit: (toClass) ->
     return unless @editable
     valEl = $('.treema-value', @$el)
-    wasEditing = valEl.hasClass('edit')
-    valEl.toggleClass('read edit') unless toClass and valEl.hasClass(toClass)
+    wasEditing = valEl.hasClass('treema-edit')
+    valEl.toggleClass('treema-read treema-edit') unless toClass and valEl.hasClass(toClass)
 
-    if valEl.hasClass('read')
+    if valEl.hasClass('treema-read')
       if wasEditing
         @saveChanges(valEl)
         @refreshErrors()
@@ -129,7 +129,7 @@ class TreemaNode
       valEl.empty()
       @setValueForReading(valEl)
 
-    if valEl.hasClass('edit')
+    if valEl.hasClass('treema-edit')
       valEl.empty()
       @setValueForEditing(valEl)
 
@@ -146,7 +146,7 @@ class TreemaNode
       newTreema = @addChildTreema(new_index, undefined, schema)
       childNode = @createChildNode(newTreema)
       @getMyAddButton().before(childNode)
-      newTreema.toggleEdit('edit')
+      newTreema.toggleEdit('treema-edit')
 
     if @keyed # object
       properties = @childPropertiesAvailable()
@@ -166,7 +166,7 @@ class TreemaNode
         newTreema = @addChildTreema(key, null, schema)
         childNode = @createChildNode(newTreema)
         @getMyAddButton().before(childNode)
-        newTreema.toggleEdit('edit')
+        newTreema.toggleEdit('treema-edit')
 
   getMyAddButton: ->
     @$el.find('> .treema-children > .treema-add-child')
@@ -181,7 +181,7 @@ class TreemaNode
 
   # Opening/closing collections -----------------------------------------------
   toggleOpen: ->
-    if @$el.hasClass('closed') then @open() else @close()
+    if @$el.hasClass('treema-closed') then @open() else @close()
 
   open: ->
     childrenContainer = @$el.find('.treema-children').detach()
@@ -191,7 +191,7 @@ class TreemaNode
       treema = @addChildTreema(key, value, schema)
       childNode = @createChildNode(treema)
       childrenContainer.append(childNode)
-    @$el.append(childrenContainer).removeClass('closed').addClass('open')
+    @$el.append(childrenContainer).removeClass('treema-closed').addClass('treema-open')
     childrenContainer.append($(@addChildTemplate))
     if @ordered and childrenContainer.sortable
       childrenContainer.sortable?(deactivate: @sortFromUI).disableSelection?()
@@ -211,7 +211,7 @@ class TreemaNode
   close: ->
     @data[key] = treema.data for key, treema of @childrenTreemas
     @$el.find('.treema-children').empty()
-    @$el.addClass('closed').removeClass('open')
+    @$el.addClass('treema-closed').removeClass('treema-open')
     @childrenTreemas = null
     @refreshErrors()
 
