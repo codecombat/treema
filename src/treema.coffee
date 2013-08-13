@@ -116,13 +116,25 @@ class TreemaNode
   navigateSelection: (direction) ->
     selected = @getSelectedTreemas()
     return unless selected.length is 1
-    next = selected[0].getNextTreema(direction)
-    if next
-      next.$el.addClass('treema-selected')
-      selected[0].$el.removeClass('treema-selected')
-    
+    selected = selected[0]
+    next = if direction is 'next' then selected.getNextTreema() else selected.getPreviousTreema() 
+    next?.toggleSelect()
+
   getSelectedTreemas: ->
     ($(el).data('instance') for el in @$el.closest('.treema-root').find('.treema-selected'))
+
+  getNextTreema: ->
+    nextChild = @$el.find('.treema-node:first').data('instance')
+    return nextChild if nextChild
+    nextSibling = @$el.next('.treema-node').data('instance')
+    return nextSibling if nextSibling
+    nextParent = @parent?.$el.next('.treema-node').data('instance')
+    return nextParent
+    
+  getPreviousTreema: ->
+    prevSibling = @$el.prev('.treema-node').data('instance')
+    lastChild = prevSibling?.$el.find('.treema-node:last').data('instance')
+    return lastChild or prevSibling or @parent
 
   onEscapePressed: (e) -> $(e.target).data('escaped', true).blur()
 
@@ -161,23 +173,6 @@ class TreemaNode
       nextTreema = tabbableChildren[nextIndex]
       nextTreema.toggleEdit 'treema-edit'
     nextTreema
-
-  getNextTreema: (direction, wrap=false) ->
-    siblings = @$el.siblings()
-    nextChild = @$el[direction]()
-    console.log "Getting next treemas out of", nextChild?.siblings?()
-    while true
-      if nextChild.length > 0
-        instance = nextChild.data('instance')
-        return null unless instance  # Probably found the .treema-add-child node stub
-        return instance unless instance.collection or instance.skipTab
-        nextChild = nextChild[direction]()
-      else if nextChild[0] is @$el[0]  # wrapped around and found nothing
-        return null
-      else if wrap
-        nextChild = siblings[if direction is 'next' then 0 else siblings.length - 1]
-      else
-        return null
 
   # Editing values ------------------------------------------------------------
   toggleEdit: (toClass) ->
@@ -309,6 +304,9 @@ class TreemaNode
     # For now, we'll let selections be independent, so that when we go to delete,
     # we'll be able to drag/delete multiple. Later we should rely on shift for that,
     # defaulting to either one or zero selections at a time with normal clicks.
+    for treema in @getSelectedTreemas()
+      continue if treema is @
+      treema.$el.removeClass('treema-selected') 
     @$el.toggleClass('treema-selected')
 
   # Child node utilities ------------------------------------------------------
@@ -323,8 +321,9 @@ class TreemaNode
     childNode = treema.build()
     if @keyed
       name = treema.schema.title or treema.keyForParent
-      keyEl = $(@keyTemplate).text(name + ' : ')
+      keyEl = $(@keyTemplate).text(name)
       keyEl.attr('title', treema.schema.description) if treema.schema.description
+      childNode.prepend(' : ')
       childNode.prepend(keyEl)
     childNode.prepend($(@toggleTemplate)) if treema.collection
     childNode

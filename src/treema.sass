@@ -1,6 +1,9 @@
 // Base styles
 
 .treema-node
+  user-select: none
+  -webkit-user-select: none
+  -moz-user-select: none
   position: relative
   font-family: Helvetica
   padding: 3px 0
@@ -14,7 +17,7 @@
   &.treema-open > .treema-children
     padding-top: 1px
 
-  &.treema-selected
+  &.treema-selected .treema-key
     background-color: rgba(64, 128, 255, 0.25)
 
 .treema-children
@@ -45,7 +48,7 @@
 .treema-key
   color: #00008b
   float: left
-  margin-right: 7px
+  margin-right: 3px
   padding: 2px 0 2px 2px
   cursor: pointer
   
@@ -58,7 +61,7 @@
   background-color: #ffb6c1
   border: 1px solid red
   
-// Collection controls (placeholders for icons)
+// Collection toggle
 // http://css-tricks.com/snippets/css/css-triangle/
 
 .treema-toggle
