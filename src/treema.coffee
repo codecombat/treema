@@ -67,6 +67,7 @@ class TreemaNode
 
   # Event handling ------------------------------------------------------------
   setUpEvents: ->
+    @$el.dblclick (e) => $(e.target).closest('.treema-node').data('instance')?.onDoubleClick(e)
     @$el.click (e) => $(e.target).closest('.treema-node').data('instance')?.onClick(e)
     @$el.keydown (e) =>
       if e.which is 8  # Delete
@@ -85,6 +86,13 @@ class TreemaNode
     return @addNewChild() if $(e.target).closest('.treema-add-child').length and @collection
     return @toggleSelect() if clickedKey
 
+  onDoubleClick: (e) ->
+    return unless @collection
+    clickedKey = $(e.target).hasClass('treema-key')
+    return unless clickedKey
+    @open() if @$el.hasClass('treema-closed')
+    @addNewChild()
+  
   onKeyDown: (e) ->
     @onEscapePressed(e) if e.which is 27
     @onTabPressed(e) if e.which is 9
