@@ -104,6 +104,30 @@ class TreemaNode
   onKeyDown: (e) ->
     @onEscapePressed(e) if e.which is 27
     @onTabPressed(e) if e.which is 9
+    @onLeftArrowPressed(e) if e.which is 37
+    @onUpArrowPressed(e) if e.which is 38
+    @onRightArrowPressed(e) if e.which is 39
+    @onDownArrowPressed(e) if e.which is 40
+
+  onLeftArrowPressed: (e) ->
+    treema.close() if treema.$el.hasClass('treema-open') for treema in @getSelectedTreemas()
+
+  onRightArrowPressed: (e) ->
+    treema.open() if treema.$el.hasClass('treema-closed') for treema in @getSelectedTreemas()
+
+  onUpArrowPressed: (e) -> @navigateSelection('prev')
+  onDownArrowPressed: (e) -> @navigateSelection('next')
+      
+  navigateSelection: (direction) ->
+    selected = @getSelectedTreemas()
+    return unless selected.length is 1
+    next = selected[0].getNextTreema(direction)
+    if next
+      next.$el.addClass('treema-selected')
+      selected[0].$el.removeClass('treema-selected')
+    
+  getSelectedTreemas: ->
+    ($(el).data('instance') for el in @$el.closest('.treema-root').find('.treema-selected'))
 
   onEscapePressed: (e) -> $(e.target).data('escaped', true).blur()
 

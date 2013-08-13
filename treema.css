@@ -2,46 +2,48 @@
 .treema-node {
   position: relative;
   font-family: Helvetica;
-  margin: 3px 0;
-  clear: both; }
-@media -sass-debug-info{filename{}line{font-family:\0000310}}
+  padding: 3px 0;
+  clear: both;
+  border-bottom: 1px solid #cccccc; }
+@media -sass-debug-info{filename{}line{font-family:\0000311}}
   .treema-node.treema-open > .treema-value {
     display: none; }
-@media -sass-debug-info{filename{}line{font-family:\0000313}}
+@media -sass-debug-info{filename{}line{font-family:\0000314}}
   .treema-node.treema-open > .treema-children {
     padding-top: 1px; }
-@media -sass-debug-info{filename{}line{font-family:\0000316}}
+@media -sass-debug-info{filename{}line{font-family:\0000317}}
   .treema-node.treema-selected {
     background-color: rgba(64, 128, 255, 0.25); }
 
-@media -sass-debug-info{filename{}line{font-family:\0000319}}
+@media -sass-debug-info{filename{}line{font-family:\0000320}}
 .treema-children {
   margin-left: 15px;
   clear: both; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000323}}
+@media -sass-debug-info{filename{}line{font-family:\0000324}}
 .treema-add-child {
   background-color: #eeeeff;
   border: 1px solid #aaaaff;
   cursor: pointer;
   display: inline-block;
+  margin: 3px 0;
   padding: 0px 5px;
   font-weight: bold; }
-@media -sass-debug-info{filename{}line{font-family:\0000331}}
+@media -sass-debug-info{filename{}line{font-family:\0000333}}
   .treema-add-child:hover {
     background-color: #ccccff; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000334}}
+@media -sass-debug-info{filename{}line{font-family:\0000336}}
 .treema-value {
   cursor: pointer;
   padding: 2px 0 2px 2px;
   display: inline-block; }
-@media -sass-debug-info{filename{}line{font-family:\0000339}}
+@media -sass-debug-info{filename{}line{font-family:\0000341}}
   .treema-value pre {
     margin: 0;
     font-family: Helvetica; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000343}}
+@media -sass-debug-info{filename{}line{font-family:\0000345}}
 .treema-key {
   color: darkblue;
   float: left;
@@ -49,18 +51,18 @@
   padding: 2px 0 2px 2px;
   cursor: pointer; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000350}}
+@media -sass-debug-info{filename{}line{font-family:\0000352}}
 .treema-error {
   float: right;
   color: darkred;
   margin: 5px 10px; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000355}}
+@media -sass-debug-info{filename{}line{font-family:\0000357}}
 .treema-has-error {
   background-color: lightpink;
   border: 1px solid red; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000362}}
+@media -sass-debug-info{filename{}line{font-family:\0000364}}
 .treema-toggle {
   cursor: pointer;
   width: 0;
@@ -69,34 +71,34 @@
   position: absolute;
   left: -10px; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000370}}
+@media -sass-debug-info{filename{}line{font-family:\0000372}}
 .treema-closed > .treema-toggle {
   border-top: 4px solid transparent;
   border-bottom: 4px solid transparent;
   border-left: 8px solid #0b97c4;
   top: 6px; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000376}}
+@media -sass-debug-info{filename{}line{font-family:\0000378}}
 .treema-open > .treema-toggle {
   border-left: 4px solid transparent;
   border-right: 4px solid transparent;
   border-top: 8px solid #0b97c4;
   top: 6px; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000384}}
+@media -sass-debug-info{filename{}line{font-family:\0000386}}
 .treema-string {
   color: darkgoldenrod; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000387}}
+@media -sass-debug-info{filename{}line{font-family:\0000389}}
 .treema-number {
   color: darkolivegreen; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000390}}
+@media -sass-debug-info{filename{}line{font-family:\0000392}}
 .treema-null {
   color: darkslateblue;
   font-weight: bold; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000395}}
+@media -sass-debug-info{filename{}line{font-family:\0000397}}
 .treema-clearfix:after {
   content: ".";
   display: block;
