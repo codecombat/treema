@@ -210,7 +210,7 @@ class TreemaNode
     return unless @parent?
     delete @parent.childrenTreemas[@keyForParent]
     delete @parent.data[@keyForParent]
-    @parent.sortFromUI()
+    @parent.sortFromUI() if @parent.ordered
     @parent.refreshErrors()
 
   # Opening/closing collections -----------------------------------------------

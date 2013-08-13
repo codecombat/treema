@@ -356,7 +356,9 @@ TreemaNode = (function() {
     }
     delete this.parent.childrenTreemas[this.keyForParent];
     delete this.parent.data[this.keyForParent];
-    this.parent.sortFromUI();
+    if (this.parent.ordered) {
+      this.parent.sortFromUI();
+    }
     return this.parent.refreshErrors();
   };
 
