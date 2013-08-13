@@ -57,8 +57,7 @@ class TreemaNode
     return if e.target.nodeName in ['INPUT', 'TEXTAREA']
 
     value = $(e.target).closest('.treema-value')
-    if value.length
-      if @collection then @open() else @toggleEdit()
+    @toggleEdit() if value.length
 
     @toggleOpen() if $(e.target).hasClass('treema-toggle')
 
@@ -345,6 +344,15 @@ class ArrayTreemaNode extends TreemaNode
   setValueForReading: (valEl) ->
     valEl.append($('<span></span>').text("[#{@data.length}]"))
 
+  setValueForEditing: (valEl) ->
+    input = $('<input />')
+    input.val(JSON.stringify(@data)) unless @data is null
+    valEl.append(input)
+    input.focus()
+    input.select()
+    input.blur =>
+      @.toggleEdit('read') if $('.treema-value', @$el).hasClass('edit')
+
     
 class ObjectTreemaNode extends TreemaNode
   """
@@ -368,6 +376,15 @@ class ObjectTreemaNode extends TreemaNode
   setValueForReading: (valEl) ->
     size = Object.keys(@data).length
     valEl.append($('<span></span>').text("{#{size}}"))
+
+  setValueForEditing: (valEl) ->
+    input = $('<input />')
+    input.val(JSON.stringify(@data)) unless @data is null
+    valEl.append(input)
+    input.focus()
+    input.select()
+    input.blur =>
+      @.toggleEdit('read') if $('.treema-value', @$el).hasClass('edit')
     
 class AnyTreemaNode extends TreemaNode
   """
