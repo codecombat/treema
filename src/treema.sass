@@ -2,38 +2,43 @@
 
 .treema-node
   position: relative
-  font-family: monospace
+  font-family: Helvetica
   margin: 3px 0
   clear: both
   
   // hide collection short strings when open
   &.treema-open > .treema-value
     display: none
+    
+  &.treema-open > .treema-children
+    padding-top: 1px
 
   &.treema-selected
     background-color: rgba(64, 128, 255, 0.25)
 
 .treema-children
-  padding-top: 3px
-  margin-left: 10px
+  margin-left: 15px
   clear: both
   
 .treema-add-child
-  background-color: lightblue
-  border: 1px solid blue
-  text-align: center
+  background-color: #eef
+  border: 1px solid #aaf
   cursor: pointer
   display: inline-block
   padding: 0px 5px
   font-weight: bold
-
+  
+  &:hover
+    background-color: #ccf
+ 
 .treema-value
-  margin-left: 10px
   cursor: pointer
   padding: 2px 0 2px 2px
+  display: inline-block
   
   pre
     margin: 0
+    font-family: Helvetica
 
 .treema-key
   color: #00008b
@@ -86,6 +91,7 @@
   color: #483d8b
   font-weight: bold
 
+// http://www.positioniseverything.net/easyclearing.html
 .treema-clearfix:after
   content: "."
   display: block

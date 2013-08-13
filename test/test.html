@@ -21,7 +21,7 @@
   $(document).ready(function () {
     data = {
       'street-address': '2338 1/2 Roosevelt Ave',
-      'locality': 'Berkeley',
+      'locality': 'Berkeley\ns',
       'region': 'California',
       'postal-code': 94703,
       'country-name': 'USA',
@@ -33,15 +33,15 @@
       "description": "An Address following the convention of http://microformats.org/wiki/hcard",
       "type": "object",
       "properties": {
-        "is-home-address": { type: 'boolean' },
-        "post-office-box": { },
-        "extended-address": { },
-        "street-address": { "type": "string", title: "Street Address", description: "Don't forget the number." },
+        "is-home-address": { type: 'boolean', title: "Is Home" },
+        "post-office-box": { title: "PO Box" },
+        "extended-address": { title: "Address 2" },
+        "street-address": { title: "Address 1", "type": "string", description: "Don't forget the number." },
         "locality":{ "type": "string", title: "Locality" },
         "region": { 'title': 'Region', type: 'string' },
         "postal-code": { "type": "number", title: "Zip Code" },
         "country-name": { "type": "string", title: "Country"},
-        "phone-numbers": { "type": "array", items: { type: "string", maxLength: 20 }, title: "Phone #'s" }
+        "phone-numbers": { "type": "array", items: { type: "string", maxLength: 20 }, title: "Phone #s" }
       },
       "required": ['locality', 'region', 'country-name'],
       "dependencies": {
