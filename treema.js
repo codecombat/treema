@@ -212,34 +212,36 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.onLeftArrowPressed = function(e) {
-    var treema;
-    if ((function() {
-      var _i, _len, _ref, _results;
-      _ref = this.getSelectedTreemas();
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        treema = _ref[_i];
-        _results.push(treema.$el.hasClass('treema-open'));
+    var parent, treema, treemas, _i, _len;
+    treemas = this.getSelectedTreemas();
+    for (_i = 0, _len = treemas.length; _i < _len; _i++) {
+      treema = treemas[_i];
+      if (treema.$el.hasClass('treema-open')) {
+        return treema.close();
       }
-      return _results;
-    }).call(this)) {
-      return treema.close();
     }
+    if (treemas.length !== 1) {
+      return;
+    }
+    parent = treemas[0].parent;
+    if (parent.$el.hasClass('treema-root')) {
+      return;
+    }
+    parent.close();
+    return parent.toggleSelect();
   };
 
   TreemaNode.prototype.onRightArrowPressed = function(e) {
-    var treema;
-    if ((function() {
-      var _i, _len, _ref, _results;
-      _ref = this.getSelectedTreemas();
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        treema = _ref[_i];
-        _results.push(treema.$el.hasClass('treema-closed'));
+    var treema, _i, _len, _ref;
+    _ref = this.getSelectedTreemas();
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      treema = _ref[_i];
+      if (!treema.collection) {
+        return;
       }
-      return _results;
-    }).call(this)) {
-      return treema.open();
+      if (treema.$el.hasClass('treema-closed')) {
+        treema.open();
+      }
     }
   };
 
@@ -573,7 +575,7 @@ TreemaNode = (function() {
   TreemaNode.prototype.createChildNode = function(treema) {
     var childNode, keyEl, name;
     childNode = treema.build();
-    if (this.keyed) {
+    if (this.collection) {
       name = treema.schema.title || treema.keyForParent;
       keyEl = $(this.keyTemplate).text(name);
       if (treema.schema.description) {

@@ -105,10 +105,19 @@ class TreemaNode
     @onDownArrowPressed(e) if e.which is 40
 
   onLeftArrowPressed: (e) ->
-    treema.close() if treema.$el.hasClass('treema-open') for treema in @getSelectedTreemas()
+    treemas = @getSelectedTreemas()
+    for treema in treemas
+      return treema.close() if treema.$el.hasClass('treema-open')
+    return unless treemas.length is 1
+    parent = treemas[0].parent
+    return if parent.$el.hasClass('treema-root')
+    parent.close()
+    parent.toggleSelect()
 
   onRightArrowPressed: (e) ->
-    treema.open() if treema.$el.hasClass('treema-closed') for treema in @getSelectedTreemas()
+    for treema in @getSelectedTreemas()
+      return unless treema.collection
+      treema.open() if treema.$el.hasClass('treema-closed') 
 
   onUpArrowPressed: (e) -> @navigateSelection('prev')
   onDownArrowPressed: (e) -> @navigateSelection('next')
@@ -319,7 +328,7 @@ class TreemaNode
 
   createChildNode: (treema) ->
     childNode = treema.build()
-    if @keyed
+    if @collection
       name = treema.schema.title or treema.keyForParent
       keyEl = $(@keyTemplate).text(name)
       keyEl.attr('title', treema.schema.description) if treema.schema.description
