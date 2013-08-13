@@ -6,14 +6,17 @@
 @media -sass-debug-info{filename{}line{font-family:\000039}}
   .treema-node.treema-open > .treema-value {
     display: none; }
-
 @media -sass-debug-info{filename{}line{font-family:\0000312}}
+  .treema-node.treema-selected {
+    background-color: rgba(64, 128, 255, 0.25); }
+
+@media -sass-debug-info{filename{}line{font-family:\0000315}}
 .treema-children {
   padding-top: 3px;
   margin-left: 10px;
   clear: both; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000317}}
+@media -sass-debug-info{filename{}line{font-family:\0000320}}
 .treema-add-child {
   background-color: lightblue;
   border: 1px solid blue;
@@ -23,47 +26,48 @@
   padding: 0px 5px;
   font-weight: bold; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000326}}
+@media -sass-debug-info{filename{}line{font-family:\0000329}}
 .treema-value {
   margin-left: 10px;
   cursor: pointer;
   padding: 2px 0 2px 2px; }
-@media -sass-debug-info{filename{}line{font-family:\0000331}}
+@media -sass-debug-info{filename{}line{font-family:\0000334}}
   .treema-value pre {
     margin: 0; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000334}}
+@media -sass-debug-info{filename{}line{font-family:\0000337}}
 .treema-key {
   color: darkblue;
   float: left;
   margin-right: 7px;
-  padding: 2px 0 2px 2px; }
+  padding: 2px 0 2px 2px;
+  cursor: pointer; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000340}}
+@media -sass-debug-info{filename{}line{font-family:\0000344}}
 .treema-error {
   float: right;
   color: darkred;
   margin-top: 5px;
   margin-bottom: 10px; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000346}}
+@media -sass-debug-info{filename{}line{font-family:\0000350}}
 .treema-has-error {
   background-color: lightpink;
   border: 1px solid red; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000352}}
+@media -sass-debug-info{filename{}line{font-family:\0000356}}
 .treema-grabber {
   color: darkblue;
   background-color: darkblue;
   cursor: move; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000357}}
+@media -sass-debug-info{filename{}line{font-family:\0000361}}
 .treema-toggle {
   color: #0b97c4;
   background-color: #0b97c4;
   cursor: pointer; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000362}}
+@media -sass-debug-info{filename{}line{font-family:\0000366}}
 .treema-grabber, .treema-toggle {
   margin-right: 4px;
   font-size: 9px;
@@ -71,20 +75,20 @@
   position: relative;
   top: 3px; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000372}}
+@media -sass-debug-info{filename{}line{font-family:\0000376}}
 .treema-string {
   color: darkgoldenrod; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000375}}
+@media -sass-debug-info{filename{}line{font-family:\0000379}}
 .treema-number {
   color: darkolivegreen; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000378}}
+@media -sass-debug-info{filename{}line{font-family:\0000382}}
 .treema-null {
   color: darkslateblue;
   font-weight: bold; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000382}}
+@media -sass-debug-info{filename{}line{font-family:\0000386}}
 .treema-clearfix:after {
   content: ".";
   display: block;
