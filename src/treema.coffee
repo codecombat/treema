@@ -71,11 +71,13 @@ class TreemaNode
 
   onClick: (e) ->
     return if e.target.nodeName in ['INPUT', 'TEXTAREA']
-    clickedValue = $(e.target).closest('.treema-value').length
+    clickedValue = $(e.target).closest('.treema-value').length  # Clicks are in children of .treema-value nodes
     clickedToggle = $(e.target).hasClass('treema-toggle')
-    @toggleEdit() if clickedValue and not @collection
-    @toggleOpen() if clickedToggle or (clickedValue and @collection)
-    @addNewChild() if $(e.target).closest('.treema-add-child').length and @collection
+    clickedKey = $(e.target).hasClass('treema-key')
+    return @toggleEdit() if clickedValue and not @collection
+    return @toggleOpen() if clickedToggle or (clickedValue and @collection)
+    return @addNewChild() if $(e.target).closest('.treema-add-child').length and @collection
+    return @toggleSelect() if clickedKey
 
   onKeyDown: (e) ->
     @onEscapePressed(e) if e.which is 27
@@ -155,7 +157,6 @@ class TreemaNode
       @getMyAddButton().before(keyInput)
       keyInput.focus()
       keyInput.blur (e) =>
-        console.log('blur')
         key = keyInput.val()
         escaped = keyInput.data('escaped')
         keyInput.remove()
@@ -214,6 +215,13 @@ class TreemaNode
     @$el.addClass('closed').removeClass('open')
     @childrenTreemas = null
     @refreshErrors()
+
+  # Selecting/deselecting nodes -----------------------------------------------
+  toggleSelect: ->
+    # For now, we'll let selections be independent, so that when we go to delete,
+    # we'll be able to drag/delete multiple. Later we should rely on shift for that,
+    # defaulting to either one or zero selections at a time with normal clicks.
+    @$el.toggleClass('treema-selected')
 
   # Child node utilities ------------------------------------------------------
   addChildTreema: (key, value, schema) ->
