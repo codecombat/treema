@@ -763,7 +763,6 @@ BooleanTreemaNode = (function(_super) {
   };
 
   BooleanTreemaNode.prototype.onEnterPressed = function(e) {
-    console.log('on enter pressed?', e);
     this.data = !this.data;
     return this.setValueForReading($('.treema-value', this.$el).empty());
   };
