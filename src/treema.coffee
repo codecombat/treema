@@ -117,7 +117,7 @@ class TreemaNode
 
   onUpArrowPressed: (e) -> @navigateSelection('prev')
   onDownArrowPressed: (e) -> @navigateSelection('next')
-      
+
   navigateSelection: (direction) ->
     selected = @getSelectedTreemas()
     return unless selected.length is 1
@@ -125,7 +125,7 @@ class TreemaNode
     if next
       next.$el.addClass('treema-selected')
       selected[0].$el.removeClass('treema-selected')
-    
+
   getSelectedTreemas: ->
     ($(el).data('instance') for el in @$el.closest('.treema-root').find('.treema-selected'))
 
@@ -166,6 +166,23 @@ class TreemaNode
       nextTreema = tabbableChildren[nextIndex]
       nextTreema.toggleEdit 'treema-edit'
     nextTreema
+
+   getNextTreema: (direction, wrap=false) ->
+    siblings = @$el.siblings()
+    nextChild = @$el[direction]()
+    console.log "Getting next treemas out of", nextChild?.siblings?()
+    while true
+      if nextChild.length > 0
+        instance = nextChild.data('instance')
+        return null unless instance  # Probably found the .treema-add-child node stub
+        return instance unless instance.collection or instance.skipTab
+        nextChild = nextChild[direction]()
+      else if nextChild[0] is @$el[0]  # wrapped around and found nothing
+        return null
+      else if wrap
+        nextChild = siblings[if direction is 'next' then 0 else siblings.length - 1]
+      else
+        return null
 
   # Editing values ------------------------------------------------------------
   toggleEdit: (toClass) ->
