@@ -68,6 +68,11 @@ class TreemaNode
     @setUpEvents() unless @isChild
     @$el
 
+  rebuild: ->
+    wasSelected = @selected
+    @$el.replaceWith if @parent then @parent.createChildNode(@) else @build()
+    @toggleSelect() if wasSelected
+
   # Event handling ------------------------------------------------------------
   setUpEvents: ->
     @$el.dblclick (e) => $(e.target).closest('.treema-node').data('instance')?.onDoubleClick(e)
@@ -138,23 +143,6 @@ class TreemaNode
       nextTreema.toggleEdit 'treema-edit'
     nextTreema
 
-  getNextTreema: (direction, wrap=false) ->
-    siblings = @$el.siblings()
-    nextChild = @$el[direction]()
-    console.log "Getting next treemas out of", nextChild?.siblings?()
-    while true
-      if nextChild.length > 0
-        instance = nextChild.data('instance')
-        return null unless instance  # Probably found the .treema-add-child node stub
-        return instance unless instance.collection or instance.skipTab
-        nextChild = nextChild[direction]()
-      else if nextChild[0] is @$el[0]  # wrapped around and found nothing
-        return null
-      else if wrap
-        nextChild = siblings[if direction is 'next' then 0 else siblings.length - 1]
-      else
-        return null
-
   # Editing values ------------------------------------------------------------
   toggleEdit: (toClass) ->
     return unless @editable
@@ -183,9 +171,9 @@ class TreemaNode
   # Adding elemements to collections ------------------------------------------
   addNewChild: ->
     if @ordered # array
-      new_index = Object.keys(@childrenTreemas).length
+      newIndex = Object.keys(@childrenTreemas).length
       schema = @getChildSchema()
-      newTreema = @addChildTreema(new_index, undefined, schema)
+      newTreema = @addChildTreema(newIndex, undefined, schema)
       childNode = @createChildNode(newTreema)
       @getMyAddButton().before(childNode)
       newTreema.toggleEdit('treema-edit')
@@ -231,8 +219,12 @@ class TreemaNode
 
   # Removing nodes ------------------------------------------------------------
   removeSelectedNodes: ->
+    # Grab all the Treemas before removing any, because original elements are replaced.
+    toRemove = []
     @$el.find('.treema-selected').each (i, elem) =>
-      $(elem).data('instance')?.remove()
+      treema = $(elem).data('instance')
+      toRemove.push treema if treema
+    treema.remove() for treema in toRemove
 
   remove: ->
     @$el.remove()
@@ -241,6 +233,7 @@ class TreemaNode
     delete @parent.data[@keyForParent]
     @parent.sortFromUI() if @parent.ordered
     @parent.refreshErrors()
+    @parent.propagateData()
 
   # Opening/closing collections -----------------------------------------------
   toggleOpen: ->
@@ -271,6 +264,7 @@ class TreemaNode
       treema.keyForParent = index
       @childrenTreemas[index] = treema
       @data[index] = treema.data
+      treema.rebuild()
       index += 1
 
   close: ->
@@ -285,7 +279,8 @@ class TreemaNode
     # For now, we'll let selections be independent, so that when we go to delete,
     # we'll be able to drag/delete multiple. Later we should rely on shift for that,
     # defaulting to either one or zero selections at a time with normal clicks.
-    @$el.toggleClass('treema-selected')
+    @selected = not @selected
+    @$el.toggleClass('treema-selected', @selected)
 
   # Child node utilities ------------------------------------------------------
   addChildTreema: (key, value, schema) ->
@@ -297,7 +292,7 @@ class TreemaNode
 
   createChildNode: (treema) ->
     childNode = treema.build()
-    if @keyed
+    if @collection
       name = treema.schema.title or treema.keyForParent
       keyEl = $(@keyTemplate).text(name + ' : ')
       keyEl.attr('title', treema.schema.description) if treema.schema.description
@@ -435,15 +430,6 @@ class AnyTreemaNode extends TreemaNode
     @helper = new NodeClass(@schema, @data, @options, @isChild)
     for prop in ['collection', 'ordered', 'keyed', 'getChildSchema', 'getChildren', 'getChildSchema', 'setValueForReading']
       @[prop] = @helper[prop]
-
-  rebuild: ->
-    oldEl = @$el
-    if @parent
-      newNode = @parent.createChildNode(@)
-    else
-      newNode = @build()
-
-    oldEl.replaceWith(newNode)
 
 
 TreemaNodeMap =
