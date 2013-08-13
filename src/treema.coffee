@@ -73,8 +73,7 @@ class TreemaNode
     @$el.dblclick (e) => $(e.target).closest('.treema-node').data('instance')?.onDoubleClick(e)
     @$el.click (e) => $(e.target).closest('.treema-node').data('instance')?.onClick(e)
     @$el.keydown (e) =>
-      if e.which is 8  # Delete
-        return if e.target.nodeName in ['INPUT', 'TEXTAREA']
+      if e.which is 8 and not (e.target.nodeName in ['INPUT', 'TEXTAREA'])  # Delete
         e.preventDefault()
         @removeSelectedNodes()
       $(e.target).closest('.treema-node').data('instance')?.onKeyDown(e)
@@ -96,7 +95,7 @@ class TreemaNode
     return unless clickedKey
     @open() if @$el.hasClass('treema-closed')
     @addNewChild()
-  
+
   onKeyDown: (e) ->
     @onEscapePressed(e) if e.which is 27
     @onTabPressed(e) if e.which is 9
@@ -117,31 +116,54 @@ class TreemaNode
     direction = if e.shiftKey then 'prev' else 'next'
     target = $(e.target)
 
-    if target.hasClass('treema-new-prop')
+    addingNewProperty = target.hasClass('treema-new-prop')
+    if addingNewProperty
       e.preventDefault()
+      childIndex = @getTabbableChildrenTreemas().length  # One past the end, since we're adding
       target.blur()
+      if @getTabbableChildrenTreemas().length is childIndex
+        @tabToNextTreema childIndex, direction  # We didn't create one, so let's tab past
+    else if @parent?.collection
+      childIndex = @parent.getTabbableChildrenTreemas().indexOf @
+      @parent.tabToNextTreema childIndex, direction
 
     # TODO: Handle switching between inputs within a single node, like for x, y points
 
-    nextTreema = @getNextTreema(direction)
-    if nextTreema
-      nextTreema.toggleEdit('treema-edit')
-      return e.preventDefault()
-
-    if @parent?.collection
-      @parent.addNewChild()
     return e.preventDefault()
 
-  getNextTreema: (direction) ->
+
+  getTabbableChildrenTreemas: ->
+    (child for key, child of @childrenTreemas when not (child.collection or child.skipTab))
+
+  tabToNextTreema: (childIndex, direction) ->
+    tabbableChildren = @getTabbableChildrenTreemas()
+    return null unless tabbableChildren.length
+    nextIndex = childIndex + (if direction is "next" then 1 else -1)
+    n = tabbableChildren.length + 1
+    nextIndex = ((nextIndex % n) + n) % n  # http://stackoverflow.com/questions/4467539/javascript-modulo-not-behaving
+    if nextIndex is tabbableChildren.length
+      nextTreema = @addNewChild()  # not fully created yet
+    else
+      nextTreema = tabbableChildren[nextIndex]
+      nextTreema.toggleEdit 'treema-edit'
+    nextTreema
+
+  getNextTreema: (direction, wrap=false) ->
+    siblings = @$el.siblings()
     nextChild = @$el[direction]()
+    console.log "Getting next treemas out of", nextChild?.siblings?()
     while true
       if nextChild.length > 0
         instance = nextChild.data('instance')
-        return unless instance
-        if instance.collection or instance.skipTab
-          nextChild = nextChild[direction]()
-          continue
-      return instance
+        return null unless instance  # Probably found the .treema-add-child node stub
+        return instance unless instance.collection or instance.skipTab
+        nextChild = nextChild[direction]()
+      else if nextChild[0] is @$el[0]  # wrapped around and found nothing
+        return null
+      else if wrap
+        nextChild = siblings[if direction is 'next' then 0 else siblings.length - 1]
+      else
+        return null
 
   # Editing values ------------------------------------------------------------
   toggleEdit: (toClass) ->
@@ -184,12 +206,12 @@ class TreemaNode
       keyInput.autocomplete?(source: properties)
       @getMyAddButton().before(keyInput)
       keyInput.focus()
-      
+
       keyInput.keydown (e) =>
         if e.which is 8 and not keyInput.val()
-          keyInput.remove() 
+          keyInput.remove()
           e.preventDefault()
-        
+
       keyInput.blur (e) =>
         key = keyInput.val()
         escaped = keyInput.data('escaped')
