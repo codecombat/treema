@@ -100,7 +100,17 @@ class TreemaNode
   onKeyDown: (e) ->
     @onEscapePressed(e) if e.which is 27
     @onTabPressed(e) if e.which is 9
+    @onLeftArrowPressed(e) if e.which is 37
+    @onRightArrowPressed(e) if e.which is 39
 
+  onLeftArrowPressed: (e) ->
+    @$el.closest('.treema-root').find('.treema-selected').each (i, el) ->
+      $(el).data('instance').close() if $(el).hasClass('treema-open')
+
+  onRightArrowPressed: (e) ->
+    @$el.closest('.treema-root').find('.treema-selected').each (i, el) ->
+      $(el).data('instance').open() if $(el).hasClass('treema-closed')
+      
   onEscapePressed: (e) -> $(e.target).data('escaped', true).blur()
 
   onTabPressed: (e) ->

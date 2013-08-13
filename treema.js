@@ -198,8 +198,30 @@ TreemaNode = (function() {
       this.onEscapePressed(e);
     }
     if (e.which === 9) {
-      return this.onTabPressed(e);
+      this.onTabPressed(e);
     }
+    if (e.which === 37) {
+      this.onLeftArrowPressed(e);
+    }
+    if (e.which === 39) {
+      return this.onRightArrowPressed(e);
+    }
+  };
+
+  TreemaNode.prototype.onLeftArrowPressed = function(e) {
+    return this.$el.closest('.treema-root').find('.treema-selected').each(function(i, el) {
+      if ($(el).hasClass('treema-open')) {
+        return $(el).data('instance').close();
+      }
+    });
+  };
+
+  TreemaNode.prototype.onRightArrowPressed = function(e) {
+    return this.$el.closest('.treema-root').find('.treema-selected').each(function(i, el) {
+      if ($(el).hasClass('treema-closed')) {
+        return $(el).data('instance').open();
+      }
+    });
   };
 
   TreemaNode.prototype.onEscapePressed = function(e) {
