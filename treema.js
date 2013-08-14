@@ -470,10 +470,27 @@ TreemaNode = (function() {
         schema = _this.getChildSchema(key);
         newTreema = _this.addChildTreema(key, null, schema);
         childNode = _this.createChildNode(newTreema);
-        _this.getMyAddButton().before(childNode);
+        _this.findObjectInsertionPoint(key).before(childNode);
         return newTreema.toggleEdit('treema-edit');
       });
     }
+  };
+
+  TreemaNode.prototype.findObjectInsertionPoint = function(key) {
+    var afterKeys, allChildren, allProps, child, _i, _len, _ref, _ref1;
+    if (!((_ref = this.schema.properties) != null ? _ref[key] : void 0)) {
+      return this.getMyAddButton();
+    }
+    allProps = Object.keys(this.schema.properties);
+    afterKeys = allProps.slice(allProps.indexOf(key) + 1);
+    allChildren = this.$el.find('> .treema-children > .treema-node');
+    for (_i = 0, _len = allChildren.length; _i < _len; _i++) {
+      child = allChildren[_i];
+      if (_ref1 = $(child).data('instance').keyForParent, __indexOf.call(afterKeys, _ref1) >= 0) {
+        return $(child);
+      }
+    }
+    return this.getMyAddButton();
   };
 
   TreemaNode.prototype.getMyAddButton = function() {
@@ -868,14 +885,26 @@ ObjectTreemaNode = (function(_super) {
   ObjectTreemaNode.prototype.keyed = true;
 
   ObjectTreemaNode.prototype.getChildren = function() {
-    var key, value, _ref6, _results;
-    _ref6 = this.data;
-    _results = [];
-    for (key in _ref6) {
-      value = _ref6[key];
-      _results.push([key, value, this.getChildSchema(key)]);
+    var children, key, keysAccountedFor, value;
+    children = [];
+    keysAccountedFor = [];
+    if (this.schema.properties) {
+      for (key in this.schema.properties) {
+        if (typeof this.data[key] === 'undefined') {
+          continue;
+        }
+        keysAccountedFor.push(key);
+        children.push([key, this.data[key], this.getChildSchema(key)]);
+      }
     }
-    return _results;
+    for (key in data) {
+      value = data[key];
+      if (__indexOf.call(keysAccountedFor, key) >= 0) {
+        continue;
+      }
+      children.push([key, value, this.getChildSchema(key)]);
+    }
+    return children;
   };
 
   ObjectTreemaNode.prototype.getChildSchema = function(key_or_title) {

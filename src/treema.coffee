@@ -262,8 +262,19 @@ class TreemaNode
         schema = @getChildSchema(key)
         newTreema = @addChildTreema(key, null, schema)
         childNode = @createChildNode(newTreema)
-        @getMyAddButton().before(childNode)
+        @findObjectInsertionPoint(key).before(childNode)
         newTreema.toggleEdit('treema-edit')
+
+  findObjectInsertionPoint: (key) ->
+    # Object children should be in the order of the schema.properties objects as much as possible
+    return @getMyAddButton() unless @schema.properties?[key]
+    allProps = Object.keys(@schema.properties)
+    afterKeys = allProps.slice(allProps.indexOf(key)+1)
+    allChildren = @$el.find('> .treema-children > .treema-node')
+    for child in allChildren
+      if $(child).data('instance').keyForParent in afterKeys
+        return $(child)
+    return @getMyAddButton()
 
   getMyAddButton: ->
     @$el.find('> .treema-children > .treema-add-child')
@@ -449,7 +460,21 @@ class ObjectTreemaNode extends TreemaNode
   collection: true
   keyed: true
 
-  getChildren: -> ([key, value, @getChildSchema(key)] for key, value of @data)
+  getChildren: ->
+    # order based on properties object first
+    children = []
+    keysAccountedFor = []
+    if @schema.properties
+      for key of @schema.properties
+        continue if typeof @data[key] is 'undefined'
+        keysAccountedFor.push(key)
+        children.push([key, @data[key], @getChildSchema(key)])
+        
+    for key, value of data
+      continue if key in keysAccountedFor
+      children.push([key, value, @getChildSchema(key)])
+    children
+      
   getChildSchema: (key_or_title) ->
     for key, child_schema of @schema.properties
       return child_schema if key is key_or_title or child_schema.title is key_or_title
