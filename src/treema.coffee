@@ -161,7 +161,8 @@ class TreemaNode
     lastChild = prevSibling?.$el.find('.treema-node:last').data('instance')
     return lastChild or prevSibling or @parent
 
-  onEscapePressed: (e) -> 
+  onEscapePressed: (e) ->
+    return @remove() if @justAdded
     $(e.target).data('escaped', true).blur()
     @$el.addClass('treema-selected')
     @$el.closest('.treema-root').focus()
