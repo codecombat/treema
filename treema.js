@@ -400,7 +400,8 @@ TreemaNode = (function() {
     }
     if (valEl.hasClass('treema-edit')) {
       valEl.empty();
-      return this.setValueForEditing(valEl);
+      this.setValueForEditing(valEl);
+      return this.deselectAll();
     }
   };
 
@@ -581,15 +582,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.toggleSelect = function() {
-    var treema, _i, _len, _ref;
-    _ref = this.getSelectedTreemas();
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      treema = _ref[_i];
-      if (treema === this) {
-        continue;
-      }
-      treema.$el.removeClass('treema-selected');
-    }
+    this.deselectAll(true);
     return this.$el.toggleClass('treema-selected');
   };
 
@@ -600,6 +593,23 @@ TreemaNode = (function() {
     treema.parent = this;
     this.childrenTreemas[key] = treema;
     return treema;
+  };
+
+  TreemaNode.prototype.deselectAll = function(excludeSelf) {
+    var treema, _i, _len, _ref, _results;
+    if (excludeSelf == null) {
+      excludeSelf = false;
+    }
+    _ref = this.getSelectedTreemas();
+    _results = [];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      treema = _ref[_i];
+      if (excludeSelf && treema === this) {
+        continue;
+      }
+      _results.push(treema.$el.removeClass('treema-selected'));
+    }
+    return _results;
   };
 
   TreemaNode.prototype.createChildNode = function(treema) {

@@ -8,7 +8,7 @@
   padding: 3px 0;
   clear: both;
   border-bottom: 1px solid #cccccc;
-  font-size: 12px; }
+  font-size: 13px; }
 @media -sass-debug-info{filename{}line{font-family:\0000317}}
   .treema-node.treema-open > .treema-value {
     display: none; }
@@ -24,7 +24,7 @@
 @media -sass-debug-info{filename{}line{font-family:\0000330}}
   .treema-node input {
     position: absolute;
-    font-size: 12px;
+    font-size: 13px;
     top: 0;
     width: 200px;
     font-family: Helvetica; }

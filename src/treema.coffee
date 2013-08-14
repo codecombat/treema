@@ -218,6 +218,7 @@ class TreemaNode
     if valEl.hasClass('treema-edit')
       valEl.empty()
       @setValueForEditing(valEl)
+      @deselectAll()
 
   propagateData: ->
     return unless @parent
@@ -330,9 +331,7 @@ class TreemaNode
     # For now, we'll let selections be independent, so that when we go to delete,
     # we'll be able to drag/delete multiple. Later we should rely on shift for that,
     # defaulting to either one or zero selections at a time with normal clicks.
-    for treema in @getSelectedTreemas()
-      continue if treema is @
-      treema.$el.removeClass('treema-selected') 
+    @deselectAll(true)
     @$el.toggleClass('treema-selected')
 
   # Child node utilities ------------------------------------------------------
@@ -342,6 +341,11 @@ class TreemaNode
     treema.parent = @
     @childrenTreemas[key] = treema
     treema
+    
+  deselectAll: (excludeSelf=false) ->
+    for treema in @getSelectedTreemas()
+      continue if excludeSelf and treema is @
+      treema.$el.removeClass('treema-selected')
 
   createChildNode: (treema) ->
     childNode = treema.build()
