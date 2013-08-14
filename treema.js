@@ -356,8 +356,12 @@ TreemaNode = (function() {
         this.tabToNextTreema(childIndex, direction);
       }
     } else if ((_ref = this.parent) != null ? _ref.collection : void 0) {
-      childIndex = this.parent.getTabbableChildrenTreemas().indexOf(this);
-      this.parent.tabToNextTreema(childIndex, direction);
+      if (!this.endExistingEdits()) {
+        target.focus();
+      } else {
+        childIndex = this.parent.getTabbableChildrenTreemas().indexOf(this);
+        this.parent.tabToNextTreema(childIndex, direction);
+      }
     }
     return e.preventDefault();
   };
@@ -507,6 +511,7 @@ TreemaNode = (function() {
       childNode = this.createChildNode(newTreema);
       this.getMyAddButton().before(childNode);
       newTreema.toggleEdit('treema-edit');
+      newTreema.removeErrors();
     }
     if (this.keyed) {
       properties = this.childPropertiesAvailable();
@@ -712,7 +717,8 @@ TreemaNode = (function() {
     treema.keyForParent = key;
     treema.parent = this;
     this.childrenTreemas[key] = treema;
-    this.data[key] = value;
+    treema.populateData();
+    this.data[key] = treema.data;
     return treema;
   };
 
@@ -1094,7 +1100,6 @@ ObjectTreemaNode = (function(_super) {
 
   ObjectTreemaNode.prototype.canAddProperty = function(key) {
     var pattern;
-    console.log('checking key', key);
     if (this.schema.additionalProperties !== false) {
       return true;
     }

@@ -181,8 +181,11 @@ class TreemaNode
       else if @getTabbableChildrenTreemas().length is childIndex
         @tabToNextTreema childIndex, direction  # We didn't create one, so let's tab past
     else if @parent?.collection
-      childIndex = @parent.getTabbableChildrenTreemas().indexOf @
-      @parent.tabToNextTreema childIndex, direction
+      if not @endExistingEdits()
+        target.focus()
+      else
+        childIndex = @parent.getTabbableChildrenTreemas().indexOf @
+        @parent.tabToNextTreema childIndex, direction
 
     # TODO: Handle switching between inputs within a single node, like for x, y points
 
@@ -286,6 +289,7 @@ class TreemaNode
       childNode = @createChildNode(newTreema)
       @getMyAddButton().before(childNode)
       newTreema.toggleEdit('treema-edit')
+      newTreema.removeErrors()
 
     if @keyed # object
       properties = @childPropertiesAvailable()
@@ -417,7 +421,8 @@ class TreemaNode
     treema.keyForParent = key
     treema.parent = @
     @childrenTreemas[key] = treema
-    @data[key] = value
+    treema.populateData()
+    @data[key] = treema.data
     treema
     
   deselectAll: (excludeSelf=false) ->
