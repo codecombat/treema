@@ -448,7 +448,6 @@ TreemaNode = (function() {
     editing = this.$el.closest('.treema-root').find('.treema-edit').closest('.treema-node');
     for (_i = 0, _len = editing.length; _i < _len; _i++) {
       elem = editing[_i];
-      console.log('close edits', elem);
       if (!$(elem).data('instance').toggleEdit('treema-read')) {
         return false;
       }
@@ -964,9 +963,13 @@ ArrayTreemaNode = (function(_super) {
   };
 
   ArrayTreemaNode.prototype.canAddChild = function() {
+    if (this.schema.additionalItems === false && this.data.length >= this.schema.items.length) {
+      return false;
+    }
     if ((this.schema.maxItems != null) && this.data.length >= this.schema.maxItems) {
       return false;
     }
+    return true;
   };
 
   return ArrayTreemaNode;
@@ -1055,7 +1058,6 @@ ObjectTreemaNode = (function(_super) {
   };
 
   ObjectTreemaNode.prototype.canAddChild = function() {
-    console.log('can add?', Object.keys(this.data));
     if ((this.schema.maxProperties != null) && Object.keys(this.data).length >= this.schema.maxProperties) {
       return false;
     }

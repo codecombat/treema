@@ -247,7 +247,6 @@ class TreemaNode
   endExistingEdits: ->
     editing = @$el.closest('.treema-root').find('.treema-edit').closest('.treema-node')
     for elem in editing
-      console.log('close edits', elem)
       return false unless $(elem).data('instance').toggleEdit('treema-read')
     return true
       
@@ -514,7 +513,9 @@ class ArrayTreemaNode extends TreemaNode
   setValueForEditing: (valEl) -> @setValueForEditingSimply(valEl, JSON.stringify(@data))
 
   canAddChild: ->
+    return false if @schema.additionalItems is false and @data.length >= @schema.items.length
     return false if @schema.maxItems? and @data.length >= @schema.maxItems
+    return true
 
 class ObjectTreemaNode extends TreemaNode
   getDefaultValue: -> {}
@@ -556,7 +557,6 @@ class ObjectTreemaNode extends TreemaNode
       @data[key] = helperTreema.data
 
   canAddChild: ->
-    console.log('can add?', Object.keys(@data))
     return false if @schema.maxProperties? and Object.keys(@data).length >= @schema.maxProperties
     return true if @schema.additionalProperties is false
     return true if @schema.patternProperties?
