@@ -350,7 +350,7 @@ class TreemaNode
     delete @parent.data[@keyForParent]
     @parent.sortFromUI() if @parent.ordered
     @parent.refreshErrors()
-    @updateMyAddButton()
+    @parent.updateMyAddButton()
 
   # Opening/closing collections -----------------------------------------------
   toggleOpen: ->
@@ -556,6 +556,7 @@ class ObjectTreemaNode extends TreemaNode
       @data[key] = helperTreema.data
 
   canAddChild: ->
+    console.log('can add?', Object.keys(@data))
     return false if @schema.maxProperties? and Object.keys(@data).length >= @schema.maxProperties
     return true if @schema.additionalProperties is false
     return true if @schema.patternProperties?

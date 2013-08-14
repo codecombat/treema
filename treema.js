@@ -610,7 +610,7 @@ TreemaNode = (function() {
       this.parent.sortFromUI();
     }
     this.parent.refreshErrors();
-    return this.updateMyAddButton();
+    return this.parent.updateMyAddButton();
   };
 
   TreemaNode.prototype.toggleOpen = function() {
@@ -1055,11 +1055,10 @@ ObjectTreemaNode = (function(_super) {
   };
 
   ObjectTreemaNode.prototype.canAddChild = function() {
-    console.log('check if can add child', this.schema.maxProperties, Object.keys(this.data));
+    console.log('can add?', Object.keys(this.data));
     if ((this.schema.maxProperties != null) && Object.keys(this.data).length >= this.schema.maxProperties) {
       return false;
     }
-    console.log('continue');
     if (this.schema.additionalProperties === false) {
       return true;
     }
@@ -1069,7 +1068,6 @@ ObjectTreemaNode = (function(_super) {
     if (this.childPropertiesAvailable().length) {
       return true;
     }
-    console.log('what?');
     return false;
   };
 
