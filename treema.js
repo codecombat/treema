@@ -16,6 +16,8 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.nodeTemplate = '<div class="treema-node treema-clearfix"><div class="treema-value"></div></div>';
 
+  TreemaNode.prototype.backdropTemplate = '<div class="treema-backdrop"></div>';
+
   TreemaNode.prototype.childrenTemplate = '<div class="treema-children"></div>';
 
   TreemaNode.prototype.addChildTemplate = '<div class="treema-add-child">+</div>';
@@ -158,6 +160,7 @@ TreemaNode = (function() {
     if (this.collection) {
       this.updateMyAddButton();
     }
+    this.$el.prepend($(this.backdropTemplate));
     return this.$el;
   };
 
@@ -205,9 +208,10 @@ TreemaNode = (function() {
     if ($(e.target).closest('.treema-add-child').length && this.collection) {
       return this.addNewChild();
     }
-    if (clickedKey) {
+    if (!this.$el.hasClass('treema-root')) {
       return this.toggleSelect();
     }
+    return this.addNewChild();
   };
 
   TreemaNode.prototype.onDoubleClick = function(e) {
@@ -339,7 +343,9 @@ TreemaNode = (function() {
       return this.remove();
     }
     $(e.target).data('escaped', true).blur();
-    this.$el.addClass('treema-selected');
+    if (!this.$el.hasClass('treema-root')) {
+      this.$el.addClass('treema-selected');
+    }
     return this.$el.closest('.treema-root').focus();
   };
 
@@ -733,7 +739,9 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.toggleSelect = function() {
     this.deselectAll(true);
-    return this.$el.toggleClass('treema-selected');
+    if (!this.$el.hasClass('treema-root')) {
+      return this.$el.toggleClass('treema-selected');
+    }
   };
 
   TreemaNode.prototype.addChildTreema = function(key, value, schema) {

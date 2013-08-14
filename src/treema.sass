@@ -1,6 +1,8 @@
 // Base styles
 
 $fontSize: 13px
+$rowVerticalPadding: 3px
+$rowInternalVerticalPadding: 2px
 
 .treema-node
   user-select: none
@@ -8,10 +10,11 @@ $fontSize: 13px
   -moz-user-select: none
   position: relative
   font-family: Helvetica
-  padding: 3px 0
+  padding: $rowVerticalPadding 0
   clear: both
   border-bottom: 1px solid #ccc
   font-size: $fontSize
+  cursor: pointer
   
   // hide collection short strings when open
   &.treema-open > .treema-value
@@ -19,12 +22,6 @@ $fontSize: 13px
     
   &.treema-open > .treema-children
     padding-top: 1px
-
-  &.treema-selected > .treema-key
-    background-color: rgba(64, 128, 255, 0.25)
-    border: 1px solid rgba(64, 128, 255, 0.55)
-    box-sizing: border-box
-    margin: -1px
 
   &.treema-root
     // remove this to debug keyboard focus
@@ -60,7 +57,7 @@ $fontSize: 13px
  
 .treema-value
   cursor: pointer
-  padding: 2px 0 2px 2px
+  padding: $rowInternalVerticalPadding 0 $rowInternalVerticalPadding 2px
   display: inline-block
   
   pre
@@ -70,8 +67,25 @@ $fontSize: 13px
 .treema-key
   color: #1c0099
   float: left
-  padding: 2px
+  padding: $rowInternalVerticalPadding
   cursor: pointer
+  
+.treema-backdrop
+  position: absolute
+  top: 0
+  left: 0
+  height: $fontSize + (2 * $rowVerticalPadding) + (2 * $rowInternalVerticalPadding) + 2px
+  background-color: rgba(64, 128, 255, 0.0)
+  pointer-events: none
+  width: 100%
+  cursor: pointer
+  //visibility: hidden
+  
+.treema-selected > .treema-backdrop
+  //visibility: visible
+  background-color: rgba(64, 128, 255, 0.25)
+  
+// Errors
   
 .treema-error
   float: right
@@ -84,7 +98,7 @@ $fontSize: 13px
   
 .treema-new-prop-error
   background-color: #ffb6c1
-  padding: 2px 3px
+  padding: $rowInternalVerticalPadding 3px
   color: #8b0000
   margin: 0 5px
   border: 1px solid #8b0000

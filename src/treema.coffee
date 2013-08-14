@@ -8,7 +8,8 @@ class TreemaNode
   isChild: false
 
   # templates
-  nodeTemplate: '''<div class="treema-node treema-clearfix"><div class="treema-value"></div></div>'''
+  nodeTemplate: '<div class="treema-node treema-clearfix"><div class="treema-value"></div></div>'
+  backdropTemplate: '<div class="treema-backdrop"></div>'
   childrenTemplate: '<div class="treema-children"></div>'
   addChildTemplate: '<div class="treema-add-child">+</div>'
   newPropertyTemplate: '<input class="treema-new-prop" />'
@@ -78,6 +79,7 @@ class TreemaNode
     @open() if @collection and not @isChild
     @setUpEvents() unless @isChild
     @updateMyAddButton() if @collection
+    @$el.prepend($(@backdropTemplate))
     @$el
     
   populateData: ->
@@ -102,8 +104,9 @@ class TreemaNode
     return @toggleEdit() if clickedValue and not @collection
     return @toggleOpen() if clickedToggle or (clickedValue and @collection)
     return @addNewChild() if $(e.target).closest('.treema-add-child').length and @collection
-    return @toggleSelect() if clickedKey
-
+    return @toggleSelect() unless @$el.hasClass('treema-root')
+    @addNewChild()
+    
   onDoubleClick: (e) ->
     return unless @collection
     clickedKey = $(e.target).hasClass('treema-key')
@@ -164,7 +167,7 @@ class TreemaNode
   onEscapePressed: (e) ->
     return @remove() if @justAdded
     $(e.target).data('escaped', true).blur()
-    @$el.addClass('treema-selected')
+    @$el.addClass('treema-selected') unless @$el.hasClass('treema-root')
     @$el.closest('.treema-root').focus()
 
   onTabPressed: (e) ->
@@ -418,7 +421,7 @@ class TreemaNode
     # we'll be able to drag/delete multiple. Later we should rely on shift for that,
     # defaulting to either one or zero selections at a time with normal clicks.
     @deselectAll(true)
-    @$el.toggleClass('treema-selected')
+    @$el.toggleClass('treema-selected') unless @$el.hasClass('treema-root')
 
   # Child node utilities ------------------------------------------------------
   addChildTreema: (key, value, schema) ->
