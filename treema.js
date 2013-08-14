@@ -70,6 +70,10 @@ TreemaNode = (function() {
     return console.error('"getChildSchema" has not been overridden.');
   };
 
+  TreemaNode.prototype.getDefaultValue = function() {
+    return null;
+  };
+
   TreemaNode.prototype.setValueForReadingSimply = function(valEl, cssClass, text) {
     return valEl.append($("<pre class='" + cssClass + " treema-shortened'></pre>").text(text.slice(0, 200)));
   };
@@ -105,13 +109,16 @@ TreemaNode = (function() {
   function TreemaNode(schema, data, options, isChild) {
     this.schema = schema;
     this.data = data;
+    this.options = options;
     this.isChild = isChild;
     this.sortFromUI = __bind(this.sortFromUI, this);
-    this.options = options || {};
+    this.options = this.options || {};
+    this.schema = this.schema || {};
   }
 
   TreemaNode.prototype.build = function() {
     var valEl;
+    this.populateData();
     this.$el = $(this.nodeTemplate);
     valEl = $('.treema-value', this.$el);
     this.setValueForReading(valEl);
@@ -135,6 +142,10 @@ TreemaNode = (function() {
       this.setUpEvents();
     }
     return this.$el;
+  };
+
+  TreemaNode.prototype.populateData = function() {
+    return this.data = this.data || this.schema["default"] || this.getDefaultValue();
   };
 
   TreemaNode.prototype.setUpEvents = function() {
@@ -725,6 +736,10 @@ StringTreemaNode = (function(_super) {
     return _ref;
   }
 
+  StringTreemaNode.prototype.getDefaultValue = function() {
+    return '';
+  };
+
   StringTreemaNode.inputTypes = ['color', 'date', 'datetime', 'datetime-local', 'email', 'month', 'range', 'search', 'tel', 'text', 'time', 'url', 'week'];
 
   StringTreemaNode.prototype.setValueForReading = function(valEl) {
@@ -757,6 +772,10 @@ NumberTreemaNode = (function(_super) {
     _ref1 = NumberTreemaNode.__super__.constructor.apply(this, arguments);
     return _ref1;
   }
+
+  NumberTreemaNode.prototype.getDefaultValue = function() {
+    return 0;
+  };
 
   NumberTreemaNode.prototype.setValueForReading = function(valEl) {
     return this.setValueForReadingSimply(valEl, 'treema-number', JSON.stringify(this.data));
@@ -807,6 +826,10 @@ BooleanTreemaNode = (function(_super) {
     return _ref3;
   }
 
+  BooleanTreemaNode.prototype.getDefaultValue = function() {
+    return false;
+  };
+
   BooleanTreemaNode.prototype.skipTab = true;
 
   BooleanTreemaNode.prototype.setValueForReading = function(valEl) {
@@ -840,6 +863,10 @@ ArrayTreemaNode = (function(_super) {
     _ref4 = ArrayTreemaNode.__super__.constructor.apply(this, arguments);
     return _ref4;
   }
+
+  ArrayTreemaNode.prototype.getDefaultValue = function() {
+    return [];
+  };
 
   ArrayTreemaNode.prototype.collection = true;
 
@@ -879,6 +906,10 @@ ObjectTreemaNode = (function(_super) {
     _ref5 = ObjectTreemaNode.__super__.constructor.apply(this, arguments);
     return _ref5;
   }
+
+  ObjectTreemaNode.prototype.getDefaultValue = function() {
+    return {};
+  };
 
   ObjectTreemaNode.prototype.collection = true;
 
@@ -927,6 +958,27 @@ ObjectTreemaNode = (function(_super) {
     var size;
     size = Object.keys(this.data).length;
     return this.setValueForReadingSimply(valEl, 'treema-object', "[" + size + "]");
+  };
+
+  ObjectTreemaNode.prototype.populateData = function() {
+    var helperTreema, key, schema, _i, _len, _ref6, _results;
+    ObjectTreemaNode.__super__.populateData.call(this);
+    if (!this.schema.required) {
+      return;
+    }
+    _ref6 = this.schema.required;
+    _results = [];
+    for (_i = 0, _len = _ref6.length; _i < _len; _i++) {
+      key = _ref6[_i];
+      if (this.data[key]) {
+        continue;
+      }
+      schema = this.getChildSchema(key);
+      helperTreema = makeTreema(this.getChildSchema(key), null, {}, true);
+      helperTreema.populateData();
+      _results.push(this.data[key] = helperTreema.data);
+    }
+    return _results;
   };
 
   return ObjectTreemaNode;

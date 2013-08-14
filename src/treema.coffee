@@ -35,6 +35,7 @@ class TreemaNode
   saveChanges: (valEl) -> console.error('"saveChanges" has not been overridden.')
   getChildren: -> console.error('"getChildren" has not been overridden.') # should return a list of key-value-schema tuples
   getChildSchema: -> console.error('"getChildSchema" has not been overridden.')
+  getDefaultValue: -> null
 
   # Subclass helper functions -------------------------------------------------
   setValueForReadingSimply: (valEl, cssClass, text) ->
@@ -54,10 +55,12 @@ class TreemaNode
     input
 
   # Initialization ------------------------------------------------------------
-  constructor: (@schema, @data, options, @isChild) ->
-    @options = options or {}
+  constructor: (@schema, @data, @options, @isChild) ->
+    @options = @options or {}
+    @schema = @schema or {}
 
   build: ->
+    @populateData()
     @$el = $(@nodeTemplate)
     valEl = $('.treema-value', @$el)
     @setValueForReading(valEl)
@@ -69,6 +72,9 @@ class TreemaNode
     @open() if @collection and not @isChild
     @setUpEvents() unless @isChild
     @$el
+    
+  populateData: ->
+    @data = @data or @schema.default or @getDefaultValue()
 
   # Event handling ------------------------------------------------------------
   setUpEvents: ->
@@ -407,6 +413,7 @@ class TreemaNode
 # TreemaNode subclasses -------------------------------------------------------
 
 class StringTreemaNode extends TreemaNode
+  getDefaultValue: -> ''
   @inputTypes = ['color', 'date', 'datetime', 'datetime-local', 'email', 'month', 'range', 'search',
                  'tel', 'text', 'time', 'url', 'week']
   setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, 'treema-string', "\"#{@data}\"")
@@ -418,6 +425,7 @@ class StringTreemaNode extends TreemaNode
   saveChanges: (valEl) -> @data = $('input', valEl).val()
 
 class NumberTreemaNode extends TreemaNode
+  getDefaultValue: -> 0
   setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, 'treema-number', JSON.stringify(@data))
   setValueForEditing: (valEl) -> 
     input = @setValueForEditingSimply(valEl, JSON.stringify(@data), 'number')
@@ -431,6 +439,7 @@ class NullTreemaNode extends TreemaNode
   setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, 'treema-null', 'null')
 
 class BooleanTreemaNode extends TreemaNode
+  getDefaultValue: -> false
   skipTab: true
   setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, 'treema-boolean', JSON.stringify(@data))
   
@@ -448,6 +457,7 @@ class BooleanTreemaNode extends TreemaNode
     super(e)
 
 class ArrayTreemaNode extends TreemaNode
+  getDefaultValue: -> []
   collection: true
   ordered: true
 
@@ -457,6 +467,7 @@ class ArrayTreemaNode extends TreemaNode
   setValueForEditing: (valEl) -> @setValueForEditingSimply(valEl, JSON.stringify(@data))
 
 class ObjectTreemaNode extends TreemaNode
+  getDefaultValue: -> {}
   collection: true
   keyed: true
 
@@ -484,6 +495,16 @@ class ObjectTreemaNode extends TreemaNode
   setValueForReading: (valEl) ->
     size = Object.keys(@data).length
     @setValueForReadingSimply(valEl, 'treema-object', "[#{size}]")
+
+  populateData: ->
+    super()
+    return unless @schema.required
+    for key in @schema.required
+      continue if @data[key]
+      helperTreema = makeTreema(@getChildSchema(key), null, {}, true)
+      helperTreema.populateData()
+      @data[key] = helperTreema.data
+
 
 class AnyTreemaNode extends TreemaNode
   """
