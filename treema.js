@@ -367,11 +367,20 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.getTabbableChildrenTreemas = function() {
-    var child, key, _ref, _results;
-    _ref = this.childrenTreemas;
+    var child, children, elem, _i, _len, _results;
+    children = (function() {
+      var _i, _len, _ref, _results;
+      _ref = this.$el.find('> .treema-children > .treema-node');
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        elem = _ref[_i];
+        _results.push($(elem).data('instance'));
+      }
+      return _results;
+    }).call(this);
     _results = [];
-    for (key in _ref) {
-      child = _ref[key];
+    for (_i = 0, _len = children.length; _i < _len; _i++) {
+      child = children[_i];
       if (!(child.collection || child.skipTab)) {
         _results.push(child);
       }

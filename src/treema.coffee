@@ -191,9 +191,9 @@ class TreemaNode
 
     return e.preventDefault()
 
-
   getTabbableChildrenTreemas: ->
-    (child for key, child of @childrenTreemas when not (child.collection or child.skipTab))
+    children = ($(elem).data('instance') for elem in @$el.find('> .treema-children > .treema-node'))
+    (child for child in children when not (child.collection or child.skipTab))
 
   tabToNextTreema: (childIndex, direction) ->
     tabbableChildren = @getTabbableChildrenTreemas()
