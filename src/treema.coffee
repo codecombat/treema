@@ -38,7 +38,7 @@ class TreemaNode
 
   # Subclass helper functions -------------------------------------------------
   setValueForReadingSimply: (valEl, cssClass, text) ->
-    valEl.append($("<pre class='#{cssClass}'></pre>").text(text))
+    valEl.append($("<pre class='#{cssClass} treema-shortened'></pre>").text(text.slice(0,200)))
 
   setValueForEditingSimply: (valEl, value) ->
     input = $('<input />')
@@ -323,6 +323,7 @@ class TreemaNode
     @$el.addClass('treema-closed').removeClass('treema-open')
     @childrenTreemas = null
     @refreshErrors()
+    @setValueForReading($('.treema-value', @$el).empty())
 
   # Selecting/deselecting nodes -----------------------------------------------
   toggleSelect: ->
@@ -425,7 +426,7 @@ class ArrayTreemaNode extends TreemaNode
 
   getChildren: -> ([key, value, @getChildSchema()] for value, key in @data)
   getChildSchema: -> @schema.items or {}
-  setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, 'treema-array', "[#{@data.length}]")
+  setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, 'treema-array', JSON.stringify(@data))
   setValueForEditing: (valEl) -> @setValueForEditingSimply(valEl, JSON.stringify(@data))
 
 class ObjectTreemaNode extends TreemaNode

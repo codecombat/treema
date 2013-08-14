@@ -71,7 +71,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.setValueForReadingSimply = function(valEl, cssClass, text) {
-    return valEl.append($("<pre class='" + cssClass + "'></pre>").text(text));
+    return valEl.append($("<pre class='" + cssClass + " treema-shortened'></pre>").text(text.slice(0, 200)));
   };
 
   TreemaNode.prototype.setValueForEditingSimply = function(valEl, value) {
@@ -576,7 +576,8 @@ TreemaNode = (function() {
     this.$el.find('.treema-children').empty();
     this.$el.addClass('treema-closed').removeClass('treema-open');
     this.childrenTreemas = null;
-    return this.refreshErrors();
+    this.refreshErrors();
+    return this.setValueForReading($('.treema-value', this.$el).empty());
   };
 
   TreemaNode.prototype.toggleSelect = function() {
@@ -810,7 +811,7 @@ ArrayTreemaNode = (function(_super) {
   };
 
   ArrayTreemaNode.prototype.setValueForReading = function(valEl) {
-    return this.setValueForReadingSimply(valEl, 'treema-array', "[" + this.data.length + "]");
+    return this.setValueForReadingSimply(valEl, 'treema-array', JSON.stringify(this.data));
   };
 
   ArrayTreemaNode.prototype.setValueForEditing = function(valEl) {

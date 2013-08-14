@@ -1,5 +1,7 @@
 // Base styles
 
+$fontSize: 12px
+
 .treema-node
   user-select: none
   -webkit-user-select: none
@@ -9,6 +11,7 @@
   padding: 3px 0
   clear: both
   border-bottom: 1px solid #ccc
+  font-size: $fontSize
   
   // hide collection short strings when open
   &.treema-open > .treema-value
@@ -25,8 +28,9 @@
     outline: none
   
   input
-    line-height: 6px
-    height: 18px
+    position: absolute
+    font-size: $fontSize
+    top: 0
     width: 200px
     font-family: Helvetica
 
@@ -111,6 +115,11 @@
   
 .treema-object
   color: #990061
+  
+.treema-shortened
+  max-width: 300px
+  overflow: hidden
+  text-overflow: ellipsis
   
 // http://www.positioniseverything.net/easyclearing.html
 .treema-clearfix:after
