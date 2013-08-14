@@ -33,14 +33,14 @@
       "description": "An Address following the convention of http://microformats.org/wiki/hcard",
       "type": "object",
       "properties": {
-        "is-home-address": { type: 'boolean', title: "Is Home" },
         "post-office-box": { title: "PO Box" },
-        "extended-address": { title: "Address 2" },
         "street-address": { title: "Address 1", "type": "string", description: "Don't forget the number." },
+        "extended-address": { title: "Address 2" },
         "locality":{ "type": "string", title: "Locality" },
         "region": { 'title': 'Region', type: 'string' },
-        "postal-code": { "type": "number", title: "Zip Code" },
+        "postal-code": { "type": "number", title: "Zip Code", minimum:10000, maximum: 99999 },
         "country-name": { "type": "string", title: "Country"},
+        "is-home-address": { type: 'boolean', title: "Is Home" },
         "phone-numbers": { "type": "array", items: { type: "string", maxLength: 20 }, title: "Phone #s" }
       },
       "required": ['locality', 'region', 'country-name'],

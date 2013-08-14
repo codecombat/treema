@@ -40,8 +40,9 @@ class TreemaNode
   setValueForReadingSimply: (valEl, cssClass, text) ->
     valEl.append($("<pre class='#{cssClass} treema-shortened'></pre>").text(text.slice(0,200)))
 
-  setValueForEditingSimply: (valEl, value) ->
+  setValueForEditingSimply: (valEl, value, inputType=null) ->
     input = $('<input />')
+    input.attr('type', inputType) if inputType
     input.val(value) unless value is null
     valEl.append(input)
     input.focus().select().blur =>
@@ -50,6 +51,7 @@ class TreemaNode
       if e.which is 8 and not $(input).val()
         @remove()
         e.preventDefault()
+    input
 
   # Initialization ------------------------------------------------------------
   constructor: (@schema, @data, options, @isChild) ->
@@ -394,13 +396,23 @@ class TreemaNode
 # TreemaNode subclasses -------------------------------------------------------
 
 class StringTreemaNode extends TreemaNode
+  @inputTypes = ['color', 'date', 'datetime', 'datetime-local', 'email', 'month', 'range', 'search',
+                 'tel', 'text', 'time', 'url', 'week']
   setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, 'treema-string', "\"#{@data}\"")
-  setValueForEditing: (valEl) -> @setValueForEditingSimply(valEl, @data)
+  setValueForEditing: (valEl) ->
+    input = @setValueForEditingSimply(valEl, @data)
+    input.attr('maxlength', @schema.maxLength) if @schema.maxLength
+    input.attr('type', @schema.format) if @schema.format in StringTreemaNode.inputTypes
+    
   saveChanges: (valEl) -> @data = $('input', valEl).val()
 
 class NumberTreemaNode extends TreemaNode
   setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, 'treema-number', JSON.stringify(@data))
-  setValueForEditing: (valEl) -> @setValueForEditingSimply(valEl, JSON.stringify(@data))
+  setValueForEditing: (valEl) -> 
+    input = @setValueForEditingSimply(valEl, JSON.stringify(@data), 'number')
+    input.attr('max', @schema.maximum) if @schema.maximum
+    input.attr('min', @schema.minimum) if @schema.minimum
+    
   saveChanges: (valEl) -> @data = parseFloat($('input', valEl).val())
 
 class NullTreemaNode extends TreemaNode

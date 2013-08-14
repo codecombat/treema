@@ -74,10 +74,16 @@ TreemaNode = (function() {
     return valEl.append($("<pre class='" + cssClass + " treema-shortened'></pre>").text(text.slice(0, 200)));
   };
 
-  TreemaNode.prototype.setValueForEditingSimply = function(valEl, value) {
+  TreemaNode.prototype.setValueForEditingSimply = function(valEl, value, inputType) {
     var input,
       _this = this;
+    if (inputType == null) {
+      inputType = null;
+    }
     input = $('<input />');
+    if (inputType) {
+      input.attr('type', inputType);
+    }
     if (value !== null) {
       input.val(value);
     }
@@ -87,12 +93,13 @@ TreemaNode = (function() {
         return _this.toggleEdit('treema-read');
       }
     });
-    return input.keydown(function(e) {
+    input.keydown(function(e) {
       if (e.which === 8 && !$(input).val()) {
         _this.remove();
         return e.preventDefault();
       }
     });
+    return input;
   };
 
   function TreemaNode(schema, data, options, isChild) {
@@ -701,12 +708,21 @@ StringTreemaNode = (function(_super) {
     return _ref;
   }
 
+  StringTreemaNode.inputTypes = ['color', 'date', 'datetime', 'datetime-local', 'email', 'month', 'range', 'search', 'tel', 'text', 'time', 'url', 'week'];
+
   StringTreemaNode.prototype.setValueForReading = function(valEl) {
     return this.setValueForReadingSimply(valEl, 'treema-string', "\"" + this.data + "\"");
   };
 
   StringTreemaNode.prototype.setValueForEditing = function(valEl) {
-    return this.setValueForEditingSimply(valEl, this.data);
+    var input, _ref1;
+    input = this.setValueForEditingSimply(valEl, this.data);
+    if (this.schema.maxLength) {
+      input.attr('maxlength', this.schema.maxLength);
+    }
+    if (_ref1 = this.schema.format, __indexOf.call(StringTreemaNode.inputTypes, _ref1) >= 0) {
+      return input.attr('type', this.schema.format);
+    }
   };
 
   StringTreemaNode.prototype.saveChanges = function(valEl) {
@@ -730,7 +746,14 @@ NumberTreemaNode = (function(_super) {
   };
 
   NumberTreemaNode.prototype.setValueForEditing = function(valEl) {
-    return this.setValueForEditingSimply(valEl, JSON.stringify(this.data));
+    var input;
+    input = this.setValueForEditingSimply(valEl, JSON.stringify(this.data), 'number');
+    if (this.schema.maximum) {
+      input.attr('max', this.schema.maximum);
+    }
+    if (this.schema.minimum) {
+      return input.attr('min', this.schema.minimum);
+    }
   };
 
   NumberTreemaNode.prototype.saveChanges = function(valEl) {
