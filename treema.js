@@ -342,6 +342,7 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.onTabPressed = function(e) {
     var addingNewProperty, blurFailed, childIndex, direction, target, _ref;
+    console.log('on tab pressed... begin!');
     direction = e.shiftKey ? 'prev' : 'next';
     target = $(e.target);
     addingNewProperty = target.hasClass('treema-new-prop');
@@ -352,7 +353,8 @@ TreemaNode = (function() {
       blurFailed = this.$el.find('.treema-new-prop').length;
       if (blurFailed) {
         target.focus();
-      } else if (this.getTabbableChildrenTreemas().length === childIndex) {
+      }
+      if (!$(document.activeElement).closest('.treema-root').length) {
         this.tabToNextTreema(childIndex, direction);
       }
     } else if ((_ref = this.parent) != null ? _ref.collection : void 0) {
@@ -446,6 +448,9 @@ TreemaNode = (function() {
     if (valEl.hasClass('treema-read')) {
       if (wasEditing) {
         this.saveChanges(valEl);
+        if (this.justAdded) {
+          delete this.justAdded;
+        }
         this.propagateData();
         this.refreshErrors();
         if (this.getErrors().length) {
@@ -513,14 +518,21 @@ TreemaNode = (function() {
     if (!this.canAddChild()) {
       return;
     }
+    if (this.$el.hasClass('treema-closed')) {
+      this.open();
+    }
     if (this.ordered) {
+      console.log('@children treemas', this.childrenTreemas);
       new_index = Object.keys(this.childrenTreemas).length;
       schema = this.getChildSchema();
       newTreema = this.addChildTreema(new_index, void 0, schema);
+      newTreema.justAdded = true;
+      console.log('adding just added');
       childNode = this.createChildNode(newTreema);
       this.getMyAddButton().before(childNode);
       newTreema.toggleEdit('treema-edit');
       newTreema.removeErrors();
+      console.log('removed errors');
     }
     if (this.keyed) {
       properties = this.childPropertiesAvailable();
@@ -566,9 +578,14 @@ TreemaNode = (function() {
         }
         schema = _this.getChildSchema(key);
         newTreema = _this.addChildTreema(key, null, schema);
+        newTreema.justAdded = true;
         childNode = _this.createChildNode(newTreema);
         _this.findObjectInsertionPoint(key).before(childNode);
-        newTreema.toggleEdit('treema-edit');
+        if (newTreema.collection) {
+          newTreema.addNewChild();
+        } else {
+          newTreema.toggleEdit('treema-edit');
+        }
         return _this.updateMyAddButton();
       });
     }
@@ -773,6 +790,10 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.showErrors = function() {
     var deepestTreema, e, error, erroredTreemas, errors, messages, path, subpath, treema, _i, _j, _k, _len, _len1, _len2, _ref, _results;
+    console.log('show errors apparently', this.justAdded);
+    if (this.justAdded) {
+      return;
+    }
     errors = this.getErrors();
     erroredTreemas = [];
     for (_i = 0, _len = errors.length; _i < _len; _i++) {

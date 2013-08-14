@@ -176,10 +176,9 @@ class TreemaNode
       childIndex = @getTabbableChildrenTreemas().length  # One past the end, since we're adding
       target.blur()
       blurFailed = @$el.find('.treema-new-prop').length
-      if blurFailed
-        target.focus()
-      else if @getTabbableChildrenTreemas().length is childIndex
-        @tabToNextTreema childIndex, direction  # We didn't create one, so let's tab past
+      target.focus() if blurFailed
+      @tabToNextTreema childIndex, direction unless $(document.activeElement).closest('.treema-root').length
+
     else if @parent?.collection
       if not @endExistingEdits()
         target.focus()
@@ -234,6 +233,7 @@ class TreemaNode
     if valEl.hasClass('treema-read')
       if wasEditing
         @saveChanges(valEl)
+        delete @justAdded if @justAdded
         @propagateData()
         @refreshErrors()
         if @getErrors().length
@@ -282,10 +282,13 @@ class TreemaNode
   addNewChild: ->
     return unless @canAddChild()
     
+    @open() if @$el.hasClass('treema-closed')
+    
     if @ordered # array
       new_index = Object.keys(@childrenTreemas).length
       schema = @getChildSchema()
       newTreema = @addChildTreema(new_index, undefined, schema)
+      newTreema.justAdded = true
       childNode = @createChildNode(newTreema)
       @getMyAddButton().before(childNode)
       newTreema.toggleEdit('treema-edit')
@@ -322,9 +325,10 @@ class TreemaNode
 
         schema = @getChildSchema(key)
         newTreema = @addChildTreema(key, null, schema)
+        newTreema.justAdded = true
         childNode = @createChildNode(newTreema)
         @findObjectInsertionPoint(key).before(childNode)
-        newTreema.toggleEdit('treema-edit')
+        if newTreema.collection then newTreema.addNewChild() else newTreema.toggleEdit('treema-edit') 
         @updateMyAddButton()
 
   findObjectInsertionPoint: (key) ->
@@ -447,6 +451,7 @@ class TreemaNode
     @showErrors()
 
   showErrors: ->
+    return if @justAdded
     errors = @getErrors()
     erroredTreemas = []
     for error in errors
