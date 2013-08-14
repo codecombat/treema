@@ -33,9 +33,12 @@ class TreemaNode
   setValueForReading: (valEl) -> console.error('"setValueForReading" has not been overridden.')
   setValueForEditing: (valEl) -> console.error('"setValueForEditing" has not been overridden.')
   saveChanges: (valEl) -> console.error('"saveChanges" has not been overridden.')
+  getDefaultValue: -> null
+  
+  # collection specific
   getChildren: -> console.error('"getChildren" has not been overridden.') # should return a list of key-value-schema tuples
   getChildSchema: -> console.error('"getChildSchema" has not been overridden.')
-  getDefaultValue: -> null
+  canAddChild: -> true
 
   # Subclass helper functions -------------------------------------------------
   setValueForReadingSimply: (valEl, cssClass, text) ->
@@ -72,6 +75,7 @@ class TreemaNode
     @$el.append($(@childrenTemplate)).addClass('treema-closed') if @collection
     @open() if @collection and not @isChild
     @setUpEvents() unless @isChild
+    @updateMyAddButton() if @collection
     @$el
     
   populateData: ->
@@ -269,6 +273,8 @@ class TreemaNode
   
   # Adding elemements to collections ------------------------------------------
   addNewChild: ->
+    return unless @canAddChild()
+    
     if @ordered # array
       new_index = Object.keys(@childrenTreemas).length
       schema = @getChildSchema()
@@ -304,6 +310,7 @@ class TreemaNode
         childNode = @createChildNode(newTreema)
         @findObjectInsertionPoint(key).before(childNode)
         newTreema.toggleEdit('treema-edit')
+        @updateMyAddButton()
 
   findObjectInsertionPoint: (key) ->
     # Object children should be in the order of the schema.properties objects as much as possible
@@ -318,6 +325,10 @@ class TreemaNode
 
   getMyAddButton: ->
     @$el.find('> .treema-children > .treema-add-child')
+    
+  updateMyAddButton: ->
+    @$el.removeClass('treema-full')
+    @$el.addClass('treema-full') unless @canAddChild()
 
   childPropertiesAvailable: ->
     return [] unless @schema.properties
@@ -339,6 +350,7 @@ class TreemaNode
     delete @parent.data[@keyForParent]
     @parent.sortFromUI() if @parent.ordered
     @parent.refreshErrors()
+    @updateMyAddButton()
 
   # Opening/closing collections -----------------------------------------------
   toggleOpen: ->
@@ -393,6 +405,7 @@ class TreemaNode
     treema.keyForParent = key
     treema.parent = @
     @childrenTreemas[key] = treema
+    @data[key] = value
     treema
     
   deselectAll: (excludeSelf=false) ->
@@ -500,6 +513,9 @@ class ArrayTreemaNode extends TreemaNode
   setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, 'treema-array', JSON.stringify(@data))
   setValueForEditing: (valEl) -> @setValueForEditingSimply(valEl, JSON.stringify(@data))
 
+  canAddChild: ->
+    return false if @schema.maxItems? and @data.length >= @schema.maxItems
+
 class ObjectTreemaNode extends TreemaNode
   getDefaultValue: -> {}
   collection: true
@@ -539,6 +555,13 @@ class ObjectTreemaNode extends TreemaNode
       helperTreema.populateData()
       @data[key] = helperTreema.data
 
+  canAddChild: ->
+    return false if @schema.maxProperties? and Object.keys(@data).length >= @schema.maxProperties
+    return true if @schema.additionalProperties is false
+    return true if @schema.patternProperties?
+    return true if @childPropertiesAvailable().length
+    return false
+    
 
 class AnyTreemaNode extends TreemaNode
   """

@@ -43,6 +43,7 @@
         "is-home-address": { type: 'boolean', title: "Is Home" },
         "phone-numbers": { "type": "array", items: { type: "string", maxLength: 20 }, title: "Phone #s" }
       },
+      "maxProperties": 4,
       "required": ['locality', 'region', 'country-name'],
       "dependencies": {
         "post-office-box": "street-address",
