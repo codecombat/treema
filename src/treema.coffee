@@ -12,6 +12,7 @@ class TreemaNode
   childrenTemplate: '<div class="treema-children"></div>'
   addChildTemplate: '<div class="treema-add-child">+</div>'
   newPropertyTemplate: '<input class="treema-new-prop" />'
+  newPropertyErrorTemplate: '<span class="treema-new-prop-error"></span>'
   toggleTemplate: '<span class="treema-toggle"></span>'
   keyTemplate: '<span class="treema-key"></span>'
   templateString: '<div class="treema-error"></div>'
@@ -39,6 +40,7 @@ class TreemaNode
   getChildren: -> console.error('"getChildren" has not been overridden.') # should return a list of key-value-schema tuples
   getChildSchema: -> console.error('"getChildSchema" has not been overridden.')
   canAddChild: -> true
+  canAddProperty: -> true
 
   # Subclass helper functions -------------------------------------------------
   setValueForReadingSimply: (valEl, cssClass, text) ->
@@ -173,7 +175,10 @@ class TreemaNode
       e.preventDefault()
       childIndex = @getTabbableChildrenTreemas().length  # One past the end, since we're adding
       target.blur()
-      if @getTabbableChildrenTreemas().length is childIndex
+      blurFailed = @$el.find('.treema-new-prop').length
+      if blurFailed
+        target.focus()
+      else if @getTabbableChildrenTreemas().length is childIndex
         @tabToNextTreema childIndex, direction  # We didn't create one, so let's tab past
     else if @parent?.collection
       childIndex = @parent.getTabbableChildrenTreemas().indexOf @
@@ -295,12 +300,19 @@ class TreemaNode
           e.preventDefault()
 
       keyInput.blur (e) =>
+        @$el.find('.treema-new-prop-error').remove()
         key = keyInput.val()
-        escaped = keyInput.data('escaped')
-        keyInput.remove()
         if @schema.properties
           for child_key, child_schema of @schema.properties
             key = child_key if child_schema.title is key
+
+        if key.length and not @canAddProperty(key)
+          keyInput.focus()
+          $(@newPropertyErrorTemplate).text('Invalid property name.').insertAfter(keyInput)
+          return
+
+        escaped = keyInput.data('escaped')
+        keyInput.remove()
         return if escaped
         return unless key.length and not @childrenTreemas[key]
 
@@ -343,6 +355,7 @@ class TreemaNode
       $(elem).data('instance')?.remove()
 
   remove: ->
+    return if @parent and @parent.schema.required? and @keyForParent in @parent.schema.required 
     @$el.remove()
     return unless @parent?
     delete @parent.childrenTreemas[@keyForParent]
@@ -561,6 +574,13 @@ class ObjectTreemaNode extends TreemaNode
     return true if @schema.additionalProperties is false
     return true if @schema.patternProperties?
     return true if @childPropertiesAvailable().length
+    return false
+
+  canAddProperty: (key) ->
+    return true unless @schema.additionalProperties is false
+    return true if @schema.properties[key]?
+    if @schema.patternProperties?
+      return true if RegExp(pattern).test(key) for pattern of @schema.patternProperties
     return false
     
 

@@ -22,6 +22,8 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.newPropertyTemplate = '<input class="treema-new-prop" />';
 
+  TreemaNode.prototype.newPropertyErrorTemplate = '<span class="treema-new-prop-error"></span>';
+
   TreemaNode.prototype.toggleTemplate = '<span class="treema-toggle"></span>';
 
   TreemaNode.prototype.keyTemplate = '<span class="treema-key"></span>';
@@ -75,6 +77,10 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.canAddChild = function() {
+    return true;
+  };
+
+  TreemaNode.prototype.canAddProperty = function() {
     return true;
   };
 
@@ -335,7 +341,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.onTabPressed = function(e) {
-    var addingNewProperty, childIndex, direction, target, _ref;
+    var addingNewProperty, blurFailed, childIndex, direction, target, _ref;
     direction = e.shiftKey ? 'prev' : 'next';
     target = $(e.target);
     addingNewProperty = target.hasClass('treema-new-prop');
@@ -343,7 +349,10 @@ TreemaNode = (function() {
       e.preventDefault();
       childIndex = this.getTabbableChildrenTreemas().length;
       target.blur();
-      if (this.getTabbableChildrenTreemas().length === childIndex) {
+      blurFailed = this.$el.find('.treema-new-prop').length;
+      if (blurFailed) {
+        target.focus();
+      } else if (this.getTabbableChildrenTreemas().length === childIndex) {
         this.tabToNextTreema(childIndex, direction);
       }
     } else if ((_ref = this.parent) != null ? _ref.collection : void 0) {
@@ -517,9 +526,8 @@ TreemaNode = (function() {
       });
       return keyInput.blur(function(e) {
         var child_key, child_schema, escaped, key, _ref;
+        _this.$el.find('.treema-new-prop-error').remove();
         key = keyInput.val();
-        escaped = keyInput.data('escaped');
-        keyInput.remove();
         if (_this.schema.properties) {
           _ref = _this.schema.properties;
           for (child_key in _ref) {
@@ -529,6 +537,13 @@ TreemaNode = (function() {
             }
           }
         }
+        if (key.length && !_this.canAddProperty(key)) {
+          keyInput.focus();
+          $(_this.newPropertyErrorTemplate).text('Invalid property name.').insertAfter(keyInput);
+          return;
+        }
+        escaped = keyInput.data('escaped');
+        keyInput.remove();
         if (escaped) {
           return;
         }
@@ -599,6 +614,10 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.remove = function() {
+    var _ref;
+    if (this.parent && (this.parent.schema.required != null) && (_ref = this.keyForParent, __indexOf.call(this.parent.schema.required, _ref) >= 0)) {
+      return;
+    }
     this.$el.remove();
     if (this.parent == null) {
       return;
@@ -1069,6 +1088,30 @@ ObjectTreemaNode = (function(_super) {
     }
     if (this.childPropertiesAvailable().length) {
       return true;
+    }
+    return false;
+  };
+
+  ObjectTreemaNode.prototype.canAddProperty = function(key) {
+    var pattern;
+    console.log('checking key', key);
+    if (this.schema.additionalProperties !== false) {
+      return true;
+    }
+    if (this.schema.properties[key] != null) {
+      return true;
+    }
+    if (this.schema.patternProperties != null) {
+      if ((function() {
+        var _results;
+        _results = [];
+        for (pattern in this.schema.patternProperties) {
+          _results.push(RegExp(pattern).test(key));
+        }
+        return _results;
+      }).call(this)) {
+        return true;
+      }
     }
     return false;
   };
