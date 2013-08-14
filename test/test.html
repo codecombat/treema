@@ -36,7 +36,7 @@
         "post-office-box": { title: "PO Box" },
         "street-address": { title: "Address 1", "type": "string", description: "Don't forget the number." },
         "extended-address": { title: "Address 2" },
-        "locality":{ "type": "string", title: "Locality", 'default': 'Berkeley' },
+        "locality":{ "type": "string", title: "Locality", 'default': 'Berkeley', minLength:2 },
         "region": { 'title': 'Region', type: 'string', 'default': 'California' },
         "postal-code": { "type": "number", title: "Zip Code", minimum:10000, maximum: 99999 },
         "country-name": { "type": "string", title: "Country", 'default': 'USA' },

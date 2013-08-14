@@ -93,8 +93,12 @@ TreemaNode = (function() {
     }
     valEl.append(input);
     input.focus().select().blur(function() {
+      var success;
       if ($('.treema-value', _this.$el).hasClass('treema-edit')) {
-        return _this.toggleEdit('treema-read');
+        success = _this.toggleEdit('treema-read');
+      }
+      if (!success) {
+        return input.focus().select();
       }
     });
     input.keydown(function(e) {
@@ -400,17 +404,25 @@ TreemaNode = (function() {
   TreemaNode.prototype.toggleEdit = function(toClass) {
     var valEl, wasEditing;
     if (!this.editable) {
-      return;
+      return false;
     }
     valEl = $('.treema-value', this.$el);
     wasEditing = valEl.hasClass('treema-edit');
+    if (!(wasEditing || (toClass === 'treema-read' && !wasEditing) || this.endExistingEdits())) {
+      return false;
+    }
     if (!(toClass && valEl.hasClass(toClass))) {
       valEl.toggleClass('treema-read treema-edit');
     }
     if (valEl.hasClass('treema-read')) {
       if (wasEditing) {
         this.saveChanges(valEl);
+        this.propagateData();
         this.refreshErrors();
+        if (this.getErrors().length) {
+          valEl.toggleClass('treema-read treema-edit');
+          return false;
+        }
       }
       this.propagateData();
       valEl.empty();
@@ -419,8 +431,22 @@ TreemaNode = (function() {
     if (valEl.hasClass('treema-edit')) {
       valEl.empty();
       this.setValueForEditing(valEl);
-      return this.deselectAll();
+      this.deselectAll();
     }
+    return true;
+  };
+
+  TreemaNode.prototype.endExistingEdits = function() {
+    var editing, elem, _i, _len;
+    editing = this.$el.closest('.treema-root').find('.treema-edit').closest('.treema-node');
+    for (_i = 0, _len = editing.length; _i < _len; _i++) {
+      elem = editing[_i];
+      console.log('close edits', elem);
+      if (!$(elem).data('instance').toggleEdit('treema-read')) {
+        return false;
+      }
+    }
+    return true;
   };
 
   TreemaNode.prototype.propagateData = function() {
@@ -429,6 +455,28 @@ TreemaNode = (function() {
     }
     this.parent.data[this.keyForParent] = this.data;
     return this.parent.refreshErrors();
+  };
+
+  TreemaNode.prototype.saveSnapshot = function() {
+    var wrappedData;
+    wrappedData = {
+      'wrap': this.data
+    };
+    this.snapData = $.extend(true, {}, wrappedData)['wrap'];
+    return this.snapErrors = this.getErrors();
+  };
+
+  TreemaNode.prototype.getErrorsSinceLastSnapshot = function() {
+    if (this.snapErrors.length > 0) {
+      return [];
+    }
+    return this.snapErrors = this.getErrors();
+  };
+
+  TreemaNode.prototype.revertSnapshot = function() {
+    this.data = this.snapData;
+    delete this.snapData;
+    return delete this.snapErrors;
   };
 
   TreemaNode.prototype.addNewChild = function() {
@@ -961,7 +1009,7 @@ ObjectTreemaNode = (function(_super) {
   };
 
   ObjectTreemaNode.prototype.populateData = function() {
-    var helperTreema, key, schema, _i, _len, _ref6, _results;
+    var helperTreema, key, _i, _len, _ref6, _results;
     ObjectTreemaNode.__super__.populateData.call(this);
     if (!this.schema.required) {
       return;
@@ -973,7 +1021,6 @@ ObjectTreemaNode = (function(_super) {
       if (this.data[key]) {
         continue;
       }
-      schema = this.getChildSchema(key);
       helperTreema = makeTreema(this.getChildSchema(key), null, {}, true);
       helperTreema.populateData();
       _results.push(this.data[key] = helperTreema.data);

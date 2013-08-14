@@ -47,7 +47,8 @@ class TreemaNode
     input.val(value) unless value is null
     valEl.append(input)
     input.focus().select().blur =>
-      @.toggleEdit('treema-read') if $('.treema-value', @$el).hasClass('treema-edit')
+      success = @toggleEdit('treema-read') if $('.treema-value', @$el).hasClass('treema-edit')
+      input.focus().select() unless success
     input.keydown (e) =>
       if e.which is 8 and not $(input).val()
         @remove()
@@ -209,15 +210,24 @@ class TreemaNode
 
   # Editing values ------------------------------------------------------------
   toggleEdit: (toClass) ->
-    return unless @editable
+    return false unless @editable
     valEl = $('.treema-value', @$el)
     wasEditing = valEl.hasClass('treema-edit')
+    
+    # if we're going from reading to editing, try to end other edits first
+    return false unless wasEditing or (toClass is 'treema-read' and not wasEditing) or @endExistingEdits()
+    
     valEl.toggleClass('treema-read treema-edit') unless toClass and valEl.hasClass(toClass)
 
     if valEl.hasClass('treema-read')
       if wasEditing
         @saveChanges(valEl)
+        @propagateData()
         @refreshErrors()
+        if @getErrors().length
+          # abort this toggle
+          valEl.toggleClass('treema-read treema-edit')
+          return false
 
       @propagateData()
       valEl.empty()
@@ -227,12 +237,36 @@ class TreemaNode
       valEl.empty()
       @setValueForEditing(valEl)
       @deselectAll()
+      
+    return true
 
+  endExistingEdits: ->
+    editing = @$el.closest('.treema-root').find('.treema-edit').closest('.treema-node')
+    for elem in editing
+      console.log('close edits', elem)
+      return false unless $(elem).data('instance').toggleEdit('treema-read')
+    return true
+      
   propagateData: ->
     return unless @parent
     @parent.data[@keyForParent] = @data
     @parent.refreshErrors()
-
+    
+  # Error prevention ----------------------------------------------------------
+  saveSnapshot: ->
+    wrappedData = { 'wrap': @data }
+    @snapData = $.extend(true, {}, wrappedData)['wrap']
+    @snapErrors = @getErrors()
+     
+  getErrorsSinceLastSnapshot: ->
+    return [] if @snapErrors.length > 0 # won't deal with this scenario for now
+    @snapErrors = @getErrors()
+    
+  revertSnapshot: ->
+    @data = @snapData
+    delete @snapData
+    delete @snapErrors
+  
   # Adding elemements to collections ------------------------------------------
   addNewChild: ->
     if @ordered # array
