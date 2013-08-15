@@ -101,12 +101,13 @@ class TreemaNode
     return if e.target.nodeName in ['INPUT', 'TEXTAREA']
     clickedValue = $(e.target).closest('.treema-value').length  # Clicks are in children of .treema-value nodes
     clickedToggle = $(e.target).hasClass('treema-toggle')
-    clickedKey = $(e.target).hasClass('treema-key')
     @$el.closest('.treema-root').focus() unless clickedValue and not @collection
-    return @toggleEdit() if clickedValue and not @collection
+    return @toggleEdit() if clickedValue and not @collection and not e.shiftKey
     return @toggleOpen() if clickedToggle or (clickedValue and @collection)
     return @addNewChild() if $(e.target).closest('.treema-add-child').length and @collection
-    return @toggleSelect() unless @$el.hasClass('treema-root')
+    unless @$el.hasClass('treema-root')
+      return @shiftSelect() if e.shiftKey
+      return @toggleSelect() 
     
   onDoubleClick: (e) ->
     return unless @collection
@@ -449,6 +450,26 @@ class TreemaNode
     # defaulting to either one or zero selections at a time with normal clicks.
     @deselectAll(true)
     @$el.toggleClass('treema-selected') unless @$el.hasClass('treema-root')
+    if @$el.hasClass('treema-selected')
+      @$el.closest('.treema-root').find('.treema-last-selected').removeClass('treema-last-selected')
+      @$el.addClass('treema-last-selected')
+      
+  shiftSelect: ->
+    lastSelected = @$el.closest('.treema-root').find('.treema-last-selected')
+    @toggleSelect() if not lastSelected.length
+    @deselectAll()
+    allNodes = @$el.closest('.treema-root').find('.treema-node')
+    started = false
+    for node in allNodes
+      node = $(node).data('instance')
+      if not started
+        started = true if node is @ or node.$el.hasClass('treema-last-selected')
+        node.$el.addClass('treema-selected') if started
+        continue
+      break if started and (node is @ or node.$el.hasClass('treema-last-selected'))
+      node.$el.addClass('treema-selected')
+    @$el.addClass('treema-selected')
+    lastSelected.addClass('treema-selected')
 
   # Child node utilities ------------------------------------------------------
   addChildTreema: (key, value, schema) ->

@@ -192,17 +192,16 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.onClick = function(e) {
-    var clickedKey, clickedToggle, clickedValue, _ref;
+    var clickedToggle, clickedValue, _ref;
     if ((_ref = e.target.nodeName) === 'INPUT' || _ref === 'TEXTAREA') {
       return;
     }
     clickedValue = $(e.target).closest('.treema-value').length;
     clickedToggle = $(e.target).hasClass('treema-toggle');
-    clickedKey = $(e.target).hasClass('treema-key');
     if (!(clickedValue && !this.collection)) {
       this.$el.closest('.treema-root').focus();
     }
-    if (clickedValue && !this.collection) {
+    if (clickedValue && !this.collection && !e.shiftKey) {
       return this.toggleEdit();
     }
     if (clickedToggle || (clickedValue && this.collection)) {
@@ -212,6 +211,9 @@ TreemaNode = (function() {
       return this.addNewChild();
     }
     if (!this.$el.hasClass('treema-root')) {
+      if (e.shiftKey) {
+        return this.shiftSelect();
+      }
       return this.toggleSelect();
     }
   };
@@ -780,8 +782,42 @@ TreemaNode = (function() {
   TreemaNode.prototype.toggleSelect = function() {
     this.deselectAll(true);
     if (!this.$el.hasClass('treema-root')) {
-      return this.$el.toggleClass('treema-selected');
+      this.$el.toggleClass('treema-selected');
     }
+    if (this.$el.hasClass('treema-selected')) {
+      this.$el.closest('.treema-root').find('.treema-last-selected').removeClass('treema-last-selected');
+      return this.$el.addClass('treema-last-selected');
+    }
+  };
+
+  TreemaNode.prototype.shiftSelect = function() {
+    var allNodes, lastSelected, node, started, _i, _len;
+    lastSelected = this.$el.closest('.treema-root').find('.treema-last-selected');
+    if (!lastSelected.length) {
+      this.toggleSelect();
+    }
+    this.deselectAll();
+    allNodes = this.$el.closest('.treema-root').find('.treema-node');
+    started = false;
+    for (_i = 0, _len = allNodes.length; _i < _len; _i++) {
+      node = allNodes[_i];
+      node = $(node).data('instance');
+      if (!started) {
+        if (node === this || node.$el.hasClass('treema-last-selected')) {
+          started = true;
+        }
+        if (started) {
+          node.$el.addClass('treema-selected');
+        }
+        continue;
+      }
+      if (started && (node === this || node.$el.hasClass('treema-last-selected'))) {
+        break;
+      }
+      node.$el.addClass('treema-selected');
+    }
+    this.$el.addClass('treema-selected');
+    return lastSelected.addClass('treema-selected');
   };
 
   TreemaNode.prototype.addChildTreema = function(key, value, schema) {
