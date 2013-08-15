@@ -661,11 +661,21 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.removeSelectedNodes = function() {
-    var _this = this;
-    return this.$el.find('.treema-selected').each(function(i, elem) {
-      var _ref;
-      return (_ref = $(elem).data('instance')) != null ? _ref.remove() : void 0;
-    });
+    var nextSibling, prevSibling, selected, toSelect, treema, _i, _len;
+    selected = this.getSelectedTreemas();
+    toSelect = null;
+    if (selected.length === 1) {
+      nextSibling = selected[0].$el.next('.treema-node').data('instance');
+      prevSibling = selected[0].$el.prev('.treema-node').data('instance');
+      toSelect = nextSibling || prevSibling || selected[0].parent;
+    }
+    for (_i = 0, _len = selected.length; _i < _len; _i++) {
+      treema = selected[_i];
+      treema.remove();
+    }
+    if (toSelect && !this.getSelectedTreemas().length) {
+      return toSelect.toggleSelect();
+    }
   };
 
   TreemaNode.prototype.remove = function() {

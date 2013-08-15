@@ -375,8 +375,14 @@ class TreemaNode
 
   # Removing nodes ------------------------------------------------------------
   removeSelectedNodes: ->
-    @$el.find('.treema-selected').each (i, elem) =>
-      $(elem).data('instance')?.remove()
+    selected = @getSelectedTreemas()
+    toSelect = null
+    if selected.length is 1
+      nextSibling = selected[0].$el.next('.treema-node').data('instance')
+      prevSibling = selected[0].$el.prev('.treema-node').data('instance')
+      toSelect = nextSibling or prevSibling or selected[0].parent
+    treema.remove() for treema in selected
+    toSelect.toggleSelect() if toSelect and not @getSelectedTreemas().length
 
   remove: ->
     return if @parent and @parent.schema.required? and @keyForParent in @parent.schema.required 
