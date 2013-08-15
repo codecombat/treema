@@ -56,16 +56,20 @@ $rowInternalVerticalPadding: 2px
   display: none
  
 .treema-value
-  cursor: pointer
+  cursor: text
   padding: $rowInternalVerticalPadding 0 $rowInternalVerticalPadding 2px
   display: inline-block
   
   pre
     margin: 0
     font-family: Helvetica
+  
+  &:hover
+    border: 1px solid rgba(64, 128, 255, 0.25)
+    margin: -1px
 
 .treema-key
-  color: #1c0099
+  color: #5353ac
   float: left
   padding: $rowInternalVerticalPadding
   cursor: pointer
@@ -130,19 +134,32 @@ $rowInternalVerticalPadding: 2px
 // Element value styles
 
 .treema-string
-  color: #991f00
-  
-.treema-number
-  color: #009908
-  
-.treema-null
-  color: #007599
-  
-.treema-array
   color: #998500
   
+.treema-number
+  color: #699900
+  
+.treema-null
+  color: #524059
+  font-weight: bold
+  
+.treema-array
+  color: #009905
+
+.treema-value > .treema-array
+  cursor: row-resize
+  
 .treema-object
-  color: #990061
+  color: #008799
+
+.treema-value > .treema-object
+  cursor: row-resize
+  
+.treema-boolean
+  color: #140099
+
+.treema-value > .treema-boolean
+  cursor: pointer
   
 .treema-shortened
   max-width: 300px

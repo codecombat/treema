@@ -725,25 +725,18 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.open = function() {
     var childNode, childrenContainer, key, schema, treema, value, _base, _i, _len, _ref, _ref1;
-    console.log('open begin', Object.keys(this.data));
     childrenContainer = this.$el.find('.treema-children').detach();
-    console.log('open begin', Object.keys(this.data));
     childrenContainer.empty();
-    console.log('open begin', Object.keys(this.data));
     this.childrenTreemas = {};
-    console.log('open begin', Object.keys(this.data));
     _ref = this.getChildren();
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       _ref1 = _ref[_i], key = _ref1[0], value = _ref1[1], schema = _ref1[2];
-      console.log('ah.... child?', key);
       treema = this.addChildTreema(key, value, schema);
       childNode = this.createChildNode(treema);
       childrenContainer.append(childNode);
     }
-    console.log('open begin', Object.keys(this.data));
     this.$el.append(childrenContainer).removeClass('treema-closed').addClass('treema-open');
-    console.log('open begin', Object.keys(this.data));
-    childrenContainer.append($(this.addChildTemplate), console.log('open begin', Object.keys(this.data)));
+    childrenContainer.append($(this.addChildTemplate));
     if (this.ordered && childrenContainer.sortable) {
       if (typeof childrenContainer.sortable === "function") {
         if (typeof (_base = childrenContainer.sortable({
@@ -753,9 +746,7 @@ TreemaNode = (function() {
         }
       }
     }
-    console.log('open begin', Object.keys(this.data));
-    this.refreshErrors();
-    return console.log('open end', this.data);
+    return this.refreshErrors();
   };
 
   TreemaNode.prototype.sortFromUI = function() {
@@ -1185,7 +1176,6 @@ ObjectTreemaNode = (function(_super) {
 
   ObjectTreemaNode.prototype.getChildren = function() {
     var children, key, keysAccountedFor, value, _ref6;
-    console.log('get children!', this, this.schema);
     children = [];
     keysAccountedFor = [];
     if (this.schema.properties) {
@@ -1227,7 +1217,7 @@ ObjectTreemaNode = (function(_super) {
   ObjectTreemaNode.prototype.setValueForReading = function(valEl) {
     var size;
     size = Object.keys(this.data).length;
-    return this.setValueForReadingSimply(valEl, 'treema-object', "[" + size + "]");
+    return this.setValueForReadingSimply(valEl, 'treema-object', JSON.stringify(this.data));
   };
 
   ObjectTreemaNode.prototype.populateData = function() {
@@ -1304,9 +1294,7 @@ AnyTreemaNode = (function(_super) {
     var splat;
     splat = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
     AnyTreemaNode.__super__.constructor.apply(this, splat);
-    console.log('construct?', this.data);
     this.updateShadowMethods();
-    console.log('construct!', this.data);
   }
 
   AnyTreemaNode.prototype.setValueForEditing = function(valEl) {
@@ -1324,7 +1312,6 @@ AnyTreemaNode = (function(_super) {
       this.data = [];
     } else if (this.data.trim() === '{') {
       this.data = {};
-      console.log('okay the data is', this.data);
     } else {
       try {
         this.data = JSON.parse(this.data);
@@ -1334,15 +1321,13 @@ AnyTreemaNode = (function(_super) {
       }
     }
     this.updateShadowMethods();
-    this.rebuild();
-    return console.log('and now data is?', this.data);
+    return this.rebuild();
   };
 
   AnyTreemaNode.prototype.updateShadowMethods = function() {
     var NodeClass, dataType, prop, _i, _len, _ref6, _results;
     dataType = $.type(this.data);
     NodeClass = TreemaNodeMap[dataType];
-    console.log('creating helper', this.data);
     this.helper = new NodeClass(this.schema, this.data, this.options, this.isChild);
     _ref6 = ['collection', 'ordered', 'keyed', 'getChildSchema', 'getChildren', 'getChildSchema', 'setValueForReading'];
     _results = [];
