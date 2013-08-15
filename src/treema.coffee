@@ -316,10 +316,12 @@ class TreemaNode
 
       keyInput.keydown (e) =>
         if e.which is 8 and not keyInput.val()
+          @$el.find('.treema-new-prop-error').remove()
           keyInput.remove()
           e.preventDefault()
 
       keyInput.blur (e) =>
+        console.log('blur and remove?')
         @$el.find('.treema-new-prop-error').remove()
         key = keyInput.val()
         if @schema.properties

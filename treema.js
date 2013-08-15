@@ -566,12 +566,14 @@ TreemaNode = (function() {
       keyInput.focus();
       keyInput.keydown(function(e) {
         if (e.which === 8 && !keyInput.val()) {
+          _this.$el.find('.treema-new-prop-error').remove();
           keyInput.remove();
           return e.preventDefault();
         }
       });
       return keyInput.blur(function(e) {
         var child_key, child_schema, escaped, key, _ref;
+        console.log('blur and remove?');
         _this.$el.find('.treema-new-prop-error').remove();
         key = keyInput.val();
         if (_this.schema.properties) {
