@@ -631,7 +631,7 @@ class ObjectTreemaNode extends TreemaNode
   setValueForEditing: (valEl) -> @setValueForEditingSimply(valEl, JSON.stringify(@data))
   setValueForReading: (valEl) ->
     size = Object.keys(@data).length
-    @setValueForReadingSimply(valEl, 'treema-object', "[#{size}]")
+    @setValueForReadingSimply(valEl, 'treema-object', JSON.stringify(@data))
 
   populateData: ->
     super()
