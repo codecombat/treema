@@ -497,7 +497,7 @@ class TreemaNode
       treema.showError(messages.join('<br />'))
 
   showError: (message) ->
-    @$el.append($(@templateString))
+    @$el.prepend($(@templateString))
     @$el.find('> .treema-error').html(message).show()
     @$el.addClass('treema-has-error')
 

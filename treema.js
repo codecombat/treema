@@ -890,7 +890,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.showError = function(message) {
-    this.$el.append($(this.templateString));
+    this.$el.prepend($(this.templateString));
     this.$el.find('> .treema-error').html(message).show();
     return this.$el.addClass('treema-has-error');
   };
