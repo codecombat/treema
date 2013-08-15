@@ -42,7 +42,7 @@ class TreemaNode
   # collection specific
   getChildren: -> console.error('"getChildren" has not been overridden.') # should return a list of key-value-schema tuples
   getChildSchema: -> console.error('"getChildSchema" has not been overridden.')
-  canAddChild: -> true
+  canAddChild: -> @collection and @editable
   canAddProperty: -> true
 
   # Subclass helper functions -------------------------------------------------
@@ -123,6 +123,7 @@ class TreemaNode
     @onRightArrowPressed(e) if e.which is 39
     @onDownArrowPressed(e) if e.which is 40
     @onEnterPressed(e) if e.which is 13
+    @onNPressed(e) if e.which is 78
 
   onLeftArrowPressed: (e) ->
     treemas = @getSelectedTreemas()
@@ -227,6 +228,9 @@ class TreemaNode
     return selected.toggleOpen() if selected.collection
     selected.toggleSelect()
     selected.toggleEdit('treema-edit')
+
+  onNPressed: ->
+    @addNewChild()
 
   # Editing values ------------------------------------------------------------
   toggleEdit: (toClass) ->

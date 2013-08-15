@@ -82,7 +82,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.canAddChild = function() {
-    return true;
+    return this.collection && this.editable;
   };
 
   TreemaNode.prototype.canAddProperty = function() {
@@ -251,7 +251,10 @@ TreemaNode = (function() {
       this.onDownArrowPressed(e);
     }
     if (e.which === 13) {
-      return this.onEnterPressed(e);
+      this.onEnterPressed(e);
+    }
+    if (e.which === 78) {
+      return this.onNPressed(e);
     }
   };
 
@@ -446,6 +449,10 @@ TreemaNode = (function() {
     }
     selected.toggleSelect();
     return selected.toggleEdit('treema-edit');
+  };
+
+  TreemaNode.prototype.onNPressed = function(e) {
+    return this.addNewChild();
   };
 
   TreemaNode.prototype.toggleEdit = function(toClass) {
