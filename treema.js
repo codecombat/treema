@@ -452,7 +452,18 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.onNPressed = function() {
-    return this.addNewChild();
+    var selected, success, _ref;
+    if (this.$el.closest('.treema-root').find('.treema-edit').length) {
+      return;
+    }
+    selected = this.getSelectedTreemas();
+    if (selected.length !== 1) {
+      return;
+    }
+    success = (_ref = selected[0].parent) != null ? _ref.addNewChild() : void 0;
+    if (success) {
+      return this.deselectAll();
+    }
   };
 
   TreemaNode.prototype.toggleEdit = function(toClass) {
@@ -571,7 +582,7 @@ TreemaNode = (function() {
           return e.preventDefault();
         }
       });
-      return keyInput.blur(function(e) {
+      keyInput.blur(function(e) {
         var child_key, child_schema, escaped, key, _ref;
         _this.$el.find('.treema-new-prop-error').remove();
         key = keyInput.val();
@@ -613,6 +624,7 @@ TreemaNode = (function() {
         return _this.updateMyAddButton();
       });
     }
+    return true;
   };
 
   TreemaNode.prototype.findObjectInsertionPoint = function(key) {

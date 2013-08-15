@@ -230,7 +230,11 @@ class TreemaNode
     selected.toggleEdit('treema-edit')
 
   onNPressed: ->
-    @addNewChild()
+    return if @$el.closest('.treema-root').find('.treema-edit').length
+    selected = @getSelectedTreemas()
+    return unless selected.length is 1
+    success = selected[0].parent?.addNewChild()
+    @deselectAll() if success
 
   # Editing values ------------------------------------------------------------
   toggleEdit: (toClass) ->
@@ -346,6 +350,8 @@ class TreemaNode
         @findObjectInsertionPoint(key).before(childNode)
         if newTreema.collection then newTreema.addNewChild() else newTreema.toggleEdit('treema-edit') 
         @updateMyAddButton()
+        
+    return true
 
   findObjectInsertionPoint: (key) ->
     # Object children should be in the order of the schema.properties objects as much as possible
