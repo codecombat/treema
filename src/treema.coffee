@@ -618,7 +618,7 @@ class ObjectTreemaNode extends TreemaNode
         keysAccountedFor.push(key)
         children.push([key, @data[key], @getChildSchema(key)])
         
-    for key, value of data
+    for key, value of @data
       continue if key in keysAccountedFor
       children.push([key, value, @getChildSchema(key)])
     children
