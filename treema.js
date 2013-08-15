@@ -59,6 +59,9 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.setValueForEditing = function(valEl) {
+    if (!this.editable) {
+      return;
+    }
     return console.error('"setValueForEditing" has not been overridden.');
   };
 
@@ -349,7 +352,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.onTabPressed = function(e) {
-    var addingNewProperty, blurFailed, childIndex, direction, target, _ref;
+    var addingNewProperty, blurFailed, childIndex, direction, selection, target, _ref;
     direction = e.shiftKey ? 'prev' : 'next';
     target = $(e.target);
     addingNewProperty = target.hasClass('treema-new-prop');
@@ -370,6 +373,12 @@ TreemaNode = (function() {
       } else {
         childIndex = this.parent.getTabbableChildrenTreemas().indexOf(this);
         this.parent.tabToNextTreema(childIndex, direction);
+      }
+    }
+    if ($(document.activeElement).hasClass('treema-root')) {
+      selection = this.getSelectedTreemas();
+      if (selection.length === 1 && !selection[0].collection) {
+        selection[0].toggleEdit('treema-edit');
       }
     }
     return e.preventDefault();
@@ -963,20 +972,26 @@ BooleanTreemaNode = (function(_super) {
     return this.setValueForReadingSimply(valEl, 'treema-boolean', JSON.stringify(this.data));
   };
 
-  BooleanTreemaNode.prototype.onEnterPressed = function(e) {
+  BooleanTreemaNode.prototype.toggleValue = function() {
     this.data = !this.data;
     return this.setValueForReading($('.treema-value', this.$el).empty());
   };
 
+  BooleanTreemaNode.prototype.onEnterPressed = function() {
+    return this.toggleValue();
+  };
+
   BooleanTreemaNode.prototype.onClick = function(e) {
-    var value;
-    value = $(e.target).closest('.treema-value');
-    if (value.length) {
-      this.data = !this.data;
-      this.setValueForReading($('.treema-value', this.$el).empty());
-      return;
+    if ($(e.target).closest('.treema-value').length) {
+      return this.toggleValue();
     }
     return BooleanTreemaNode.__super__.onClick.call(this, e);
+  };
+
+  BooleanTreemaNode.prototype.toggleEdit = function(toClass) {
+    if (toClass !== 'treema-read') {
+      return this.toggleValue();
+    }
   };
 
   return BooleanTreemaNode;

@@ -33,7 +33,9 @@ class TreemaNode
 
   # Abstract functions --------------------------------------------------------
   setValueForReading: (valEl) -> console.error('"setValueForReading" has not been overridden.')
-  setValueForEditing: (valEl) -> console.error('"setValueForEditing" has not been overridden.')
+  setValueForEditing: (valEl) ->
+    return unless @editable
+    console.error('"setValueForEditing" has not been overridden.')
   saveChanges: (valEl) -> console.error('"saveChanges" has not been overridden.')
   getDefaultValue: -> null
   
@@ -188,6 +190,10 @@ class TreemaNode
       else
         childIndex = @parent.getTabbableChildrenTreemas().indexOf @
         @parent.tabToNextTreema childIndex, direction
+        
+    if $(document.activeElement).hasClass('treema-root')
+      selection = @getSelectedTreemas()
+      selection[0].toggleEdit('treema-edit') if selection.length is 1 and not selection[0].collection
 
     # TODO: Handle switching between inputs within a single node, like for x, y points
 
@@ -515,18 +521,18 @@ class BooleanTreemaNode extends TreemaNode
   skipTab: true
   setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, 'treema-boolean', JSON.stringify(@data))
   
-  onEnterPressed: (e) ->
+  toggleValue: ->
     @data = not @data
     @setValueForReading($('.treema-value', @$el).empty())
+  
+  onEnterPressed: -> @toggleValue()
     
   onClick: (e) ->
-    # Override the normal behavior for clicking the value, just flip the value instead.
-    value = $(e.target).closest('.treema-value')
-    if value.length
-      @data = not @data
-      @setValueForReading($('.treema-value', @$el).empty())
-      return
+    return @toggleValue() if $(e.target).closest('.treema-value').length
     super(e)
+    
+  toggleEdit: (toClass) ->
+    @toggleValue() unless toClass is 'treema-read'
 
 class ArrayTreemaNode extends TreemaNode
   getDefaultValue: -> []
