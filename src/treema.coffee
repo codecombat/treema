@@ -404,17 +404,19 @@ class TreemaNode
     @refreshErrors()
 
   sortFromUI: =>
-    children_wrapper = @$el.find('> .treema-children')
+    children = @$el.find('> .treema-children > .treema-node')
     index = 0
     @childrenTreemas = {}  # rebuild it
     @data = if $.isArray(@data) then [] else {}
-    for child in children_wrapper[0].children
+    for child in children
       treema = $(child).data('instance')
       continue unless treema
       treema.keyForParent = index
       @childrenTreemas[index] = treema
       @data[index] = treema.data
       index += 1
+    @propagateData()
+
 
   close: ->
     @data[key] = treema.data for key, treema of @childrenTreemas

@@ -451,7 +451,7 @@ TreemaNode = (function() {
     return selected.toggleEdit('treema-edit');
   };
 
-  TreemaNode.prototype.onNPressed = function(e) {
+  TreemaNode.prototype.onNPressed = function() {
     return this.addNewChild();
   };
 
@@ -717,15 +717,13 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.sortFromUI = function() {
-    var child, children_wrapper, index, treema, _i, _len, _ref, _results;
-    children_wrapper = this.$el.find('> .treema-children');
+    var child, children, index, treema, _i, _len;
+    children = this.$el.find('> .treema-children > .treema-node');
     index = 0;
     this.childrenTreemas = {};
     this.data = $.isArray(this.data) ? [] : {};
-    _ref = children_wrapper[0].children;
-    _results = [];
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      child = _ref[_i];
+    for (_i = 0, _len = children.length; _i < _len; _i++) {
+      child = children[_i];
       treema = $(child).data('instance');
       if (!treema) {
         continue;
@@ -733,9 +731,9 @@ TreemaNode = (function() {
       treema.keyForParent = index;
       this.childrenTreemas[index] = treema;
       this.data[index] = treema.data;
-      _results.push(index += 1);
+      index += 1;
     }
-    return _results;
+    return this.propagateData();
   };
 
   TreemaNode.prototype.close = function() {
