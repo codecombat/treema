@@ -573,7 +573,6 @@ TreemaNode = (function() {
       });
       return keyInput.blur(function(e) {
         var child_key, child_schema, escaped, key, _ref;
-        console.log('blur and remove?');
         _this.$el.find('.treema-new-prop-error').remove();
         key = keyInput.val();
         if (_this.schema.properties) {
@@ -814,7 +813,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.showErrors = function() {
-    var deepestTreema, e, error, erroredTreemas, errors, messages, path, subpath, treema, _i, _j, _k, _len, _len1, _len2, _ref, _results;
+    var childErrors, deepestTreema, e, error, erroredTreemas, errors, message, messages, ownErrors, path, subpath, treema, _i, _j, _k, _len, _len1, _len2, _ref, _results;
     if (this.justAdded) {
       return;
     }
@@ -827,6 +826,7 @@ TreemaNode = (function() {
       for (_j = 0, _len1 = path.length; _j < _len1; _j++) {
         subpath = path[_j];
         if (!deepestTreema.childrenTreemas) {
+          error.forChild = true;
           break;
         }
         if (deepestTreema.ordered) {
@@ -844,16 +844,46 @@ TreemaNode = (function() {
     _results = [];
     for (_k = 0, _len2 = _ref.length; _k < _len2; _k++) {
       treema = _ref[_k];
-      messages = (function() {
+      childErrors = (function() {
         var _l, _len3, _ref1, _results1;
         _ref1 = treema._errors;
         _results1 = [];
         for (_l = 0, _len3 = _ref1.length; _l < _len3; _l++) {
           e = _ref1[_l];
+          if (e.forChild) {
+            _results1.push(e);
+          }
+        }
+        return _results1;
+      })();
+      ownErrors = (function() {
+        var _l, _len3, _ref1, _results1;
+        _ref1 = treema._errors;
+        _results1 = [];
+        for (_l = 0, _len3 = _ref1.length; _l < _len3; _l++) {
+          e = _ref1[_l];
+          if (!e.forChild) {
+            _results1.push(e);
+          }
+        }
+        return _results1;
+      })();
+      messages = (function() {
+        var _l, _len3, _results1;
+        _results1 = [];
+        for (_l = 0, _len3 = ownErrors.length; _l < _len3; _l++) {
+          e = ownErrors[_l];
           _results1.push(e.message);
         }
         return _results1;
       })();
+      if (childErrors.length > 0) {
+        message = "[" + childErrors.length + "] error";
+        if (childErrors.length > 1) {
+          message = message + 's';
+        }
+        messages.push(message);
+      }
       _results.push(treema.showError(messages.join('<br />')));
     }
     return _results;

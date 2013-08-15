@@ -476,7 +476,9 @@ class TreemaNode
       path = error.dataPath.split('/').slice(1)
       deepestTreema = @
       for subpath in path
-        break unless deepestTreema.childrenTreemas
+        unless deepestTreema.childrenTreemas
+          error.forChild = true
+          break 
         subpath = parseInt(subpath) if deepestTreema.ordered
         deepestTreema = deepestTreema.childrenTreemas[subpath]
       deepestTreema._errors = [] unless deepestTreema._errors and deepestTreema in erroredTreemas
@@ -484,7 +486,14 @@ class TreemaNode
       erroredTreemas.push(deepestTreema)
 
     for treema in $.unique(erroredTreemas)
-      messages = (e.message for e in treema._errors)
+      childErrors = (e for e in treema._errors when e.forChild)
+      ownErrors = (e for e in treema._errors when not e.forChild)
+      messages = (e.message for e in ownErrors)
+      if childErrors.length > 0
+        message = "[#{childErrors.length}] error"
+        message = message + 's' if childErrors.length > 1
+        messages.push(message)
+        
       treema.showError(messages.join('<br />'))
 
   showError: (message) ->
