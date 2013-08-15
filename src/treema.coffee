@@ -336,7 +336,9 @@ class TreemaNode
         escaped = keyInput.data('escaped')
         keyInput.remove()
         return if escaped
-        return unless key.length and not @childrenTreemas[key]
+
+        return unless key.length
+        return @childrenTreemas[key].toggleEdit() if @childrenTreemas[key]?
 
         schema = @getChildSchema(key)
         newTreema = @addChildTreema(key, null, schema)

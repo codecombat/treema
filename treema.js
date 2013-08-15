@@ -595,8 +595,11 @@ TreemaNode = (function() {
         if (escaped) {
           return;
         }
-        if (!(key.length && !_this.childrenTreemas[key])) {
+        if (!key.length) {
           return;
+        }
+        if (_this.childrenTreemas[key] != null) {
+          return _this.childrenTreemas[key].toggleEdit();
         }
         schema = _this.getChildSchema(key);
         newTreema = _this.addChildTreema(key, null, schema);
