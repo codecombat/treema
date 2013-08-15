@@ -192,16 +192,17 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.onClick = function(e) {
-    var clickedToggle, clickedValue, _ref;
+    var clickedToggle, clickedValue, usedModKey, _ref;
     if ((_ref = e.target.nodeName) === 'INPUT' || _ref === 'TEXTAREA') {
       return;
     }
     clickedValue = $(e.target).closest('.treema-value').length;
     clickedToggle = $(e.target).hasClass('treema-toggle');
+    usedModKey = e.shiftKey || e.ctrlKey || e.metaKey;
     if (!(clickedValue && !this.collection)) {
       this.$el.closest('.treema-root').focus();
     }
-    if (clickedValue && !this.collection && !e.shiftKey) {
+    if (clickedValue && !this.collection && !usedModKey) {
       return this.toggleEdit();
     }
     if (clickedToggle || (clickedValue && this.collection)) {
@@ -214,7 +215,10 @@ TreemaNode = (function() {
       if (e.shiftKey) {
         return this.shiftSelect();
       }
-      return this.toggleSelect();
+      if (e.ctrlKey || e.metaKey) {
+        return this.toggleSelect();
+      }
+      return this.selectOne();
     }
   };
 
@@ -277,7 +281,7 @@ TreemaNode = (function() {
       return;
     }
     parent.close();
-    return parent.toggleSelect();
+    return parent.selectOne();
   };
 
   TreemaNode.prototype.onRightArrowPressed = function(e) {
@@ -310,7 +314,7 @@ TreemaNode = (function() {
     }
     selected = selected[0];
     next = direction === 'next' ? selected.getNextTreema() : selected.getPreviousTreema();
-    return next != null ? next.toggleSelect() : void 0;
+    return next != null ? next.selectOne() : void 0;
   };
 
   TreemaNode.prototype.getSelectedTreemas = function() {
@@ -449,7 +453,7 @@ TreemaNode = (function() {
     if (selected.collection) {
       return selected.toggleOpen();
     }
-    selected.toggleSelect();
+    selected.selectOne();
     return selected.toggleEdit('treema-edit');
   };
 
@@ -689,7 +693,7 @@ TreemaNode = (function() {
       treema.remove();
     }
     if (toSelect && !this.getSelectedTreemas().length) {
-      return toSelect.toggleSelect();
+      return toSelect.selectOne();
     }
   };
 
@@ -779,8 +783,12 @@ TreemaNode = (function() {
     return this.setValueForReading($('.treema-value', this.$el).empty());
   };
 
-  TreemaNode.prototype.toggleSelect = function() {
+  TreemaNode.prototype.selectOne = function() {
     this.deselectAll(true);
+    return this.toggleSelect();
+  };
+
+  TreemaNode.prototype.toggleSelect = function() {
     if (!this.$el.hasClass('treema-root')) {
       this.$el.toggleClass('treema-selected');
     }
@@ -794,7 +802,7 @@ TreemaNode = (function() {
     var allNodes, lastSelected, node, started, _i, _len;
     lastSelected = this.$el.closest('.treema-root').find('.treema-last-selected');
     if (!lastSelected.length) {
-      this.toggleSelect();
+      this.selectOne();
     }
     this.deselectAll();
     allNodes = this.$el.closest('.treema-root').find('.treema-node');

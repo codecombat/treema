@@ -101,13 +101,15 @@ class TreemaNode
     return if e.target.nodeName in ['INPUT', 'TEXTAREA']
     clickedValue = $(e.target).closest('.treema-value').length  # Clicks are in children of .treema-value nodes
     clickedToggle = $(e.target).hasClass('treema-toggle')
+    usedModKey = e.shiftKey or e.ctrlKey or e.metaKey
     @$el.closest('.treema-root').focus() unless clickedValue and not @collection
-    return @toggleEdit() if clickedValue and not @collection and not e.shiftKey
+    return @toggleEdit() if clickedValue and not @collection and not usedModKey
     return @toggleOpen() if clickedToggle or (clickedValue and @collection)
     return @addNewChild() if $(e.target).closest('.treema-add-child').length and @collection
     unless @$el.hasClass('treema-root')
       return @shiftSelect() if e.shiftKey
-      return @toggleSelect() 
+      return @toggleSelect() if e.ctrlKey or e.metaKey
+      return @selectOne() 
     
   onDoubleClick: (e) ->
     return unless @collection
@@ -134,7 +136,7 @@ class TreemaNode
     parent = treemas[0].parent
     return if parent.$el.hasClass('treema-root')
     parent.close()
-    parent.toggleSelect()
+    parent.selectOne()
 
   onRightArrowPressed: (e) ->
     for treema in @getSelectedTreemas()
@@ -149,7 +151,7 @@ class TreemaNode
     return unless selected.length is 1
     selected = selected[0]
     next = if direction is 'next' then selected.getNextTreema() else selected.getPreviousTreema() 
-    next?.toggleSelect()
+    next?.selectOne()
 
   getSelectedTreemas: ->
     ($(el).data('instance') for el in @$el.closest('.treema-root').find('.treema-selected'))
@@ -227,7 +229,7 @@ class TreemaNode
       
     return unless selected.editable
     return selected.toggleOpen() if selected.collection
-    selected.toggleSelect()
+    selected.selectOne()
     selected.toggleEdit('treema-edit')
 
   onNPressed: (e) ->
@@ -390,7 +392,7 @@ class TreemaNode
       prevSibling = selected[0].$el.prev('.treema-node').data('instance')
       toSelect = nextSibling or prevSibling or selected[0].parent
     treema.remove() for treema in selected
-    toSelect.toggleSelect() if toSelect and not @getSelectedTreemas().length
+    toSelect.selectOne() if toSelect and not @getSelectedTreemas().length
 
   remove: ->
     return if @parent and @parent.schema.required? and @keyForParent in @parent.schema.required 
@@ -444,11 +446,11 @@ class TreemaNode
     @setValueForReading($('.treema-value', @$el).empty())
 
   # Selecting/deselecting nodes -----------------------------------------------
-  toggleSelect: ->
-    # For now, we'll let selections be independent, so that when we go to delete,
-    # we'll be able to drag/delete multiple. Later we should rely on shift for that,
-    # defaulting to either one or zero selections at a time with normal clicks.
+  selectOne: ->
     @deselectAll(true)
+    @toggleSelect()
+
+  toggleSelect: ->
     @$el.toggleClass('treema-selected') unless @$el.hasClass('treema-root')
     if @$el.hasClass('treema-selected')
       @$el.closest('.treema-root').find('.treema-last-selected').removeClass('treema-last-selected')
@@ -456,7 +458,7 @@ class TreemaNode
       
   shiftSelect: ->
     lastSelected = @$el.closest('.treema-root').find('.treema-last-selected')
-    @toggleSelect() if not lastSelected.length
+    @selectOne() if not lastSelected.length
     @deselectAll()
     allNodes = @$el.closest('.treema-root').find('.treema-node')
     started = false
