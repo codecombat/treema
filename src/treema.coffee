@@ -229,12 +229,13 @@ class TreemaNode
     selected.toggleSelect()
     selected.toggleEdit('treema-edit')
 
-  onNPressed: ->
+  onNPressed: (e) ->
     return if @$el.closest('.treema-root').find('.treema-edit').length
     selected = @getSelectedTreemas()
     return unless selected.length is 1
     success = selected[0].parent?.addNewChild()
     @deselectAll() if success
+    e.preventDefault()
 
   # Editing values ------------------------------------------------------------
   toggleEdit: (toClass) ->

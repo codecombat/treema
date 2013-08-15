@@ -451,7 +451,7 @@ TreemaNode = (function() {
     return selected.toggleEdit('treema-edit');
   };
 
-  TreemaNode.prototype.onNPressed = function() {
+  TreemaNode.prototype.onNPressed = function(e) {
     var selected, success, _ref;
     if (this.$el.closest('.treema-root').find('.treema-edit').length) {
       return;
@@ -462,8 +462,9 @@ TreemaNode = (function() {
     }
     success = (_ref = selected[0].parent) != null ? _ref.addNewChild() : void 0;
     if (success) {
-      return this.deselectAll();
+      this.deselectAll();
     }
+    return e.preventDefault();
   };
 
   TreemaNode.prototype.toggleEdit = function(toClass) {
