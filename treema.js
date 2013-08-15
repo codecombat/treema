@@ -211,7 +211,6 @@ TreemaNode = (function() {
     if (!this.$el.hasClass('treema-root')) {
       return this.toggleSelect();
     }
-    return this.addNewChild();
   };
 
   TreemaNode.prototype.onDoubleClick = function(e) {

@@ -105,7 +105,6 @@ class TreemaNode
     return @toggleOpen() if clickedToggle or (clickedValue and @collection)
     return @addNewChild() if $(e.target).closest('.treema-add-child').length and @collection
     return @toggleSelect() unless @$el.hasClass('treema-root')
-    @addNewChild()
     
   onDoubleClick: (e) ->
     return unless @collection
