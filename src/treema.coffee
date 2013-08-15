@@ -321,7 +321,6 @@ class TreemaNode
           e.preventDefault()
 
       keyInput.blur (e) =>
-        console.log('blur and remove?')
         @$el.find('.treema-new-prop-error').remove()
         key = keyInput.val()
         if @schema.properties
