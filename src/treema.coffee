@@ -495,6 +495,8 @@ class TreemaNode
       keyEl = $(@keyTemplate).text(name)
       keyEl.attr('title', treema.schema.description) if treema.schema.description
       childNode.prepend(' : ')
+      required = @schema.required or []
+      childNode.prepend('*') if treema.keyForParent in required 
       childNode.prepend(keyEl)
     childNode.prepend($(@toggleTemplate)) if treema.collection
     childNode

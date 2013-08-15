@@ -857,7 +857,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.createChildNode = function(treema) {
-    var childNode, keyEl, name;
+    var childNode, keyEl, name, required, _ref;
     childNode = treema.build();
     if (this.collection) {
       name = treema.schema.title || treema.keyForParent;
@@ -866,6 +866,10 @@ TreemaNode = (function() {
         keyEl.attr('title', treema.schema.description);
       }
       childNode.prepend(' : ');
+      required = this.schema.required || [];
+      if (_ref = treema.keyForParent, __indexOf.call(required, _ref) >= 0) {
+        childNode.prepend('*');
+      }
       childNode.prepend(keyEl);
     }
     if (treema.collection) {
