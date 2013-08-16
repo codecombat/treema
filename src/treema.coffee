@@ -13,7 +13,7 @@ class TreemaNode
   childrenTemplate: '<div class="treema-children"></div>'
   addChildTemplate: '<div class="treema-add-child">+</div>'
   newPropertyTemplate: '<input class="treema-new-prop" />'
-  newPropertyErrorTemplate: '<span class="treema-new-prop-error"></span>'
+  tempErrorTemplate: '<span class="treema-temp-error"></span>'
   toggleTemplate: '<span class="treema-toggle"></span>'
   keyTemplate: '<span class="treema-key"></span>'
   templateString: '<div class="treema-error"></div>'
@@ -102,14 +102,14 @@ class TreemaNode
     clickedValue = $(e.target).closest('.treema-value').length  # Clicks are in children of .treema-value nodes
     clickedToggle = $(e.target).hasClass('treema-toggle')
     usedModKey = e.shiftKey or e.ctrlKey or e.metaKey
-    @$el.closest('.treema-root').focus() unless clickedValue and not @collection
+    @getRootEl().focus() unless clickedValue and not @collection
     return @toggleEdit() if clickedValue and not @collection and not usedModKey
     return @toggleOpen() if clickedToggle or (clickedValue and @collection)
     return @addNewChild() if $(e.target).closest('.treema-add-child').length and @collection
-    unless @$el.hasClass('treema-root')
-      return @shiftSelect() if e.shiftKey
-      return @toggleSelect() if e.ctrlKey or e.metaKey
-      return @selectOne() 
+    return if @isRoot()
+    return @shiftSelect() if e.shiftKey
+    return @toggleSelect() if e.ctrlKey or e.metaKey
+    return @selectOne() 
     
   onDoubleClick: (e) ->
     return unless @collection
@@ -134,7 +134,7 @@ class TreemaNode
       return treema.close() if treema.$el.hasClass('treema-open')
     return unless treemas.length is 1
     parent = treemas[0].parent
-    return if parent.$el.hasClass('treema-root')
+    return if parent.isRoot()
     parent.close()
     parent.selectOne()
 
@@ -154,7 +154,7 @@ class TreemaNode
     next?.selectOne()
 
   getSelectedTreemas: ->
-    ($(el).data('instance') for el in @$el.closest('.treema-root').find('.treema-selected'))
+    ($(el).data('instance') for el in @getRootEl().find('.treema-selected'))
 
   getNextTreema: ->
     nextChild = @$el.find('.treema-node:first').data('instance')
@@ -172,8 +172,8 @@ class TreemaNode
   onEscapePressed: (e) ->
     return @remove() if @justAdded
     $(e.target).data('escaped', true).blur()
-    @$el.addClass('treema-selected') unless @$el.hasClass('treema-root')
-    @$el.closest('.treema-root').focus()
+    @$el.addClass('treema-selected') unless @isRoot()
+    @getRootEl().focus()
 
   onTabPressed: (e) ->
     direction = if e.shiftKey then 'prev' else 'next'
@@ -195,7 +195,7 @@ class TreemaNode
         childIndex = @parent.getTabbableChildrenTreemas().indexOf @
         @parent.tabToNextTreema childIndex, direction
         
-    if $(document.activeElement).hasClass('treema-root')
+    if @rootSelected()
       selection = @getSelectedTreemas()
       selection[0].toggleEdit('treema-edit') if selection.length is 1 and not selection[0].collection
 
@@ -233,7 +233,7 @@ class TreemaNode
     selected.toggleEdit('treema-edit')
 
   onNPressed: (e) ->
-    return if @$el.closest('.treema-root').find('.treema-edit').length
+    return if @getRootEl().find('.treema-edit').length
     selected = @getSelectedTreemas()
     return unless selected.length is 1
     success = selected[0].parent?.addNewChild()
@@ -274,7 +274,7 @@ class TreemaNode
     return true
 
   endExistingEdits: ->
-    editing = @$el.closest('.treema-root').find('.treema-edit').closest('.treema-node')
+    editing = @getRootEl().find('.treema-edit').closest('.treema-node')
     for elem in editing
       return false unless $(elem).data('instance').toggleEdit('treema-read')
     return true
@@ -337,7 +337,8 @@ class TreemaNode
 
         if key.length and not @canAddProperty(key)
           keyInput.focus()
-          $(@newPropertyErrorTemplate).text('Invalid property name.').insertAfter(keyInput)
+          tempError = @createTemporaryError('Invalid property name.')
+          tempError.insertAfter(keyInput)
           return
 
         escaped = keyInput.data('escaped')
@@ -395,7 +396,11 @@ class TreemaNode
     toSelect.selectOne() if toSelect and not @getSelectedTreemas().length
 
   remove: ->
-    return if @parent and @parent.schema.required? and @keyForParent in @parent.schema.required 
+    required = @parent and @parent.schema.required? and @keyForParent in @parent.schema.required
+    if required
+      tempError = @createTemporaryError('required')
+      return @$el.prepend(tempError)
+
     @$el.remove()
     return unless @parent?
     delete @parent.childrenTreemas[@keyForParent]
@@ -451,16 +456,16 @@ class TreemaNode
     @toggleSelect()
 
   toggleSelect: ->
-    @$el.toggleClass('treema-selected') unless @$el.hasClass('treema-root')
+    @$el.toggleClass('treema-selected') unless @isRoot()
     if @$el.hasClass('treema-selected')
-      @$el.closest('.treema-root').find('.treema-last-selected').removeClass('treema-last-selected')
+      @getRootEl().find('.treema-last-selected').removeClass('treema-last-selected')
       @$el.addClass('treema-last-selected')
       
   shiftSelect: ->
-    lastSelected = @$el.closest('.treema-root').find('.treema-last-selected')
+    lastSelected = @getRootEl().find('.treema-last-selected')
     @selectOne() if not lastSelected.length
     @deselectAll()
-    allNodes = @$el.closest('.treema-root').find('.treema-node')
+    allNodes = @getRootEl().find('.treema-node')
     started = false
     for node in allNodes
       node = $(node).data('instance')
@@ -496,7 +501,7 @@ class TreemaNode
       keyEl.attr('title', treema.schema.description) if treema.schema.description
       childNode.prepend(' : ')
       required = @schema.required or []
-      childNode.prepend('*') if treema.keyForParent in required 
+      keyEl.text(keyEl.text()+'*') if treema.keyForParent in required 
       childNode.prepend(keyEl)
     childNode.prepend($(@toggleTemplate)) if treema.collection
     childNode
@@ -542,6 +547,17 @@ class TreemaNode
   removeErrors: ->
     @$el.find('.treema-error').remove()
     @$el.removeClass('treema-has-error')
+
+  createTemporaryError: (message, attachFunction=null) ->
+    attachFunction = @$el.prepend unless attachFunction
+    @getRootEl().find('.treema-temp-error').remove()
+    return $(@tempErrorTemplate).text(message).delay(3000).fadeOut(1000, -> $(@).remove())
+    
+  # Utilities -----------------------------------------------------------------
+
+  getRootEl: -> @$el.closest('.treema-root')
+  isRoot: -> @$el.hasClass('treema-root')
+  rootSelected: -> $(document.activeElement).hasClass('treema-root') 
 
 
 # TreemaNode subclasses -------------------------------------------------------
