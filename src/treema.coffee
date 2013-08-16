@@ -17,11 +17,12 @@ class TreemaNode
   templateString: '<div class="treema-error"></div>'
 
   # behavior settings (overridden by subclasses)
-  collection: false   # acts like an array or object
-  ordered: false      # acts like an array
-  keyed: false        # acts like an object
-  editable: true      # can be changed
-  skipTab: false      # is skipped over when tabbing between elements for editing
+  collection: false      # acts like an array or object
+  ordered: false         # acts like an array
+  keyed: false           # acts like an object
+  editable: true         # can be changed
+  directlyEditable: true # can be changed at this level directly
+  skipTab: false         # is skipped over when tabbing between elements for editing
   valueClass: null
   
   # dynamically managed properties
@@ -98,7 +99,7 @@ class TreemaNode
     @$el.append($(@childrenTemplate)).addClass('treema-closed') if @collection
     valEl = @getValEl()
     valEl.addClass(@valueClass) if @valueClass
-    valEl.addClass('treema-read') unless @collection
+    valEl.addClass('treema-read') if @directlyEditable
     @setValueForReading(valEl)
     @open() if @collection and not @parent
     @setUpEvents() unless @parent
@@ -120,7 +121,7 @@ class TreemaNode
     clickedToggle = $(e.target).hasClass('treema-toggle')
     usedModKey = e.shiftKey or e.ctrlKey or e.metaKey
     @getRootEl().focus() unless clickedValue and not @collection
-    return @toggleEdit() if clickedValue and not @collection and not usedModKey
+    return @toggleEdit() if clickedValue and @canEdit() and not usedModKey
     return @toggleOpen() if clickedToggle or (clickedValue and @collection)
     return @addNewChild() if $(e.target).closest('.treema-add-child').length and @collection
     return if @isRoot()
@@ -201,8 +202,7 @@ class TreemaNode
     offset = if e.shiftKey then -1 else 1
     if not @editingIsHappening()
       targetTreema = @getLastSelectedTreema()
-      return unless targetTreema
-      return if targetTreema.collection
+      return unless targetTreema?.canEdit()
       return targetTreema.toggleEdit('treema-edit')
       
     inputValues = (Boolean($(input).val()) for input in @getValEl().find('input, textarea'))
@@ -225,7 +225,7 @@ class TreemaNode
 
     # try siblings first
     targetTreema = el[dir]('.treema-node').data('instance')
-    if targetTreema?.collection
+    if targetTreema and not targetTreema?.canEdit()
       targetTreema = targetTreema.getNextEditableTreema(offset) 
       
     # then from parent treemas
@@ -238,14 +238,14 @@ class TreemaNode
       dir = if offset > 0 then 'first' else 'last'
       selector = '> .treema-children > .treema-node:'+dir
       targetTreema = @getRootEl().find(selector).data('instance')
-      targetTreema = targetTreema.getNextEditableTreema(offset) if targetTreema.collection
+      targetTreema = targetTreema.getNextEditableTreema(offset) if targetTreema and not targetTreema.canEdit()
     return targetTreema
 
   getNextEditableTreema: (offset) ->
     targetTreema = @
     while targetTreema
       targetTreema = if offset > 0 then targetTreema.getNextTreema() else targetTreema.getPreviousTreema()
-      continue if targetTreema?.collection
+      continue if targetTreema and not targetTreema.canEdit()
       break
     targetTreema
   
@@ -280,6 +280,12 @@ class TreemaNode
     prevSibling = @$el.prev('.treema-node').data('instance')
     lastChild = prevSibling?.$el.find('.treema-node:last').data('instance')
     return lastChild or prevSibling or @parent
+    
+  canEdit: ->
+    return false if not @editable
+    return false if not @directlyEditable
+    return false if @collection and @isOpen()
+    return true
 
   # Editing values ------------------------------------------------------------
   toggleEdit: (toClass=null) ->
@@ -302,6 +308,7 @@ class TreemaNode
     $(elem).data('instance').toggleEdit('treema-read') for elem in editing
       
   flushChanges: ->
+    @justAdded = false
     return @refreshErrors() unless @parent
     @parent.data[@keyForParent] = @data
     @parent.refreshErrors()
@@ -467,6 +474,7 @@ class TreemaNode
   clearErrors: ->
     @$el.find('.treema-error').remove()
     @$el.find('.treema-has-error').removeClass('treema-has-error')
+    @$el.removeClass('treema-has-error')
 
   createTemporaryError: (message, attachFunction=null) ->
     attachFunction = @$el.prepend unless attachFunction
@@ -565,6 +573,7 @@ class ArrayTreemaNode extends TreemaNode
   getDefaultValue: -> []
   collection: true
   ordered: true
+  directlyEditable: false
 
   getChildren: -> ([key, value, @getChildSchema()] for value, key in @data)
   getChildSchema: -> @schema.items or {}
@@ -596,6 +605,7 @@ class ObjectTreemaNode extends TreemaNode
   collection: true
   keyed: true
   newPropertyTemplate: '<input class="treema-new-prop" />'
+  directlyEditable: false
 
   getChildren: ->
     # order based on properties object first
@@ -717,6 +727,13 @@ class ObjectTreemaNode extends TreemaNode
       @clearTemporaryErrors()
       keyInput.remove()
       e.preventDefault()
+      
+  onEscapePressed: (e) ->
+    keyInput = $(e.target)
+    return unless keyInput.hasClass('treema-new-prop')
+    @clearTemporaryErrors()
+    keyInput.remove()
+    e.preventDefault()
 
   onTabPressed: (e) ->
     e.preventDefault()
@@ -774,7 +791,7 @@ class AnyTreemaNode extends TreemaNode
     @helper = new NodeClass(@schema, @data, @options, @parent)
     @helper.tv4 = @tv4
     for prop in ['collection', 'ordered', 'keyed', 'getChildSchema', 'getChildren', 'getChildSchema',
-                 'setValueForReading', 'valueClass']
+                 'setValueForReading']
       @[prop] = @helper[prop]
 
   rebuild: ->
@@ -785,6 +802,13 @@ class AnyTreemaNode extends TreemaNode
       newNode = @build()
 
     oldEl.replaceWith(newNode)
+
+  onClick: (e) ->
+    return if e.target.nodeName in ['INPUT', 'TEXTAREA']
+    clickedValue = $(e.target).closest('.treema-value').length  # Clicks are in children of .treema-value nodes
+    usedModKey = e.shiftKey or e.ctrlKey or e.metaKey
+    return @toggleEdit() if clickedValue and not usedModKey
+    super(e)
 
 
 TreemaNodeMap =
