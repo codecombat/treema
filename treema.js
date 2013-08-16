@@ -12,7 +12,7 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.options = null;
 
-  TreemaNode.prototype.isChild = false;
+  TreemaNode.prototype.parent = null;
 
   TreemaNode.prototype.nodeTemplate = '<div class="treema-node treema-clearfix"><div class="treema-value"></div><div class="treema-backdrop"></div></div>';
 
@@ -39,8 +39,6 @@ TreemaNode = (function() {
   TreemaNode.prototype.skipTab = false;
 
   TreemaNode.prototype.valueClass = null;
-
-  TreemaNode.prototype.parent = null;
 
   TreemaNode.prototype.keyForParent = null;
 
@@ -69,6 +67,18 @@ TreemaNode = (function() {
       return [];
     }
     return this.tv4.validateMultiple(this.data, this.schema)['missing'];
+  };
+
+  TreemaNode.prototype.setUpValidator = function() {
+    var node, _ref;
+    if (!this.parent) {
+      return this.tv4 = (_ref = window['tv4']) != null ? _ref.freshApi() : void 0;
+    }
+    node = this;
+    while (node.parent) {
+      node = node.parent;
+    }
+    return this.tv4 = node.tv4;
   };
 
   TreemaNode.prototype.saveChanges = function() {
@@ -153,25 +163,26 @@ TreemaNode = (function() {
     return input;
   };
 
-  function TreemaNode(schema, data, options, isChild) {
+  function TreemaNode(schema, data, options, parent) {
     this.schema = schema;
     this.data = data;
     this.options = options;
-    this.isChild = isChild;
+    this.parent = parent;
     this.orderDataFromUI = __bind(this.orderDataFromUI, this);
     this.options = this.options || {};
     this.schema = this.schema || {};
   }
 
   TreemaNode.prototype.build = function() {
-    var valEl, _ref;
+    var valEl;
     this.populateData();
+    this.setUpValidator();
     this.$el = $(this.nodeTemplate);
     this.$el.data('instance', this);
-    if (!this.isChild) {
+    if (!this.parent) {
       this.$el.addClass('treema-root');
     }
-    if (!this.isChild) {
+    if (!this.parent) {
       this.$el.attr('tabindex', 9001);
     }
     if (this.collection) {
@@ -185,17 +196,14 @@ TreemaNode = (function() {
       valEl.addClass('treema-read');
     }
     this.setValueForReading(valEl);
-    if (this.collection && !this.isChild) {
+    if (this.collection && !this.parent) {
       this.open();
     }
-    if (!this.isChild) {
+    if (!this.parent) {
       this.setUpEvents();
     }
     if (this.collection) {
       this.updateMyAddButton();
-    }
-    if (!this.isChild) {
-      this.tv4 = (_ref = window['tv4']) != null ? _ref.freshApi() : void 0;
     }
     return this.$el;
   };
@@ -406,10 +414,25 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.onTabPressed = function(e) {
-    var targetTreema, _ref, _ref1;
+    var input, inputValues, targetTreema, _ref, _ref1;
     e.preventDefault();
     if (!this.editingIsHappening()) {
       return (_ref = this.getLastSelectedTreema()) != null ? _ref.toggleEdit('treema-edit') : void 0;
+    }
+    inputValues = (function() {
+      var _i, _len, _ref1, _results;
+      _ref1 = this.getValEl().find('input, textarea');
+      _results = [];
+      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+        input = _ref1[_i];
+        _results.push(Boolean($(input).val()));
+      }
+      return _results;
+    }).call(this);
+    if (__indexOf.call(inputValues, true) < 0) {
+      targetTreema = this.getNextEditableTreemaFromElement(this.$el, e.shiftKey ? -1 : 1);
+      this.remove();
+      targetTreema.toggleEdit('treema-edit');
     }
     this.saveChanges();
     this.flushChanges();
@@ -423,6 +446,35 @@ TreemaNode = (function() {
     } else {
       return (_ref1 = this.parent) != null ? _ref1.addNewChild() : void 0;
     }
+  };
+
+  TreemaNode.prototype.getNextEditableTreemaFromElement = function(el, offset) {
+    var dir, parentTreema, targetTreema;
+    dir = offset > 0 ? 'next' : 'prev';
+    targetTreema = el[dir]('.treema-node').data('instance');
+    if (targetTreema != null ? targetTreema.collection : void 0) {
+      targetTreema = targetTreema.getNextEditableTreema(offset);
+    } else if (!targetTreema) {
+      parentTreema = el.closest('.treema-node').data('instance');
+      targetTreema = parentTreema != null ? parentTreema.getNextEditableTreema(offset) : void 0;
+    }
+    if (!targetTreema) {
+      if (offset > 0) {
+        targetTreema = this.getNextEditableTreema(1);
+        if (!targetTreema) {
+          targetTreema = this.getRootEl().find('.treema-node:first').data('instance') != null;
+        }
+        if (targetTreema.collection) {
+          targetTreema = this.getNextEditableTreema(1);
+        }
+      } else {
+        targetTreema = this.$el.find('> .treema-children > .treema-node:last').data('instance') || this;
+        if (targetTreema.collection) {
+          targetTreema = targetTreema.getNextEditableTreema(-1);
+        }
+      }
+    }
+    return targetTreema;
   };
 
   TreemaNode.prototype.getNextEditableTreema = function(offset) {
@@ -728,10 +780,8 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.addChildTreema = function(key, value, schema) {
     var treema;
-    treema = makeTreema(schema, value, {}, true);
-    treema.tv4 = this.tv4;
+    treema = makeTreema(schema, value, {}, this);
     treema.keyForParent = key;
-    treema.parent = this;
     this.childrenTreemas[key] = treema;
     treema.populateData();
     this.data[key] = treema.data;
@@ -1163,6 +1213,7 @@ ArrayTreemaNode = (function(_super) {
     schema = this.getChildSchema();
     newTreema = this.addChildTreema(new_index, void 0, schema);
     newTreema.justAdded = true;
+    newTreema.tv4 = this.tv4;
     childNode = this.createChildNode(newTreema);
     this.getAddButtonEl().before(childNode);
     newTreema.toggleEdit('treema-edit');
@@ -1251,8 +1302,7 @@ ObjectTreemaNode = (function(_super) {
       if (this.data[key]) {
         continue;
       }
-      helperTreema = makeTreema(this.getChildSchema(key), null, {}, true);
-      helperTreema.tv4 = this.tv4;
+      helperTreema = makeTreema(this.getChildSchema(key), null, {}, this);
       helperTreema.populateData();
       _results.push(this.data[key] = helperTreema.data);
     }
@@ -1365,6 +1415,7 @@ ObjectTreemaNode = (function(_super) {
     schema = this.getChildSchema(key);
     newTreema = this.addChildTreema(key, null, schema);
     newTreema.justAdded = true;
+    newTreema.tv4 = this.tv4;
     childNode = this.createChildNode(newTreema);
     this.findObjectInsertionPoint(key).before(childNode);
     if (newTreema.collection) {
@@ -1436,22 +1487,8 @@ ObjectTreemaNode = (function(_super) {
     if (keyInput.val()) {
       return keyInput.blur();
     }
+    targetTreema = this.getNextEditableTreemaFromElement(keyInput, e.shiftKey ? -1 : 1);
     keyInput.remove();
-    targetTreema = null;
-    if (e.shiftKey) {
-      targetTreema = this.$el.find('> .treema-children > .treema-node:last').data('instance') || this;
-      if (targetTreema.collection) {
-        targetTreema = targetTreema.getNextEditableTreema(-1);
-      }
-    } else {
-      targetTreema = this.getNextEditableTreema(1);
-      if (!targetTreema) {
-        targetTreema = this.getRootEl().find('.treema-node:first').data('instance') != null;
-      }
-      if (targetTreema.collection) {
-        targetTreema = this.getNextEditableTreema(1);
-      }
-    }
     if (targetTreema) {
       return targetTreema.toggleEdit('treema-edit');
     }
@@ -1506,7 +1543,7 @@ AnyTreemaNode = (function(_super) {
     var NodeClass, dataType, prop, _i, _len, _ref6, _results;
     dataType = $.type(this.data);
     NodeClass = TreemaNodeMap[dataType];
-    this.helper = new NodeClass(this.schema, this.data, this.options, this.isChild);
+    this.helper = new NodeClass(this.schema, this.data, this.options, this.parent);
     this.helper.tv4 = this.tv4;
     _ref6 = ['collection', 'ordered', 'keyed', 'getChildSchema', 'getChildren', 'getChildSchema', 'setValueForReading', 'valueClass'];
     _results = [];
@@ -1542,7 +1579,7 @@ TreemaNodeMap = {
   'any': AnyTreemaNode
 };
 
-makeTreema = function(schema, data, options, child) {
+makeTreema = function(schema, data, options, parent) {
   var NodeClass;
   NodeClass = TreemaNodeMap[schema.format];
   if (!NodeClass) {
@@ -1551,7 +1588,7 @@ makeTreema = function(schema, data, options, child) {
   if (!NodeClass) {
     NodeClass = TreemaNodeMap['any'];
   }
-  return new NodeClass(schema, data, options, child);
+  return new NodeClass(schema, data, options, parent);
 };
 
 //@ sourceMappingURL=treema.js.map

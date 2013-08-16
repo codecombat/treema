@@ -5,8 +5,8 @@ class TreemaNode
   schema: {}
   data: null
   options: null
-  isChild: false
-
+  parent: null
+  
   # templates
   nodeTemplate: '<div class="treema-node treema-clearfix"><div class="treema-value"></div><div class="treema-backdrop"></div></div>'
   childrenTemplate: '<div class="treema-children"></div>'
@@ -25,7 +25,6 @@ class TreemaNode
   valueClass: null
   
   # dynamically managed properties
-  parent: null
   keyForParent: null
   $el: null
   childrenTreemas: null
@@ -43,6 +42,12 @@ class TreemaNode
   getMissing: ->
     return [] unless @tv4
     @tv4.validateMultiple(@data, @schema)['missing']
+
+  setUpValidator: ->
+    return @tv4 = window['tv4']?.freshApi() if not @parent
+    node = @
+    node = node.parent while node.parent
+    @tv4 = node.tv4
 
   # Abstract functions --------------------------------------------------------
   saveChanges: -> console.error('"saveChanges" has not been overridden.')
@@ -79,25 +84,25 @@ class TreemaNode
     input
 
   # Initialization ------------------------------------------------------------
-  constructor: (@schema, @data, @options, @isChild) ->
+  constructor: (@schema, @data, @options, @parent) ->
     @options = @options or {}
     @schema = @schema or {}
 
   build: ->
     @populateData()
+    @setUpValidator()
     @$el = $(@nodeTemplate)
     @$el.data('instance', @)
-    @$el.addClass('treema-root') unless @isChild
-    @$el.attr('tabindex', 9001) unless @isChild
+    @$el.addClass('treema-root') unless @parent
+    @$el.attr('tabindex', 9001) unless @parent
     @$el.append($(@childrenTemplate)).addClass('treema-closed') if @collection
     valEl = @getValEl()
     valEl.addClass(@valueClass) if @valueClass
     valEl.addClass('treema-read') unless @collection
     @setValueForReading(valEl)
-    @open() if @collection and not @isChild
-    @setUpEvents() unless @isChild
+    @open() if @collection and not @parent
+    @setUpEvents() unless @parent
     @updateMyAddButton() if @collection
-    @tv4 = window['tv4']?.freshApi() unless @isChild
     @$el
     
   populateData: ->
@@ -194,6 +199,12 @@ class TreemaNode
   onTabPressed: (e) ->
     e.preventDefault()
     return @getLastSelectedTreema()?.toggleEdit('treema-edit') if not @editingIsHappening()
+    inputValues = (Boolean($(input).val()) for input in @getValEl().find('input, textarea'))
+    unless true in inputValues
+      targetTreema = @getNextEditableTreemaFromElement(@$el, if e.shiftKey then -1 else 1)
+      @remove()
+      targetTreema.toggleEdit('treema-edit')
+
     @saveChanges()
     @flushChanges()
     return unless @isValid()
@@ -202,6 +213,24 @@ class TreemaNode
     if targetTreema then targetTreema.toggleEdit('treema-edit') else @parent?.addNewChild()
     
   # Tree traversing -----------------------------------------------------------
+
+  getNextEditableTreemaFromElement: (el, offset) ->
+    dir = if offset > 0 then 'next' else 'prev'
+    targetTreema = el[dir]('.treema-node').data('instance')
+    if targetTreema?.collection
+      targetTreema = targetTreema.getNextEditableTreema(offset)
+    else if not targetTreema
+      parentTreema = el.closest('.treema-node').data('instance')
+      targetTreema = parentTreema?.getNextEditableTreema(offset)
+    if not targetTreema
+      if offset > 0
+        targetTreema = @getNextEditableTreema(1)
+        targetTreema = @getRootEl().find('.treema-node:first').data('instance')? if not targetTreema
+        targetTreema = @getNextEditableTreema(1) if targetTreema.collection
+      else
+        targetTreema = @$el.find('> .treema-children > .treema-node:last').data('instance') or @
+        targetTreema = targetTreema.getNextEditableTreema(-1) if targetTreema.collection
+    return targetTreema
 
   getNextEditableTreema: (offset) ->
     targetTreema = @
@@ -267,7 +296,7 @@ class TreemaNode
     return @refreshErrors() unless @parent
     @parent.data[@keyForParent] = @data
     @parent.refreshErrors()
-  
+    
   # Removing nodes ------------------------------------------------------------
   removeSelectedNodes: ->
     selected = @getSelectedTreemas()
@@ -368,10 +397,8 @@ class TreemaNode
 
   # Child node utilities ------------------------------------------------------
   addChildTreema: (key, value, schema) ->
-    treema = makeTreema(schema, value, {}, true)
-    treema.tv4 = @tv4
+    treema = makeTreema(schema, value, {}, @)
     treema.keyForParent = key
-    treema.parent = @
     @childrenTreemas[key] = treema
     treema.populateData()
     @data[key] = treema.data
@@ -547,6 +574,7 @@ class ArrayTreemaNode extends TreemaNode
     schema = @getChildSchema()
     newTreema = @addChildTreema(new_index, undefined, schema)
     newTreema.justAdded = true
+    newTreema.tv4 = @tv4
     childNode = @createChildNode(newTreema)
     @getAddButtonEl().before(childNode)
     newTreema.toggleEdit('treema-edit')
@@ -588,8 +616,7 @@ class ObjectTreemaNode extends TreemaNode
     return unless @schema.required
     for key in @schema.required
       continue if @data[key]
-      helperTreema = makeTreema(@getChildSchema(key), null, {}, true)
-      helperTreema.tv4 = @tv4
+      helperTreema = makeTreema(@getChildSchema(key), null, {}, @)
       helperTreema.populateData()
       @data[key] = helperTreema.data
 
@@ -646,6 +673,7 @@ class ObjectTreemaNode extends TreemaNode
     schema = @getChildSchema(key)
     newTreema = @addChildTreema(key, null, schema)
     newTreema.justAdded = true
+    newTreema.tv4 = @tv4
     childNode = @createChildNode(newTreema)
     @findObjectInsertionPoint(key).before(childNode)
     if newTreema.collection then newTreema.addNewChild() else newTreema.toggleEdit('treema-edit')
@@ -685,18 +713,8 @@ class ObjectTreemaNode extends TreemaNode
     keyInput = $(e.target)
     return super(e) unless keyInput.hasClass('treema-new-prop')
     return keyInput.blur() if keyInput.val() # pass to onNewPropertyBlur
+    targetTreema = @getNextEditableTreemaFromElement(keyInput, if e.shiftKey then -1 else 1)
     keyInput.remove()
-    targetTreema = null
-    
-    # figure out what treema to edit from here
-    if e.shiftKey
-      targetTreema = @$el.find('> .treema-children > .treema-node:last').data('instance') or @
-      targetTreema = targetTreema.getNextEditableTreema(-1) if targetTreema.collection
-    else
-      targetTreema = @getNextEditableTreema(1)
-      targetTreema = @getRootEl().find('.treema-node:first').data('instance')? if not targetTreema
-      targetTreema = @getNextEditableTreema(1) if targetTreema.collection
-    
     targetTreema.toggleEdit('treema-edit') if targetTreema
     
 
@@ -743,7 +761,7 @@ class AnyTreemaNode extends TreemaNode
     # This node takes on the behaviors of the other basic nodes.
     dataType = $.type(@data)
     NodeClass = TreemaNodeMap[dataType]
-    @helper = new NodeClass(@schema, @data, @options, @isChild)
+    @helper = new NodeClass(@schema, @data, @options, @parent)
     @helper.tv4 = @tv4
     for prop in ['collection', 'ordered', 'keyed', 'getChildSchema', 'getChildren', 'getChildSchema',
                  'setValueForReading', 'valueClass']
@@ -768,11 +786,11 @@ TreemaNodeMap =
   'boolean': BooleanTreemaNode
   'any': AnyTreemaNode
 
-makeTreema = (schema, data, options, child) ->
+makeTreema = (schema, data, options, parent) ->
   NodeClass = TreemaNodeMap[schema.format]
   unless NodeClass
     NodeClass = TreemaNodeMap[schema.type]
   unless NodeClass
     NodeClass = TreemaNodeMap['any']
-
-  return new NodeClass(schema, data, options, child)
+    
+  return new NodeClass(schema, data, options, parent)
