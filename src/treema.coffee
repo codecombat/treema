@@ -120,7 +120,7 @@ class TreemaNode
     clickedValue = $(e.target).closest('.treema-value').length  # Clicks are in children of .treema-value nodes
     clickedToggle = $(e.target).hasClass('treema-toggle')
     usedModKey = e.shiftKey or e.ctrlKey or e.metaKey
-    @getRootEl().focus() unless clickedValue and not @collection
+    @keepFocus() unless clickedValue and not @collection
     return @toggleEdit() if clickedValue and @canEdit() and not usedModKey
     return @toggleOpen() if clickedToggle or (clickedValue and @collection)
     return @addNewChild() if $(e.target).closest('.treema-add-child').length and @collection
@@ -330,7 +330,9 @@ class TreemaNode
       tempError = @createTemporaryError('required')
       return @$el.prepend(tempError)
 
+    root = @getRootEl()
     @$el.remove()
+    root.focus()
     return unless @parent?
     delete @parent.childrenTreemas[@keyForParent]
     delete @parent.data[@keyForParent]
@@ -497,6 +499,7 @@ class TreemaNode
   isSelected: -> @$el.hasClass('treema-selected')
   wasSelectedLast: -> @$el.hasClass('treema-last-selected')
   editingIsHappening: -> @getRootEl().find('.treema-edit').length
+  keepFocus: -> @getRootEl().focus()
   
   rootSelected: -> $(document.activeElement).hasClass('treema-root')
   getSelectedTreemas: -> ($(el).data('instance') for el in @getRootEl().find('.treema-selected'))

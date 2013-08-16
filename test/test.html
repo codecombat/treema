@@ -45,7 +45,7 @@
         "is-home-address": { type: 'boolean', title: "Is Home" },
         "phone-numbers": { "type": "array", items: { type: "string", maxLength: 20, minLength:4 }, title: "Phone #s" }
       },
-      "required": ['locality', 'region', 'country-name'],
+      "required": ['locality', 'region', 'country-name', 'postal-code'],
       "dependencies": {
         "post-office-box": "street-address",
         "extended-address": "street-address"

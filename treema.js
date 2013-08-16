@@ -239,7 +239,7 @@ TreemaNode = (function() {
     clickedToggle = $(e.target).hasClass('treema-toggle');
     usedModKey = e.shiftKey || e.ctrlKey || e.metaKey;
     if (!(clickedValue && !this.collection)) {
-      this.getRootEl().focus();
+      this.keepFocus();
     }
     if (clickedValue && this.canEdit() && !usedModKey) {
       return this.toggleEdit();
@@ -642,13 +642,15 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.remove = function() {
-    var required, tempError, _ref;
+    var required, root, tempError, _ref;
     required = this.parent && (this.parent.schema.required != null) && (_ref = this.keyForParent, __indexOf.call(this.parent.schema.required, _ref) >= 0);
     if (required) {
       tempError = this.createTemporaryError('required');
       return this.$el.prepend(tempError);
     }
+    root = this.getRootEl();
     this.$el.remove();
+    root.focus();
     if (this.parent == null) {
       return;
     }
@@ -973,6 +975,10 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.editingIsHappening = function() {
     return this.getRootEl().find('.treema-edit').length;
+  };
+
+  TreemaNode.prototype.keepFocus = function() {
+    return this.getRootEl().focus();
   };
 
   TreemaNode.prototype.rootSelected = function() {
