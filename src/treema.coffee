@@ -208,7 +208,6 @@ class TreemaNode
     (child for child in children when not (child.collection or child.skipTab))
 
   tabToNextTreema: (childIndex, direction) ->
-    console.log('tab to next treema', childIndex)
     tabbableChildren = @getTabbableChildrenTreemas()
     return null unless tabbableChildren.length
     nextIndex = childIndex + (if direction is "next" then 1 else -1)
