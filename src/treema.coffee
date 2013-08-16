@@ -198,38 +198,47 @@ class TreemaNode
     
   onTabPressed: (e) ->
     e.preventDefault()
-    return @getLastSelectedTreema()?.toggleEdit('treema-edit') if not @editingIsHappening()
+    offset = if e.shiftKey then -1 else 1
+    if not @editingIsHappening()
+      targetTreema = @getLastSelectedTreema()
+      return unless targetTreema
+      return if targetTreema.collection
+      return targetTreema.toggleEdit('treema-edit')
+      
     inputValues = (Boolean($(input).val()) for input in @getValEl().find('input, textarea'))
     unless true in inputValues
-      targetTreema = @getNextEditableTreemaFromElement(@$el, if e.shiftKey then -1 else 1)
+      targetTreema = @getNextEditableTreemaFromElement(@$el, offset)
       @remove()
-      targetTreema.toggleEdit('treema-edit')
-
+      return targetTreema.toggleEdit('treema-edit')
+      
     @saveChanges()
     @flushChanges()
     return unless @isValid()
     @endExistingEdits()
-    targetTreema = @getNextEditableTreema(if e.shiftKey then -1 else 1)
+    targetTreema = @getNextEditableTreema(offset)
     if targetTreema then targetTreema.toggleEdit('treema-edit') else @parent?.addNewChild()
     
   # Tree traversing -----------------------------------------------------------
 
   getNextEditableTreemaFromElement: (el, offset) ->
     dir = if offset > 0 then 'next' else 'prev'
+
+    # try siblings first
     targetTreema = el[dir]('.treema-node').data('instance')
     if targetTreema?.collection
-      targetTreema = targetTreema.getNextEditableTreema(offset)
+      targetTreema = targetTreema.getNextEditableTreema(offset) 
+      
+    # then from parent treemas
     else if not targetTreema
       parentTreema = el.closest('.treema-node').data('instance')
       targetTreema = parentTreema?.getNextEditableTreema(offset)
+      
+    # otherwise, just start again from the beginning or end
     if not targetTreema
-      if offset > 0
-        targetTreema = @getNextEditableTreema(1)
-        targetTreema = @getRootEl().find('.treema-node:first').data('instance')? if not targetTreema
-        targetTreema = @getNextEditableTreema(1) if targetTreema.collection
-      else
-        targetTreema = @$el.find('> .treema-children > .treema-node:last').data('instance') or @
-        targetTreema = targetTreema.getNextEditableTreema(-1) if targetTreema.collection
+      dir = if offset > 0 then 'first' else 'last'
+      selector = '> .treema-children > .treema-node:'+dir
+      targetTreema = @getRootEl().find(selector).data('instance')
+      targetTreema = targetTreema.getNextEditableTreema(offset) if targetTreema.collection
     return targetTreema
 
   getNextEditableTreema: (offset) ->

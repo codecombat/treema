@@ -414,25 +414,33 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.onTabPressed = function(e) {
-    var input, inputValues, targetTreema, _ref, _ref1;
+    var input, inputValues, offset, targetTreema, _ref;
     e.preventDefault();
+    offset = e.shiftKey ? -1 : 1;
     if (!this.editingIsHappening()) {
-      return (_ref = this.getLastSelectedTreema()) != null ? _ref.toggleEdit('treema-edit') : void 0;
+      targetTreema = this.getLastSelectedTreema();
+      if (!targetTreema) {
+        return;
+      }
+      if (targetTreema.collection) {
+        return;
+      }
+      return targetTreema.toggleEdit('treema-edit');
     }
     inputValues = (function() {
-      var _i, _len, _ref1, _results;
-      _ref1 = this.getValEl().find('input, textarea');
+      var _i, _len, _ref, _results;
+      _ref = this.getValEl().find('input, textarea');
       _results = [];
-      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-        input = _ref1[_i];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        input = _ref[_i];
         _results.push(Boolean($(input).val()));
       }
       return _results;
     }).call(this);
     if (__indexOf.call(inputValues, true) < 0) {
-      targetTreema = this.getNextEditableTreemaFromElement(this.$el, e.shiftKey ? -1 : 1);
+      targetTreema = this.getNextEditableTreemaFromElement(this.$el, offset);
       this.remove();
-      targetTreema.toggleEdit('treema-edit');
+      return targetTreema.toggleEdit('treema-edit');
     }
     this.saveChanges();
     this.flushChanges();
@@ -440,16 +448,16 @@ TreemaNode = (function() {
       return;
     }
     this.endExistingEdits();
-    targetTreema = this.getNextEditableTreema(e.shiftKey ? -1 : 1);
+    targetTreema = this.getNextEditableTreema(offset);
     if (targetTreema) {
       return targetTreema.toggleEdit('treema-edit');
     } else {
-      return (_ref1 = this.parent) != null ? _ref1.addNewChild() : void 0;
+      return (_ref = this.parent) != null ? _ref.addNewChild() : void 0;
     }
   };
 
   TreemaNode.prototype.getNextEditableTreemaFromElement = function(el, offset) {
-    var dir, parentTreema, targetTreema;
+    var dir, parentTreema, selector, targetTreema;
     dir = offset > 0 ? 'next' : 'prev';
     targetTreema = el[dir]('.treema-node').data('instance');
     if (targetTreema != null ? targetTreema.collection : void 0) {
@@ -459,19 +467,11 @@ TreemaNode = (function() {
       targetTreema = parentTreema != null ? parentTreema.getNextEditableTreema(offset) : void 0;
     }
     if (!targetTreema) {
-      if (offset > 0) {
-        targetTreema = this.getNextEditableTreema(1);
-        if (!targetTreema) {
-          targetTreema = this.getRootEl().find('.treema-node:first').data('instance') != null;
-        }
-        if (targetTreema.collection) {
-          targetTreema = this.getNextEditableTreema(1);
-        }
-      } else {
-        targetTreema = this.$el.find('> .treema-children > .treema-node:last').data('instance') || this;
-        if (targetTreema.collection) {
-          targetTreema = targetTreema.getNextEditableTreema(-1);
-        }
+      dir = offset > 0 ? 'first' : 'last';
+      selector = '> .treema-children > .treema-node:' + dir;
+      targetTreema = this.getRootEl().find(selector).data('instance');
+      if (targetTreema.collection) {
+        targetTreema = targetTreema.getNextEditableTreema(offset);
       }
     }
     return targetTreema;
