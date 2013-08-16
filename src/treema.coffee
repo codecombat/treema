@@ -365,6 +365,7 @@ class TreemaNode
       treema = $(child).data('instance')
       continue unless treema
       treema.keyForParent = index
+      treema.$el.find('.treema-key').text(index)
       @childrenTreemas[index] = treema
       @data[index] = treema.data
       index += 1

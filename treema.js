@@ -708,6 +708,7 @@ TreemaNode = (function() {
         continue;
       }
       treema.keyForParent = index;
+      treema.$el.find('.treema-key').text(index);
       this.childrenTreemas[index] = treema;
       this.data[index] = treema.data;
       index += 1;
@@ -1521,7 +1522,6 @@ ObjectTreemaNode = (function(_super) {
       return keyInput.blur();
     }
     targetTreema = this.getNextEditableTreemaFromElement(keyInput, e.shiftKey ? -1 : 1);
-    console.log('target treema?', targetTreema);
     keyInput.remove();
     if (targetTreema) {
       return targetTreema.toggleEdit('treema-edit');
