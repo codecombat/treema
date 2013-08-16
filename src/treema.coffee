@@ -34,16 +34,24 @@ class TreemaNode
   justAdded: false
 
   # Thin interface for tv4 ----------------------------------------------------
-  isValid: -> tv4.validate(@data, @schema)
-  getErrors: -> tv4.validateMultiple(@data, @schema)['errors']
-  getMissing: -> tv4.validateMultiple(@data, @schema)['missing']
+  isValid: ->
+    return true unless @tv4
+    @tv4.validate(@data, @schema)
+    
+  getErrors: ->
+    return [] unless @tv4
+    @tv4.validateMultiple(@data, @schema)['errors']
+    
+  getMissing: ->
+    return [] unless @tv4
+    @tv4.validateMultiple(@data, @schema)['missing']
 
   # Abstract functions --------------------------------------------------------
-  setValueForReading: (valEl) -> console.error('"setValueForReading" has not been overridden.')
-  setValueForEditing: (valEl) ->
+  setValueForReading: -> console.error('"setValueForReading" has not been overridden.')
+  setValueForEditing: ->
     return unless @editable
     console.error('"setValueForEditing" has not been overridden.')
-  saveChanges: (valEl) -> console.error('"saveChanges" has not been overridden.')
+  saveChanges: -> console.error('"saveChanges" has not been overridden.')
   getDefaultValue: -> null
   
   # collection specific
@@ -86,6 +94,7 @@ class TreemaNode
     @$el.data('instance', @)
     @$el.addClass('treema-root') unless @isChild
     @$el.attr('tabindex', 9001) unless @isChild
+    @tv4 = tv4?.freshApi() unless @isChild
     @$el.append($(@childrenTemplate)).addClass('treema-closed') if @collection
     @open() if @collection and not @isChild
     @setUpEvents() unless @isChild
@@ -397,6 +406,7 @@ class TreemaNode
   # Child node utilities ------------------------------------------------------
   addChildTreema: (key, value, schema) ->
     treema = makeTreema(schema, value, {}, true)
+    treema.tv4 = @tv4
     treema.keyForParent = key
     treema.parent = @
     @childrenTreemas[key] = treema
@@ -601,6 +611,7 @@ class ObjectTreemaNode extends TreemaNode
     for key in @schema.required
       continue if @data[key]
       helperTreema = makeTreema(@getChildSchema(key), null, {}, true)
+      helperTreema.tv4 = @tv4
       helperTreema.populateData()
       @data[key] = helperTreema.data
 
@@ -754,6 +765,7 @@ class AnyTreemaNode extends TreemaNode
     dataType = $.type(@data)
     NodeClass = TreemaNodeMap[dataType]
     @helper = new NodeClass(@schema, @data, @options, @isChild)
+    @helper.tv4 = @tv4
     for prop in ['collection', 'ordered', 'keyed', 'getChildSchema', 'getChildren', 'getChildSchema',
                  'setValueForReading', 'valueClass']
       @[prop] = @helper[prop]

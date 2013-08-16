@@ -55,29 +55,38 @@ TreemaNode = (function() {
   TreemaNode.prototype.justAdded = false;
 
   TreemaNode.prototype.isValid = function() {
-    return tv4.validate(this.data, this.schema);
+    if (!this.tv4) {
+      return true;
+    }
+    return this.tv4.validate(this.data, this.schema);
   };
 
   TreemaNode.prototype.getErrors = function() {
-    return tv4.validateMultiple(this.data, this.schema)['errors'];
+    if (!this.tv4) {
+      return [];
+    }
+    return this.tv4.validateMultiple(this.data, this.schema)['errors'];
   };
 
   TreemaNode.prototype.getMissing = function() {
-    return tv4.validateMultiple(this.data, this.schema)['missing'];
+    if (!this.tv4) {
+      return [];
+    }
+    return this.tv4.validateMultiple(this.data, this.schema)['missing'];
   };
 
-  TreemaNode.prototype.setValueForReading = function(valEl) {
+  TreemaNode.prototype.setValueForReading = function() {
     return console.error('"setValueForReading" has not been overridden.');
   };
 
-  TreemaNode.prototype.setValueForEditing = function(valEl) {
+  TreemaNode.prototype.setValueForEditing = function() {
     if (!this.editable) {
       return;
     }
     return console.error('"setValueForEditing" has not been overridden.');
   };
 
-  TreemaNode.prototype.saveChanges = function(valEl) {
+  TreemaNode.prototype.saveChanges = function() {
     return console.error('"saveChanges" has not been overridden.');
   };
 
@@ -169,6 +178,9 @@ TreemaNode = (function() {
     }
     if (!this.isChild) {
       this.$el.attr('tabindex', 9001);
+    }
+    if (!this.isChild) {
+      this.tv4 = typeof tv4 !== "undefined" && tv4 !== null ? tv4.freshApi() : void 0;
     }
     if (this.collection) {
       this.$el.append($(this.childrenTemplate)).addClass('treema-closed');
@@ -422,7 +434,6 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.tabToNextTreema = function(childIndex, direction) {
     var n, nextIndex, nextTreema, tabbableChildren;
-    console.log('tab to next treema', childIndex);
     tabbableChildren = this.getTabbableChildrenTreemas();
     if (!tabbableChildren.length) {
       return null;
@@ -717,6 +728,7 @@ TreemaNode = (function() {
   TreemaNode.prototype.addChildTreema = function(key, value, schema) {
     var treema;
     treema = makeTreema(schema, value, {}, true);
+    treema.tv4 = this.tv4;
     treema.keyForParent = key;
     treema.parent = this;
     this.childrenTreemas[key] = treema;
@@ -1225,6 +1237,7 @@ ObjectTreemaNode = (function(_super) {
         continue;
       }
       helperTreema = makeTreema(this.getChildSchema(key), null, {}, true);
+      helperTreema.tv4 = this.tv4;
       helperTreema.populateData();
       _results.push(this.data[key] = helperTreema.data);
     }
@@ -1462,6 +1475,7 @@ AnyTreemaNode = (function(_super) {
     dataType = $.type(this.data);
     NodeClass = TreemaNodeMap[dataType];
     this.helper = new NodeClass(this.schema, this.data, this.options, this.isChild);
+    this.helper.tv4 = this.tv4;
     _ref6 = ['collection', 'ordered', 'keyed', 'getChildSchema', 'getChildren', 'getChildSchema', 'setValueForReading', 'valueClass'];
     _results = [];
     for (_i = 0, _len = _ref6.length; _i < _len; _i++) {
