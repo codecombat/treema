@@ -466,7 +466,7 @@ class TreemaNode
 
   clearErrors: ->
     @$el.find('.treema-error').remove()
-    @$el.removeClass('treema-has-error')
+    @$el.find('.treema-has-error').removeClass('treema-has-error')
 
   createTemporaryError: (message, attachFunction=null) ->
     attachFunction = @$el.prepend unless attachFunction
@@ -647,10 +647,11 @@ class ObjectTreemaNode extends TreemaNode
     return unless @canAddChild()
     properties = @childPropertiesAvailable()
     keyInput = $(@newPropertyTemplate)
-    keyInput.autocomplete?(source: properties)
+    keyInput.autocomplete?(source: properties, minLength: 0, delay: 0, autoFocus: true)
     @getAddButtonEl().before(keyInput)
     keyInput.focus()
     keyInput.blur @onNewPropertyBlur
+    keyInput.autocomplete('search')
     true
     
   addingNewProperty: -> document.activeElement is @$el.find('.treema-new-prop')[0]
@@ -659,11 +660,11 @@ class ObjectTreemaNode extends TreemaNode
     keyInput = $(e.target)
     @clearTemporaryErrors()
     key = @getPropertyKey(keyInput)
-    return @showBadPropertyError() if key.length and not @canAddProperty(key)
+    return @showBadPropertyError(keyInput) if key.length and not @canAddProperty(key)
     keyInput.remove()
     return unless key.length
     return @childrenTreemas[key].toggleEdit() if @childrenTreemas[key]?
-    addNewChildForKey(key)
+    @addNewChildForKey(key)
     
   getPropertyKey: (keyInput) ->
     key = keyInput.val()
@@ -676,7 +677,7 @@ class ObjectTreemaNode extends TreemaNode
     keyInput.focus()
     tempError = @createTemporaryError('Invalid property name.')
     tempError.insertAfter(keyInput)
-    return    
+    return
     
   addNewChildForKey: (key) ->
     schema = @getChildSchema(key)

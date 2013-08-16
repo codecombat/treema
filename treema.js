@@ -450,10 +450,13 @@ TreemaNode = (function() {
     this.endExistingEdits();
     targetTreema = this.getNextEditableTreema(offset);
     if (targetTreema) {
-      return targetTreema.toggleEdit('treema-edit');
+      targetTreema.toggleEdit('treema-edit');
     } else {
-      return (_ref = this.parent) != null ? _ref.addNewChild() : void 0;
+      if ((_ref = this.parent) != null) {
+        _ref.addNewChild();
+      }
     }
+    return console;
   };
 
   TreemaNode.prototype.getNextEditableTreemaFromElement = function(el, offset) {
@@ -900,7 +903,7 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.clearErrors = function() {
     this.$el.find('.treema-error').remove();
-    return this.$el.removeClass('treema-has-error');
+    return this.$el.find('.treema-has-error').removeClass('treema-has-error');
   };
 
   TreemaNode.prototype.createTemporaryError = function(message, attachFunction) {
@@ -1357,12 +1360,16 @@ ObjectTreemaNode = (function(_super) {
     keyInput = $(this.newPropertyTemplate);
     if (typeof keyInput.autocomplete === "function") {
       keyInput.autocomplete({
-        source: properties
+        source: properties,
+        minLength: 0,
+        delay: 0,
+        autoFocus: true
       });
     }
     this.getAddButtonEl().before(keyInput);
     keyInput.focus();
     keyInput.blur(this.onNewPropertyBlur);
+    keyInput.autocomplete('search');
     return true;
   };
 
@@ -1376,7 +1383,7 @@ ObjectTreemaNode = (function(_super) {
     this.clearTemporaryErrors();
     key = this.getPropertyKey(keyInput);
     if (key.length && !this.canAddProperty(key)) {
-      return this.showBadPropertyError();
+      return this.showBadPropertyError(keyInput);
     }
     keyInput.remove();
     if (!key.length) {
@@ -1385,7 +1392,7 @@ ObjectTreemaNode = (function(_super) {
     if (this.childrenTreemas[key] != null) {
       return this.childrenTreemas[key].toggleEdit();
     }
-    return addNewChildForKey(key);
+    return this.addNewChildForKey(key);
   };
 
   ObjectTreemaNode.prototype.getPropertyKey = function(keyInput) {
@@ -1408,6 +1415,7 @@ ObjectTreemaNode = (function(_super) {
     keyInput.focus();
     tempError = this.createTemporaryError('Invalid property name.');
     tempError.insertAfter(keyInput);
+    console.log('focus?', document.activeElement);
   };
 
   ObjectTreemaNode.prototype.addNewChildForKey = function(key) {
