@@ -24,6 +24,7 @@ class TreemaNode
   keyed: false        # acts like an object
   editable: true      # can be changed
   skipTab: false      # is skipped over when tabbing between elements for editing
+  valueClass: null
 
 
   # Thin interface for tv4 ----------------------------------------------------
@@ -46,8 +47,8 @@ class TreemaNode
   canAddProperty: -> true
 
   # Subclass helper functions -------------------------------------------------
-  setValueForReadingSimply: (valEl, cssClass, text) ->
-    valEl.append($("<pre class='#{cssClass} treema-shortened'></pre>").text(text.slice(0,200)))
+  setValueForReadingSimply: (valEl, text) ->
+    valEl.append($("<pre></pre>").addClass('treema-shortened').text(text.slice(0,200)))
 
   setValueForEditingSimply: (valEl, value, inputType=null) ->
     input = $('<input />')
@@ -55,7 +56,7 @@ class TreemaNode
     input.val(value) unless value is null
     valEl.append(input)
     input.focus().select().blur =>
-      success = @toggleEdit('treema-read') if $('.treema-value', @$el).hasClass('treema-edit')
+      success = @toggleEdit('treema-read') if @getValEl().hasClass('treema-edit')
       input.focus().select() unless success
     input.keydown (e) =>
       if e.which is 8 and not $(input).val()
@@ -71,7 +72,8 @@ class TreemaNode
   build: ->
     @populateData()
     @$el = $(@nodeTemplate)
-    valEl = $('.treema-value', @$el)
+    valEl = @getValEl()
+    valEl.addClass(@valueClass) if @valueClass
     @setValueForReading(valEl)
     valEl.addClass('treema-read') unless @collection
     @$el.data('instance', @)
@@ -127,6 +129,9 @@ class TreemaNode
     @onDownArrowPressed(e) if e.which is 40
     @onEnterPressed(e) if e.which is 13
     @onNPressed(e) if e.which is 78
+    @onSpacePressed(e) if e.which is 32
+    @onTPressed(e) if e.which is 84
+    @onFPressed(e) if e.which is 70
 
   onLeftArrowPressed: (e) ->
     treemas = @getSelectedTreemas()
@@ -240,10 +245,14 @@ class TreemaNode
     @deselectAll() if success
     e.preventDefault()
 
+  onSpacePressed: ->
+  onTPressed: ->
+  onFPressed: ->
+
   # Editing values ------------------------------------------------------------
   toggleEdit: (toClass) ->
     return false unless @editable
-    valEl = $('.treema-value', @$el)
+    valEl = @getValEl()
     wasEditing = valEl.hasClass('treema-edit')
     
     # if we're going from reading to editing, try to end other edits first
@@ -448,7 +457,7 @@ class TreemaNode
     @$el.addClass('treema-closed').removeClass('treema-open')
     @childrenTreemas = null
     @refreshErrors()
-    @setValueForReading($('.treema-value', @$el).empty())
+    @setValueForReading(@getValEl().empty())
 
   # Selecting/deselecting nodes -----------------------------------------------
   selectOne: ->
@@ -555,6 +564,7 @@ class TreemaNode
     
   # Utilities -----------------------------------------------------------------
 
+  getValEl: -> @$el.find('> .treema-value')
   getRootEl: -> @$el.closest('.treema-root')
   isRoot: -> @$el.hasClass('treema-root')
   rootSelected: -> $(document.activeElement).hasClass('treema-root') 
@@ -563,10 +573,11 @@ class TreemaNode
 # TreemaNode subclasses -------------------------------------------------------
 
 class StringTreemaNode extends TreemaNode
+  valueClass: 'treema-string'
   getDefaultValue: -> ''
   @inputTypes = ['color', 'date', 'datetime', 'datetime-local', 'email', 'month', 'range', 'search',
                  'tel', 'text', 'time', 'url', 'week']
-  setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, 'treema-string', "\"#{@data}\"")
+  setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, "\"#{@data}\"")
   setValueForEditing: (valEl) ->
     input = @setValueForEditingSimply(valEl, @data)
     input.attr('maxlength', @schema.maxLength) if @schema.maxLength
@@ -575,8 +586,9 @@ class StringTreemaNode extends TreemaNode
   saveChanges: (valEl) -> @data = $('input', valEl).val()
 
 class NumberTreemaNode extends TreemaNode
+  valueClass: 'treema-number'
   getDefaultValue: -> 0
-  setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, 'treema-number', JSON.stringify(@data))
+  setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, JSON.stringify(@data))
   setValueForEditing: (valEl) -> 
     input = @setValueForEditingSimply(valEl, JSON.stringify(@data), 'number')
     input.attr('max', @schema.maximum) if @schema.maximum
@@ -585,35 +597,39 @@ class NumberTreemaNode extends TreemaNode
   saveChanges: (valEl) -> @data = parseFloat($('input', valEl).val())
 
 class NullTreemaNode extends TreemaNode
+  valueClass: 'treema-null'
   editable: false
-  setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, 'treema-null', 'null')
+  setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, 'null')
 
 class BooleanTreemaNode extends TreemaNode
+  valueClass: 'treema-boolean'
   getDefaultValue: -> false
-  skipTab: true
-  setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, 'treema-boolean', JSON.stringify(@data))
-  
-  toggleValue: ->
+  setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, JSON.stringify(@data))
+  setValueForEditing: (valEl) -> 
+    input = @setValueForEditingSimply(valEl, JSON.stringify(@data))
+    $('<span></span>').text(JSON.stringify(@data)).insertBefore(input)
+    input.focus()
+  toggleValue: (newValue=null) ->
     @data = not @data
-    @setValueForReading($('.treema-value', @$el).empty())
-  
+    @data = newValue if newValue?
+    valEl = @getValEl().empty()
+    if valEl.hasClass('treema-read') then @setValueForReading(valEl) else @setValueForEditing(valEl) 
+    
   onEnterPressed: -> @toggleValue()
+  onSpacePressed: -> @toggleValue()
+  onFPressed: -> @toggleValue(false)
+  onTPressed: -> @toggleValue(true)
+  saveChanges: ->
     
-  onClick: (e) ->
-    return @toggleValue() if $(e.target).closest('.treema-value').length
-    super(e)
-    
-  toggleEdit: (toClass) ->
-    @toggleValue() unless toClass is 'treema-read'
-
 class ArrayTreemaNode extends TreemaNode
+  valueClass: 'treema-array'
   getDefaultValue: -> []
   collection: true
   ordered: true
 
   getChildren: -> ([key, value, @getChildSchema()] for value, key in @data)
   getChildSchema: -> @schema.items or {}
-  setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, 'treema-array', JSON.stringify(@data))
+  setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, JSON.stringify(@data))
   setValueForEditing: (valEl) -> @setValueForEditingSimply(valEl, JSON.stringify(@data))
 
   canAddChild: ->
@@ -622,6 +638,7 @@ class ArrayTreemaNode extends TreemaNode
     return true
 
 class ObjectTreemaNode extends TreemaNode
+  valueClass: 'treema-object'
   getDefaultValue: -> {}
   collection: true
   keyed: true
@@ -649,7 +666,7 @@ class ObjectTreemaNode extends TreemaNode
   setValueForEditing: (valEl) -> @setValueForEditingSimply(valEl, JSON.stringify(@data))
   setValueForReading: (valEl) ->
     size = Object.keys(@data).length
-    @setValueForReadingSimply(valEl, 'treema-object', JSON.stringify(@data))
+    @setValueForReadingSimply(valEl, JSON.stringify(@data))
 
   populateData: ->
     super()
@@ -718,7 +735,8 @@ class AnyTreemaNode extends TreemaNode
     dataType = $.type(@data)
     NodeClass = TreemaNodeMap[dataType]
     @helper = new NodeClass(@schema, @data, @options, @isChild)
-    for prop in ['collection', 'ordered', 'keyed', 'getChildSchema', 'getChildren', 'getChildSchema', 'setValueForReading']
+    for prop in ['collection', 'ordered', 'keyed', 'getChildSchema', 'getChildren', 'getChildSchema',
+                 'setValueForReading', 'valueClass']
       @[prop] = @helper[prop]
 
   rebuild: ->

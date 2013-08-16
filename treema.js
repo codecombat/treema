@@ -42,6 +42,8 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.skipTab = false;
 
+  TreemaNode.prototype.valueClass = null;
+
   TreemaNode.prototype.isValid = function() {
     return tv4.validate(this.data, this.schema);
   };
@@ -89,8 +91,8 @@ TreemaNode = (function() {
     return true;
   };
 
-  TreemaNode.prototype.setValueForReadingSimply = function(valEl, cssClass, text) {
-    return valEl.append($("<pre class='" + cssClass + " treema-shortened'></pre>").text(text.slice(0, 200)));
+  TreemaNode.prototype.setValueForReadingSimply = function(valEl, text) {
+    return valEl.append($("<pre></pre>").addClass('treema-shortened').text(text.slice(0, 200)));
   };
 
   TreemaNode.prototype.setValueForEditingSimply = function(valEl, value, inputType) {
@@ -109,7 +111,7 @@ TreemaNode = (function() {
     valEl.append(input);
     input.focus().select().blur(function() {
       var success;
-      if ($('.treema-value', _this.$el).hasClass('treema-edit')) {
+      if (_this.getValEl().hasClass('treema-edit')) {
         success = _this.toggleEdit('treema-read');
       }
       if (!success) {
@@ -139,7 +141,10 @@ TreemaNode = (function() {
     var valEl;
     this.populateData();
     this.$el = $(this.nodeTemplate);
-    valEl = $('.treema-value', this.$el);
+    valEl = this.getValEl();
+    if (this.valueClass) {
+      valEl.addClass(this.valueClass);
+    }
     this.setValueForReading(valEl);
     if (!this.collection) {
       valEl.addClass('treema-read');
@@ -261,7 +266,16 @@ TreemaNode = (function() {
       this.onEnterPressed(e);
     }
     if (e.which === 78) {
-      return this.onNPressed(e);
+      this.onNPressed(e);
+    }
+    if (e.which === 32) {
+      this.onSpacePressed(e);
+    }
+    if (e.which === 84) {
+      this.onTPressed(e);
+    }
+    if (e.which === 70) {
+      return this.onFPressed(e);
     }
   };
 
@@ -474,12 +488,18 @@ TreemaNode = (function() {
     return e.preventDefault();
   };
 
+  TreemaNode.prototype.onSpacePressed = function() {};
+
+  TreemaNode.prototype.onTPressed = function() {};
+
+  TreemaNode.prototype.onFPressed = function() {};
+
   TreemaNode.prototype.toggleEdit = function(toClass) {
     var valEl, wasEditing;
     if (!this.editable) {
       return false;
     }
-    valEl = $('.treema-value', this.$el);
+    valEl = this.getValEl();
     wasEditing = valEl.hasClass('treema-edit');
     if (!(wasEditing || (toClass === 'treema-read' && !wasEditing) || this.endExistingEdits())) {
       return false;
@@ -784,7 +804,7 @@ TreemaNode = (function() {
     this.$el.addClass('treema-closed').removeClass('treema-open');
     this.childrenTreemas = null;
     this.refreshErrors();
-    return this.setValueForReading($('.treema-value', this.$el).empty());
+    return this.setValueForReading(this.getValEl().empty());
   };
 
   TreemaNode.prototype.selectOne = function() {
@@ -988,6 +1008,10 @@ TreemaNode = (function() {
     });
   };
 
+  TreemaNode.prototype.getValEl = function() {
+    return this.$el.find('> .treema-value');
+  };
+
   TreemaNode.prototype.getRootEl = function() {
     return this.$el.closest('.treema-root');
   };
@@ -1012,6 +1036,8 @@ StringTreemaNode = (function(_super) {
     return _ref;
   }
 
+  StringTreemaNode.prototype.valueClass = 'treema-string';
+
   StringTreemaNode.prototype.getDefaultValue = function() {
     return '';
   };
@@ -1019,7 +1045,7 @@ StringTreemaNode = (function(_super) {
   StringTreemaNode.inputTypes = ['color', 'date', 'datetime', 'datetime-local', 'email', 'month', 'range', 'search', 'tel', 'text', 'time', 'url', 'week'];
 
   StringTreemaNode.prototype.setValueForReading = function(valEl) {
-    return this.setValueForReadingSimply(valEl, 'treema-string', "\"" + this.data + "\"");
+    return this.setValueForReadingSimply(valEl, "\"" + this.data + "\"");
   };
 
   StringTreemaNode.prototype.setValueForEditing = function(valEl) {
@@ -1049,12 +1075,14 @@ NumberTreemaNode = (function(_super) {
     return _ref1;
   }
 
+  NumberTreemaNode.prototype.valueClass = 'treema-number';
+
   NumberTreemaNode.prototype.getDefaultValue = function() {
     return 0;
   };
 
   NumberTreemaNode.prototype.setValueForReading = function(valEl) {
-    return this.setValueForReadingSimply(valEl, 'treema-number', JSON.stringify(this.data));
+    return this.setValueForReadingSimply(valEl, JSON.stringify(this.data));
   };
 
   NumberTreemaNode.prototype.setValueForEditing = function(valEl) {
@@ -1084,10 +1112,12 @@ NullTreemaNode = (function(_super) {
     return _ref2;
   }
 
+  NullTreemaNode.prototype.valueClass = 'treema-null';
+
   NullTreemaNode.prototype.editable = false;
 
   NullTreemaNode.prototype.setValueForReading = function(valEl) {
-    return this.setValueForReadingSimply(valEl, 'treema-null', 'null');
+    return this.setValueForReadingSimply(valEl, 'null');
   };
 
   return NullTreemaNode;
@@ -1102,37 +1132,57 @@ BooleanTreemaNode = (function(_super) {
     return _ref3;
   }
 
+  BooleanTreemaNode.prototype.valueClass = 'treema-boolean';
+
   BooleanTreemaNode.prototype.getDefaultValue = function() {
     return false;
   };
 
-  BooleanTreemaNode.prototype.skipTab = true;
-
   BooleanTreemaNode.prototype.setValueForReading = function(valEl) {
-    return this.setValueForReadingSimply(valEl, 'treema-boolean', JSON.stringify(this.data));
+    return this.setValueForReadingSimply(valEl, JSON.stringify(this.data));
   };
 
-  BooleanTreemaNode.prototype.toggleValue = function() {
+  BooleanTreemaNode.prototype.setValueForEditing = function(valEl) {
+    var input;
+    input = this.setValueForEditingSimply(valEl, JSON.stringify(this.data));
+    $('<span></span>').text(JSON.stringify(this.data)).insertBefore(input);
+    return input.focus();
+  };
+
+  BooleanTreemaNode.prototype.toggleValue = function(newValue) {
+    var valEl;
+    if (newValue == null) {
+      newValue = null;
+    }
     this.data = !this.data;
-    return this.setValueForReading($('.treema-value', this.$el).empty());
+    if (newValue != null) {
+      this.data = newValue;
+    }
+    valEl = this.getValEl().empty();
+    if (valEl.hasClass('treema-read')) {
+      return this.setValueForReading(valEl);
+    } else {
+      return this.setValueForEditing(valEl);
+    }
   };
 
   BooleanTreemaNode.prototype.onEnterPressed = function() {
     return this.toggleValue();
   };
 
-  BooleanTreemaNode.prototype.onClick = function(e) {
-    if ($(e.target).closest('.treema-value').length) {
-      return this.toggleValue();
-    }
-    return BooleanTreemaNode.__super__.onClick.call(this, e);
+  BooleanTreemaNode.prototype.onSpacePressed = function() {
+    return this.toggleValue();
   };
 
-  BooleanTreemaNode.prototype.toggleEdit = function(toClass) {
-    if (toClass !== 'treema-read') {
-      return this.toggleValue();
-    }
+  BooleanTreemaNode.prototype.onFPressed = function() {
+    return this.toggleValue(false);
   };
+
+  BooleanTreemaNode.prototype.onTPressed = function() {
+    return this.toggleValue(true);
+  };
+
+  BooleanTreemaNode.prototype.saveChanges = function() {};
 
   return BooleanTreemaNode;
 
@@ -1145,6 +1195,8 @@ ArrayTreemaNode = (function(_super) {
     _ref4 = ArrayTreemaNode.__super__.constructor.apply(this, arguments);
     return _ref4;
   }
+
+  ArrayTreemaNode.prototype.valueClass = 'treema-array';
 
   ArrayTreemaNode.prototype.getDefaultValue = function() {
     return [];
@@ -1170,7 +1222,7 @@ ArrayTreemaNode = (function(_super) {
   };
 
   ArrayTreemaNode.prototype.setValueForReading = function(valEl) {
-    return this.setValueForReadingSimply(valEl, 'treema-array', JSON.stringify(this.data));
+    return this.setValueForReadingSimply(valEl, JSON.stringify(this.data));
   };
 
   ArrayTreemaNode.prototype.setValueForEditing = function(valEl) {
@@ -1198,6 +1250,8 @@ ObjectTreemaNode = (function(_super) {
     _ref5 = ObjectTreemaNode.__super__.constructor.apply(this, arguments);
     return _ref5;
   }
+
+  ObjectTreemaNode.prototype.valueClass = 'treema-object';
 
   ObjectTreemaNode.prototype.getDefaultValue = function() {
     return {};
@@ -1250,7 +1304,7 @@ ObjectTreemaNode = (function(_super) {
   ObjectTreemaNode.prototype.setValueForReading = function(valEl) {
     var size;
     size = Object.keys(this.data).length;
-    return this.setValueForReadingSimply(valEl, 'treema-object', JSON.stringify(this.data));
+    return this.setValueForReadingSimply(valEl, JSON.stringify(this.data));
   };
 
   ObjectTreemaNode.prototype.populateData = function() {
@@ -1362,7 +1416,7 @@ AnyTreemaNode = (function(_super) {
     dataType = $.type(this.data);
     NodeClass = TreemaNodeMap[dataType];
     this.helper = new NodeClass(this.schema, this.data, this.options, this.isChild);
-    _ref6 = ['collection', 'ordered', 'keyed', 'getChildSchema', 'getChildren', 'getChildSchema', 'setValueForReading'];
+    _ref6 = ['collection', 'ordered', 'keyed', 'getChildSchema', 'getChildren', 'getChildSchema', 'setValueForReading', 'valueClass'];
     _results = [];
     for (_i = 0, _len = _ref6.length; _i < _len; _i++) {
       prop = _ref6[_i];
