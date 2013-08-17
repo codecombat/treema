@@ -75,14 +75,29 @@ class TreemaNode
     input.val(value) unless value is null
     valEl.append(input)
     input.focus().select()
-    input.blur =>
-      success = @toggleEdit('treema-read') if @isEditing()
-      if not success
-        inputs = @getValEl().find('input, textarea')
-        allEmpty = true not in (Boolean($(input).val()) for input in inputs)
-          
-      input.focus().select() unless success
+    input.blur @onEditInputBlur
     input
+
+  onEditInputBlur: =>
+    @saveChanges()
+    input = @getValEl().find('input, textarea, select')
+    if @isValid() then @toggleEdit('treema-read') if @isEditing() else input.focus().select()
+
+  limitChoices: (options) ->
+    @enum = options
+    @setValueForEditing = (valEl) =>
+      input = $('<select></select>')
+      input.append($('<option></option>').text(option)) for option in @enum
+      index = @enum.indexOf(@data)
+      input.prop('selectedIndex', index) if index >= 0
+      valEl.append(input)
+      input.focus()
+      input.blur @onEditInputBlur
+      input
+      
+    @saveChanges = =>
+      index = @getValEl().find('select').prop('selectedIndex')
+      @data = @enum[index]
 
   # Initialization ------------------------------------------------------------
   constructor: (@schema, @data, @options, @parent) ->
@@ -104,6 +119,7 @@ class TreemaNode
     @open() if @collection and not @parent
     @setUpEvents() unless @parent
     @updateMyAddButton() if @collection
+    @limitChoices(@schema.enum) if @schema.enum
     @$el
     
   populateData: ->
@@ -205,7 +221,7 @@ class TreemaNode
       return unless targetTreema?.canEdit()
       return targetTreema.toggleEdit('treema-edit')
       
-    inputValues = (Boolean($(input).val()) for input in @getValEl().find('input, textarea'))
+    inputValues = (Boolean($(input).val()) for input in @getValEl().find('input, textarea, select'))
     unless true in inputValues
       targetTreema = @getNextEditableTreemaFromElement(@$el, offset)
       @remove()

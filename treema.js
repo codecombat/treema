@@ -127,8 +127,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.setValueForEditingSimply = function(valEl, value, inputType) {
-    var input,
-      _this = this;
+    var input;
     if (inputType == null) {
       inputType = null;
     }
@@ -141,28 +140,35 @@ TreemaNode = (function() {
     }
     valEl.append(input);
     input.focus().select();
-    input.blur(function() {
-      var allEmpty, inputs, success;
-      if (_this.isEditing()) {
-        success = _this.toggleEdit('treema-read');
-      }
-      if (!success) {
-        inputs = _this.getValEl().find('input, textarea');
-        allEmpty = __indexOf.call((function() {
-          var _i, _len, _results;
-          _results = [];
-          for (_i = 0, _len = inputs.length; _i < _len; _i++) {
-            input = inputs[_i];
-            _results.push(Boolean($(input).val()));
-          }
-          return _results;
-        })(), true) < 0;
-      }
-      if (!success) {
-        return input.focus().select();
-      }
-    });
+    input.blur(this.onEditInputBlur);
     return input;
+  };
+
+  TreemaNode.prototype.limitChoices = function(options) {
+    var _this = this;
+    this["enum"] = options;
+    this.setValueForEditing = function(valEl) {
+      var index, input, option, _i, _len, _ref;
+      input = $('<select></select>');
+      _ref = _this["enum"];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        option = _ref[_i];
+        input.append($('<option></option>').text(option));
+      }
+      index = _this["enum"].indexOf(_this.data);
+      if (index >= 0) {
+        input.prop('selectedIndex', index);
+      }
+      valEl.append(input);
+      input.focus();
+      input.blur(_this.onEditInputBlur);
+      return input;
+    };
+    return this.saveChanges = function() {
+      var index;
+      index = _this.getValEl().find('select').prop('selectedIndex');
+      return _this.data = _this["enum"][index];
+    };
   };
 
   function TreemaNode(schema, data, options, parent) {
@@ -206,6 +212,9 @@ TreemaNode = (function() {
     }
     if (this.collection) {
       this.updateMyAddButton();
+    }
+    if (this.schema["enum"]) {
+      this.limitChoices(this.schema["enum"]);
     }
     return this.$el;
   };
@@ -428,7 +437,7 @@ TreemaNode = (function() {
     }
     inputValues = (function() {
       var _i, _len, _ref, _results;
-      _ref = this.getValEl().find('input, textarea');
+      _ref = this.getValEl().find('input, textarea, select');
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         input = _ref[_i];
@@ -645,6 +654,7 @@ TreemaNode = (function() {
     var required, root, tempError, _ref;
     required = this.parent && (this.parent.schema.required != null) && (_ref = this.keyForParent, __indexOf.call(this.parent.schema.required, _ref) >= 0);
     if (required) {
+      alksdjfkla;
       tempError = this.createTemporaryError('required');
       return this.$el.prepend(tempError);
     }

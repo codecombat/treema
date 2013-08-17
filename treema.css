@@ -20,14 +20,14 @@
   .treema-node.treema-root {
     outline: none; }
 @media -sass-debug-info{filename{}line{font-family:\0000331}}
-  .treema-node input {
+  .treema-node input, .treema-node select {
     position: absolute;
     font-size: 13px;
     top: 0;
     width: 200px;
     font-family: Helvetica; }
 @media -sass-debug-info{filename{}line{font-family:\0000337}}
-    .treema-node input.treema-new-prop {
+    .treema-node input.treema-new-prop, .treema-node select.treema-new-prop {
       position: inherit; }
 
 @media -sass-debug-info{filename{}line{font-family:\0000340}}
