@@ -1,0 +1,48 @@
+Describe TV4 interface
+  it can check validity
+  it returns errors
+  
+Describe initialization
+  it sets up $el
+  it populates with default data from the schema
+  it opens up root collection nodes by default
+  
+Describe mouse click behavior
+  it edits the value if you click the value
+  it opens the collection if you click the value
+  it selects the row if you don't click the value
+  it selects along all open rows if you shift click
+  it toggles the select state if you ctrl/meta click
+  
+Describe arrow key press behavior
+  it moves the most recent selection down when down is pressed
+  it moves the most recent selection up when up is pressed
+  it navigates along the open nodes of the tree
+  it opens a collection when the right arrow is pressed
+  it closes a collection when the left arrow is pressed
+ 
+Describe delete key press behavior
+  it is ignored when there's a value in the focused input
+  it removes the row when there's no value in the focused input
+  it removes selected rows
+
+Describe escape key press behavior
+  it closes current input, ignoring changes
+
+Describe enter key press behavior
+  it starts editing the last selected row
+  it saves the current row and goes on to the next value in the collection if there is one
+  it saves the current row and creates a new row if there are no further values
+  it shows errors and moves on when saving the currently editing row
+
+Describe tab key press behavior
+  it starts editing the last selected row
+  it saves the current row if editing
+  it removes the current row if there's no input
+  it shows errors and stays in the current input if the row has errors
+
+Describe "N" key press behavior
+  it creates a new row for the currently selected collection
+  it does nothing if the current collection cannot add more
+  
+  
