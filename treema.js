@@ -1925,7 +1925,9 @@ DatabaseSearchNode = (function(_super) {
       return DatabaseSearchNode.__super__.onClick.call(this, e);
     }
     this.getSelectedResultEl().removeClass('treema-search-selected');
-    return newSelection.addClass('treema-search-selected');
+    newSelection.addClass('treema-search-selected');
+    this.saveChanges();
+    return this.read();
   };
 
   return DatabaseSearchNode;

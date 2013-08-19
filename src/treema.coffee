@@ -972,6 +972,8 @@ class DatabaseSearchNode extends TreemaNode
     return super(e) unless newSelection.length
     @getSelectedResultEl().removeClass('treema-search-selected')
     newSelection.addClass('treema-search-selected')
+    @saveChanges()
+    @read()
     
 
 # Source: http://coffeescriptcookbook.com/chapters/functions/debounce
