@@ -7,7 +7,7 @@ Editing JSON in the browser? Forget the syntax quibbles--GUI it up! Trying to ed
 
 Like [tv4](https://github.com/geraintluff/tv4) crossed with [JSON Editor Online](https://github.com/josdejong/jsoneditor/) or [Hulk](https://github.com/kevinburke/hulk).
 
-Originally designed for use in the [CodeCombat](http://codecombat.com/) challenge editor.
+Originally designed for use in the [CodeCombat](http://codecombat.com/) challenge editor. Design and behavior inspired by Chrome Dev Tools and the Starcraft II Galaxy Editor. 
 
 ## Get in touch
 You can use the [GitHub issues](https://github.com/sderickson/treema/issues), the [Discourse forum](http://discourse.codecombat.com/), the [HipChat](http://www.hipchat.com/g3plnOKqa), or [email](mailto:team@codecombat.com) the [team](http://codecombat.com/about).
