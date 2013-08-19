@@ -1,4 +1,4 @@
-var AnyTreemaNode, ArrayTreemaNode, BooleanTreemaNode, DatabaseSearchNode, NullTreemaNode, NumberTreemaNode, ObjectTreemaNode, Point2DTreemaNode, Point3DTreemaNode, RestaurantSearchNode, StringTreemaNode, TreemaNode, TreemaNodeMap, debounce, makeTreema, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9,
+var AceNode, AnyTreemaNode, ArrayTreemaNode, BooleanTreemaNode, DatabaseSearchNode, NullTreemaNode, NumberTreemaNode, ObjectTreemaNode, Point2DTreemaNode, Point3DTreemaNode, RestaurantSearchNode, StringTreemaNode, TreemaNode, TreemaNodeMap, debounce, makeTreema, _ref, _ref1, _ref10, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
   __hasProp = {}.hasOwnProperty,
@@ -123,7 +123,10 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.setValueForReadingSimply = function(valEl, text) {
-    return valEl.append($("<pre></pre>").addClass('treema-shortened').text(text.slice(0, 200)));
+    if (text.length > 200) {
+      text = text.slice(0, 200) + '...';
+    }
+    return valEl.append($("<pre></pre>").addClass('treema-shortened').text(text));
   };
 
   TreemaNode.prototype.setValueForEditingSimply = function(valEl, value, inputType) {
@@ -264,7 +267,7 @@ TreemaNode = (function() {
     if (!(clickedValue && !this.collection)) {
       this.keepFocus();
     }
-    if (clickedValue && this.canEdit() && !usedModKey) {
+    if (this.isReading() && clickedValue && this.canEdit() && !usedModKey) {
       return this.toggleEdit();
     }
     if (clickedToggle || (clickedValue && this.collection)) {
@@ -273,7 +276,7 @@ TreemaNode = (function() {
     if ($(e.target).closest('.treema-add-child').length && this.collection) {
       return this.addNewChild();
     }
-    if (this.isRoot()) {
+    if (this.isRoot() || this.isEditing()) {
       return;
     }
     if (e.shiftKey) {
@@ -677,12 +680,14 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.endExistingEdits = function() {
-    var editing, elem, _i, _len, _results;
+    var editing, elem, treema, _i, _len, _results;
     editing = this.getRootEl().find('.treema-edit').closest('.treema-node');
     _results = [];
     for (_i = 0, _len = editing.length; _i < _len; _i++) {
       elem = editing[_i];
-      _results.push($(elem).data('instance').read());
+      treema = $(elem).data('instance');
+      treema.saveChanges(treema.getValEl());
+      _results.push(treema.read());
     }
     return _results;
   };
@@ -1976,6 +1981,55 @@ RestaurantSearchNode = (function(_super) {
 
 })(DatabaseSearchNode);
 
+AceNode = (function(_super) {
+  __extends(AceNode, _super);
+
+  function AceNode() {
+    _ref10 = AceNode.__super__.constructor.apply(this, arguments);
+    return _ref10;
+  }
+
+  AceNode.prototype.valueClass = 'treema-ace';
+
+  AceNode.prototype.getDefaultValue = function() {
+    return '';
+  };
+
+  AceNode.prototype.setValueForReading = function(valEl) {
+    var _ref11;
+    if ((_ref11 = this.editor) != null) {
+      _ref11.destroy();
+    }
+    return this.setValueForReadingSimply(valEl, ("" + this.data) || "-empty-");
+  };
+
+  AceNode.prototype.setValueForEditing = function(valEl) {
+    var d;
+    d = $('<div></div>').text(this.data);
+    valEl.append(d);
+    this.editor = ace.edit(d[0]);
+    this.editor.setReadOnly(false);
+    if (this.schema.aceMode != null) {
+      this.editor.getSession().setMode(this.schema.aceMode);
+    }
+    if (this.schema.aceTheme != null) {
+      this.editor.setTheme(this.schema.aceTheme);
+    }
+    return valEl.find('textarea').focus();
+  };
+
+  AceNode.prototype.saveChanges = function() {
+    return this.data = this.editor.getValue();
+  };
+
+  AceNode.prototype.onTabPressed = function() {};
+
+  AceNode.prototype.onEnterPressed = function() {};
+
+  return AceNode;
+
+})(TreemaNode);
+
 TreemaNodeMap = {
   'array': ArrayTreemaNode,
   'string': StringTreemaNode,
@@ -1986,7 +2040,8 @@ TreemaNodeMap = {
   'any': AnyTreemaNode,
   'point2d': Point2DTreemaNode,
   'point3d': Point3DTreemaNode,
-  'restaurant': RestaurantSearchNode
+  'restaurant': RestaurantSearchNode,
+  'ace': AceNode
 };
 
 makeTreema = function(schema, data, options, parent) {

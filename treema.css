@@ -185,7 +185,20 @@
   overflow: hidden;
   text-overflow: ellipsis; }
 
-@media -sass-debug-info{filename{}line{font-family:\00003179}}
+@media -sass-debug-info{filename{}line{font-family:\00003178}}
+.treema-ace.treema-read .treema-shortened {
+  font-family: monospace; }
+
+@media -sass-debug-info{filename{}line{font-family:\00003181}}
+.treema-ace.treema-edit {
+  border: 1px solid gray;
+  margin: 2px 5px; }
+@media -sass-debug-info{filename{}line{font-family:\00003185}}
+  .treema-ace.treema-edit, .treema-ace.treema-edit > div {
+    width: 500px;
+    height: 300px; }
+
+@media -sass-debug-info{filename{}line{font-family:\00003191}}
 .treema-clearfix:after {
   content: ".";
   display: block;

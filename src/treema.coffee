@@ -67,7 +67,8 @@ class TreemaNode
 
   # Subclass helper functions -------------------------------------------------
   setValueForReadingSimply: (valEl, text) ->
-    valEl.append($("<pre></pre>").addClass('treema-shortened').text(text.slice(0,200)))
+    text = text.slice(0,200) + '...' if text.length > 200
+    valEl.append($("<pre></pre>").addClass('treema-shortened').text(text))
 
   setValueForEditingSimply: (valEl, value, inputType=null) ->
     input = $('<input />')
@@ -137,10 +138,10 @@ class TreemaNode
     clickedToggle = $(e.target).hasClass('treema-toggle')
     usedModKey = e.shiftKey or e.ctrlKey or e.metaKey
     @keepFocus() unless clickedValue and not @collection
-    return @toggleEdit() if clickedValue and @canEdit() and not usedModKey
+    return @toggleEdit() if @isReading() and clickedValue and @canEdit() and not usedModKey
     return @toggleOpen() if clickedToggle or (clickedValue and @collection)
     return @addNewChild() if $(e.target).closest('.treema-add-child').length and @collection
-    return if @isRoot()
+    return if @isRoot() or @isEditing()
     return @shiftSelect() if e.shiftKey
     return @toggleSelect() if e.ctrlKey or e.metaKey
     return @select()
@@ -344,7 +345,10 @@ class TreemaNode
 
   endExistingEdits: ->
     editing = @getRootEl().find('.treema-edit').closest('.treema-node')
-    $(elem).data('instance').read() for elem in editing
+    for elem in editing
+      treema = $(elem).data('instance')
+      treema.saveChanges(treema.getValEl())
+      treema.read()
       
   flushChanges: ->
     @justAdded = false
@@ -998,6 +1002,30 @@ class RestaurantSearchNode extends DatabaseSearchNode
   formatDocument: (doc) -> doc.name
 
 
+class AceNode extends TreemaNode
+  valueClass: 'treema-ace'
+
+  getDefaultValue: -> ''
+
+  setValueForReading: (valEl) ->
+    @editor?.destroy()
+    @setValueForReadingSimply(valEl, "#{@data}" or "-empty-")
+    
+  setValueForEditing: (valEl) ->
+    d = $('<div></div>').text(@data)
+    valEl.append(d)
+    @editor = ace.edit(d[0])
+    @editor.setReadOnly(false)
+    @editor.getSession().setMode(@schema.aceMode) if @schema.aceMode?
+    @editor.setTheme(@schema.aceTheme) if @schema.aceTheme?
+    valEl.find('textarea').focus()
+    
+  saveChanges: ->
+    @data = @editor.getValue()
+    
+  onTabPressed: ->
+  onEnterPressed: ->
+
 
 TreemaNodeMap =
   'array': ArrayTreemaNode
@@ -1010,6 +1038,7 @@ TreemaNodeMap =
   'point2d': Point2DTreemaNode
   'point3d': Point3DTreemaNode
   'restaurant': RestaurantSearchNode
+  'ace': AceNode
 
 makeTreema = (schema, data, options, parent) ->
   NodeClass = TreemaNodeMap[schema.format]

@@ -3,6 +3,7 @@
   <script type="text/javascript" src="jquery-1.8.1.js"></script>
   <script type="text/javascript" src="jquery-ui-1.10.3.custom.js"></script>
   <script type="text/javascript" src="tv4.js"></script>
+  <script type="text/javascript" src="ace.js"></script>
   <script type="text/javascript" src="treema.js"></script>
   <link rel="stylesheet" href="treema.css">
   <link rel="stylesheet" href="jquery-ui-1.10.3.custom.css">
@@ -16,11 +17,15 @@
 </div>
 
 <script type="text/javascript">
+  (function(a){if(window.filepicker){return}var b=a.createElement("script");b.type="text/javascript";b.async=!0;b.src=("https:"===a.location.protocol?"https:":"http:")+"//api.filepicker.io/v1/filepicker.js";var c=a.getElementsByTagName("script")[0];c.parentNode.insertBefore(b,c);var d={};d._queue=[];var e="pick,pickMultiple,pickAndStore,read,write,writeUrl,export,convert,store,storeUrl,remove,stat,setKey,constructWidget,makeDropPane".split(",");var f=function(a,b){return function(){b.push([a,arguments])}};for(var g=0;g<e.length;g++){d[e[g]]=f(e[g],d._queue)}window.filepicker=d})(document);
+</script>
+
+<script type="text/javascript">
 
   var jade = {};
   $(document).ready(function () {
     data = {
-      'restaurants': [{"id":96,"name":"Nathan's Famous"},{"id":90,"name":"McDonald's"},{"id":37,"name":"Del Taco"},{"id":17,"name":"Braum's"},{"id":21,"name":"Cafe Rio"}]
+      'restaurants': [{"id":96,"name":"Nathan's Famous"},{"id":90,"name":"McDonald's"},{"id":37,"name":"Del Taco"},{"id":17,"name":"Braum's"},{"id":21,"name":"Cafe Rio"}],
 //      'locality': 'Berkeley',
 //      'region': 'California',
 //      'country-name': 'USA',
@@ -30,6 +35,7 @@
 //      'post-office-box': null,
 //      'extended-address': {1:2},
 //      'street-address': '2338 1/2 Roosevelt Ave'
+      hackery: "var i = 0;"
     };
     schema = {
       "additionalProperties": false,
@@ -45,7 +51,8 @@
         "country-name": { "type": "string", title: "Country", 'default': 'USA', enum:['USA', 'Mars'] },
         "is-home-address": { type: 'boolean', title: "Is Home" },
         "phone-numbers": { "type": "array", items: { type: "string", maxLength: 20, minLength:4 }, title: "Phone #s" },
-        "restaurants": { "type": "array", items: {format: "restaurant"}, title: 'Favorite Fast Food', uniqueItems: true }
+        "restaurants": { "type": "array", items: {format: "restaurant"}, title: 'Favorite Fast Food', uniqueItems: true },
+        "hackery": { type: "string", format: "ace", aceMode: "ace/mode/javascript" }
       },
       "required": ['locality', 'region', 'country-name'],
       "dependencies": {
