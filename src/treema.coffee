@@ -209,7 +209,9 @@ class TreemaNode
   onNPressed: (e) ->
     return if @editingIsHappening()
     selected = @getLastSelectedTreema()
-    success = selected?.parent?.addNewChild()
+    target = if selected?.collection then selected else selected?.parent
+    return unless target
+    success = target.addNewChild()
     @deselectAll() if success
     e.preventDefault()
     
@@ -226,7 +228,7 @@ class TreemaNode
     inputValues = (Boolean($(input).val()) for input in @getValEl().find('input, textarea, select'))
     unless true in inputValues
       targetTreema = @getNextEditableTreemaFromElement(@$el, offset)
-      @remove()
+      @remove() unless @data
       return targetTreema.edit(offset: offset)
       
     @saveChanges(@getValEl())
@@ -660,7 +662,18 @@ class ArrayTreemaNode extends TreemaNode
 
   getChildren: -> ([key, value, @getChildSchema()] for value, key in @data)
   getChildSchema: -> @schema.items or {}
-  setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, JSON.stringify(@data))
+  setValueForReading: (valEl) ->
+    text = []
+    return unless @data
+    for child in @data[..2]
+      helperTreema = makeTreema(@getChildSchema(), child, {}, @)
+      val = $('<div></div>')
+      helperTreema.setValueForReading(val)
+      text.push(val.text())
+    text.push('...') if @data.length > 3
+      
+    @setValueForReadingSimply(valEl, text.join(', '))
+    
   setValueForEditing: (valEl) -> @setValueForEditingSimply(valEl, JSON.stringify(@data))
 
   canAddChild: ->
@@ -893,6 +906,96 @@ class AnyTreemaNode extends TreemaNode
     return @toggleEdit() if clickedValue and not usedModKey
     super(e)
 
+    
+
+class DatabaseSearchNode extends TreemaNode
+  valueClass: 'treema-search'
+  searchValueTemplate: '<input placeholder="Search" /><div class="treema-search-results"></div>'
+  url: null
+  lastTerm: null
+
+  setValueForReading: (valEl) ->
+    @setValueForReadingSimply(valEl, if @data then @formatDocument(@data) else 'None')
+    
+  formatDocument: (doc) ->
+    return doc if $.isString(doc)
+    JSON.stringify(doc)
+    
+  setValueForEditing: (valEl) ->
+    valEl.html(@searchValueTemplate)
+    input = valEl.find('input')
+    input.focus().keyup @search
+    input.attr('placeholder', @formatDocument(@data)) if @data
+  
+  search: =>
+    term = @getValEl().find('input').val()
+    return if term is @lastTerm
+    @getSearchResultsEl().empty() if @lastTerm and not term
+    return unless term
+    @lastTerm = term
+    @getSearchResultsEl().empty().append('Searching')
+    $.ajax(@url+'?term='+term, {dataType: 'json', success: @searchCallback})
+    
+  searchCallback: (results) =>
+    container = @getSearchResultsEl().detach().empty()
+    for result, i in results
+      row = $('<div></div>').addClass('treema-search-result-row')
+      row.addClass('treema-search-selected') if i is 0
+      row.text(@formatDocument(result))
+      row.data('value', result)
+      container.append(row)
+    if not results.length
+      container.append($('<div>No results</div>'))
+    @getValEl().append(container)
+    
+  getSearchResultsEl: -> @getValEl().find('.treema-search-results')
+  getSelectedResultEl: -> @getValEl().find('.treema-search-selected')
+
+  saveChanges: ->
+    selected = @getSelectedResultEl()
+    return unless selected.length
+    @data = selected.data('value')
+    
+  onDownArrowPressed: -> @navigateSearch(1)
+  onUpArrowPressed: -> @navigateSearch(-1)
+    
+  navigateSearch: (offset) ->
+    selected = @getSelectedResultEl()
+    func = if offset > 0 then 'next' else 'prev'
+    next = selected[func]('.treema-search-result-row')
+    return unless next.length
+    selected.removeClass('treema-search-selected')
+    next.addClass('treema-search-selected')
+    
+  onClick: (e) ->
+    newSelection = $(e.target).closest('.treema-search-result-row')
+    return super(e) unless newSelection.length
+    @getSelectedResultEl().removeClass('treema-search-selected')
+    newSelection.addClass('treema-search-selected')
+    
+
+# Source: http://coffeescriptcookbook.com/chapters/functions/debounce
+
+debounce = (func, threshold, execAsap) ->
+  timeout = null
+  (args...) ->
+    obj = this
+    delayed = ->
+      func.apply(obj, args) unless execAsap
+      timeout = null
+    if timeout
+      clearTimeout(timeout)
+    else if (execAsap)
+      func.apply(obj, args)
+    timeout = setTimeout delayed, threshold || 100
+
+DatabaseSearchNode.prototype.search = debounce(DatabaseSearchNode.prototype.search, 200)
+    
+class RestaurantSearchNode extends DatabaseSearchNode
+  url: '/db/fastfood'
+  formatDocument: (doc) -> doc.name
+
+
 
 TreemaNodeMap =
   'array': ArrayTreemaNode
@@ -904,6 +1007,7 @@ TreemaNodeMap =
   'any': AnyTreemaNode
   'point2d': Point2DTreemaNode
   'point3d': Point3DTreemaNode
+  'restaurant': RestaurantSearchNode
 
 makeTreema = (schema, data, options, parent) ->
   NodeClass = TreemaNodeMap[schema.format]

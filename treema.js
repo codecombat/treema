@@ -1,4 +1,4 @@
-var AnyTreemaNode, ArrayTreemaNode, BooleanTreemaNode, NullTreemaNode, NumberTreemaNode, ObjectTreemaNode, Point2DTreemaNode, Point3DTreemaNode, StringTreemaNode, TreemaNode, TreemaNodeMap, makeTreema, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7,
+var AnyTreemaNode, ArrayTreemaNode, BooleanTreemaNode, DatabaseSearchNode, NullTreemaNode, NumberTreemaNode, ObjectTreemaNode, Point2DTreemaNode, Point3DTreemaNode, RestaurantSearchNode, StringTreemaNode, TreemaNode, TreemaNodeMap, debounce, makeTreema, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
   __hasProp = {}.hasOwnProperty,
@@ -426,12 +426,16 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.onNPressed = function(e) {
-    var selected, success, _ref;
+    var selected, success, target;
     if (this.editingIsHappening()) {
       return;
     }
     selected = this.getLastSelectedTreema();
-    success = selected != null ? (_ref = selected.parent) != null ? _ref.addNewChild() : void 0 : void 0;
+    target = (selected != null ? selected.collection : void 0) ? selected : selected != null ? selected.parent : void 0;
+    if (!target) {
+      return;
+    }
+    success = target.addNewChild();
     if (success) {
       this.deselectAll();
     }
@@ -466,7 +470,9 @@ TreemaNode = (function() {
     }).call(this);
     if (__indexOf.call(inputValues, true) < 0) {
       targetTreema = this.getNextEditableTreemaFromElement(this.$el, offset);
-      this.remove();
+      if (!this.data) {
+        this.remove();
+      }
       return targetTreema.edit({
         offset: offset
       });
@@ -1366,7 +1372,23 @@ ArrayTreemaNode = (function(_super) {
   };
 
   ArrayTreemaNode.prototype.setValueForReading = function(valEl) {
-    return this.setValueForReadingSimply(valEl, JSON.stringify(this.data));
+    var child, helperTreema, text, val, _i, _len, _ref7;
+    text = [];
+    if (!this.data) {
+      return;
+    }
+    _ref7 = this.data.slice(0, 3);
+    for (_i = 0, _len = _ref7.length; _i < _len; _i++) {
+      child = _ref7[_i];
+      helperTreema = makeTreema(this.getChildSchema(), child, {}, this);
+      val = $('<div></div>');
+      helperTreema.setValueForReading(val);
+      text.push(val.text());
+    }
+    if (this.data.length > 3) {
+      text.push('...');
+    }
+    return this.setValueForReadingSimply(valEl, text.join(', '));
   };
 
   ArrayTreemaNode.prototype.setValueForEditing = function(valEl) {
@@ -1781,6 +1803,177 @@ AnyTreemaNode = (function(_super) {
 
 })(TreemaNode);
 
+DatabaseSearchNode = (function(_super) {
+  __extends(DatabaseSearchNode, _super);
+
+  function DatabaseSearchNode() {
+    this.searchCallback = __bind(this.searchCallback, this);
+    this.search = __bind(this.search, this);
+    _ref8 = DatabaseSearchNode.__super__.constructor.apply(this, arguments);
+    return _ref8;
+  }
+
+  DatabaseSearchNode.prototype.valueClass = 'treema-search';
+
+  DatabaseSearchNode.prototype.searchValueTemplate = '<input placeholder="Search" /><div class="treema-search-results"></div>';
+
+  DatabaseSearchNode.prototype.url = null;
+
+  DatabaseSearchNode.prototype.lastTerm = null;
+
+  DatabaseSearchNode.prototype.setValueForReading = function(valEl) {
+    return this.setValueForReadingSimply(valEl, this.data ? this.formatDocument(this.data) : 'None');
+  };
+
+  DatabaseSearchNode.prototype.formatDocument = function(doc) {
+    if ($.isString(doc)) {
+      return doc;
+    }
+    return JSON.stringify(doc);
+  };
+
+  DatabaseSearchNode.prototype.setValueForEditing = function(valEl) {
+    var input;
+    valEl.html(this.searchValueTemplate);
+    input = valEl.find('input');
+    input.focus().keyup(this.search);
+    if (this.data) {
+      return input.attr('placeholder', this.formatDocument(this.data));
+    }
+  };
+
+  DatabaseSearchNode.prototype.search = function() {
+    var term;
+    term = this.getValEl().find('input').val();
+    if (term === this.lastTerm) {
+      return;
+    }
+    if (this.lastTerm && !term) {
+      this.getSearchResultsEl().empty();
+    }
+    if (!term) {
+      return;
+    }
+    this.lastTerm = term;
+    this.getSearchResultsEl().empty().append('Searching');
+    return $.ajax(this.url + '?term=' + term, {
+      dataType: 'json',
+      success: this.searchCallback
+    });
+  };
+
+  DatabaseSearchNode.prototype.searchCallback = function(results) {
+    var container, i, result, row, _i, _len;
+    container = this.getSearchResultsEl().detach().empty();
+    for (i = _i = 0, _len = results.length; _i < _len; i = ++_i) {
+      result = results[i];
+      row = $('<div></div>').addClass('treema-search-result-row');
+      if (i === 0) {
+        row.addClass('treema-search-selected');
+      }
+      row.text(this.formatDocument(result));
+      row.data('value', result);
+      container.append(row);
+    }
+    if (!results.length) {
+      container.append($('<div>No results</div>'));
+    }
+    return this.getValEl().append(container);
+  };
+
+  DatabaseSearchNode.prototype.getSearchResultsEl = function() {
+    return this.getValEl().find('.treema-search-results');
+  };
+
+  DatabaseSearchNode.prototype.getSelectedResultEl = function() {
+    return this.getValEl().find('.treema-search-selected');
+  };
+
+  DatabaseSearchNode.prototype.saveChanges = function() {
+    var selected;
+    selected = this.getSelectedResultEl();
+    if (!selected.length) {
+      return;
+    }
+    return this.data = selected.data('value');
+  };
+
+  DatabaseSearchNode.prototype.onDownArrowPressed = function() {
+    return this.navigateSearch(1);
+  };
+
+  DatabaseSearchNode.prototype.onUpArrowPressed = function() {
+    return this.navigateSearch(-1);
+  };
+
+  DatabaseSearchNode.prototype.navigateSearch = function(offset) {
+    var func, next, selected;
+    selected = this.getSelectedResultEl();
+    func = offset > 0 ? 'next' : 'prev';
+    next = selected[func]('.treema-search-result-row');
+    if (!next.length) {
+      return;
+    }
+    selected.removeClass('treema-search-selected');
+    return next.addClass('treema-search-selected');
+  };
+
+  DatabaseSearchNode.prototype.onClick = function(e) {
+    var newSelection;
+    newSelection = $(e.target).closest('.treema-search-result-row');
+    if (!newSelection.length) {
+      return DatabaseSearchNode.__super__.onClick.call(this, e);
+    }
+    this.getSelectedResultEl().removeClass('treema-search-selected');
+    return newSelection.addClass('treema-search-selected');
+  };
+
+  return DatabaseSearchNode;
+
+})(TreemaNode);
+
+debounce = function(func, threshold, execAsap) {
+  var timeout;
+  timeout = null;
+  return function() {
+    var args, delayed, obj;
+    args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    obj = this;
+    delayed = function() {
+      if (!execAsap) {
+        func.apply(obj, args);
+      }
+      return timeout = null;
+    };
+    if (timeout) {
+      clearTimeout(timeout);
+    } else if (execAsap) {
+      func.apply(obj, args);
+    }
+    return timeout = setTimeout(delayed, threshold || 100);
+  };
+};
+
+DatabaseSearchNode.prototype.search = debounce(DatabaseSearchNode.prototype.search, 200);
+
+RestaurantSearchNode = (function(_super) {
+  __extends(RestaurantSearchNode, _super);
+
+  function RestaurantSearchNode() {
+    _ref9 = RestaurantSearchNode.__super__.constructor.apply(this, arguments);
+    return _ref9;
+  }
+
+  RestaurantSearchNode.prototype.url = '/db/fastfood';
+
+  RestaurantSearchNode.prototype.formatDocument = function(doc) {
+    return doc.name;
+  };
+
+  return RestaurantSearchNode;
+
+})(DatabaseSearchNode);
+
 TreemaNodeMap = {
   'array': ArrayTreemaNode,
   'string': StringTreemaNode,
@@ -1790,7 +1983,8 @@ TreemaNodeMap = {
   'boolean': BooleanTreemaNode,
   'any': AnyTreemaNode,
   'point2d': Point2DTreemaNode,
-  'point3d': Point3DTreemaNode
+  'point3d': Point3DTreemaNode,
+  'restaurant': RestaurantSearchNode
 };
 
 makeTreema = function(schema, data, options, parent) {

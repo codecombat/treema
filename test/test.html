@@ -20,25 +20,22 @@
   var jade = {};
   $(document).ready(function () {
     data = {
-      'locality': 'Berkeley',
-      'region': 'California',
-      'country-name': 'USA',
-      'postal-code': 94703,
-      'is-home-address': true,
-      'phone-numbers': ['1-800-938-3000', '1-234-567-8900 x1337'],
-      'post-office-box': null,
-      'extended-address': {1:2},
-      'coords1': {x:52, y:98},
-      'coords2': {x:52, y:98, z:100},
-      'street-address': '2338 1/2 Roosevelt Ave'
+      'restaurants': [{"id":96,"name":"Nathan's Famous"},{"id":90,"name":"McDonald's"},{"id":37,"name":"Del Taco"},{"id":17,"name":"Braum's"},{"id":21,"name":"Cafe Rio"}]
+//      'locality': 'Berkeley',
+//      'region': 'California',
+//      'country-name': 'USA',
+//      'postal-code': 94703,
+//      'is-home-address': true,
+//      'phone-numbers': ['1-800-938-3000', '1-234-567-8900 x1337'],
+//      'post-office-box': null,
+//      'extended-address': {1:2},
+//      'street-address': '2338 1/2 Roosevelt Ave'
     };
     schema = {
       "additionalProperties": false,
       "description": "An Address following the convention of http://microformats.org/wiki/hcard",
       "type": "object",
       "properties": {
-        "coords1": { type: 'object', format: 'point2d' } ,
-        "coords2": { type: 'object', format: 'point3d' } ,
         "post-office-box": { title: "PO Box", type: ['null', 'string'] },
         "street-address": { title: "Address 1", description: "Don't forget the number." },
         "extended-address": { title: "Address 2" },
@@ -47,9 +44,10 @@
         "postal-code": { "type": "number", title: "Zip Code", minimum:10000, maximum: 99999 },
         "country-name": { "type": "string", title: "Country", 'default': 'USA', enum:['USA', 'Mars'] },
         "is-home-address": { type: 'boolean', title: "Is Home" },
-        "phone-numbers": { "type": "array", items: { type: "string", maxLength: 20, minLength:4 }, title: "Phone #s" }
+        "phone-numbers": { "type": "array", items: { type: "string", maxLength: 20, minLength:4 }, title: "Phone #s" },
+        "restaurants": { "type": "array", items: {format: "restaurant"}, title: 'Favorite Fast Food', uniqueItems: true }
       },
-      "required": ['locality', 'region', 'country-name', 'postal-code'],
+      "required": ['locality', 'region', 'country-name'],
       "dependencies": {
         "post-office-box": "street-address",
         "extended-address": "street-address"

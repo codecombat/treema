@@ -102,7 +102,6 @@ $selectedColor: rgba(64, 128, 255, 0.25)
   color: #8b0000
   margin: 0 5px
   border: 1px solid #8b0000
-  position: absolute
   
 // Collection toggle
 // http://css-tricks.com/snippets/css/css-triangle/
@@ -159,6 +158,17 @@ $selectedColor: rgba(64, 128, 255, 0.25)
 .treema-point2d, .treema-point3d
   input
     width: 40px
+  
+.treema-search-results
+  width: 500px
+  margin-top: 10px
+  cursor: pointer
+  
+.treema-search-result-row:hover
+  background-color: lighten($selectedColor, 20%)
+  
+.treema-search-selected
+  background-color: $selectedColor !important
 
 .treema-shortened
   max-width: 300px
