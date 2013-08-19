@@ -29,14 +29,11 @@ $selectedColor: rgba(64, 128, 255, 0.25)
     outline: none
   
   input, select
-    position: absolute
     font-size: $fontSize
-    top: 0
     width: 200px
     font-family: Helvetica
-    &.treema-new-prop
-      position: inherit
-
+    margin: -3px 0
+  
 .treema-children
   margin-left: 15px
   clear: both
@@ -158,6 +155,10 @@ $selectedColor: rgba(64, 128, 255, 0.25)
     background-color: $selectedColor
   input
     opacity: 0 // hacky way to get tab selection and keyboard inputs to work
+
+.treema-point2d, .treema-point3d
+  input
+    width: 40px
 
 .treema-shortened
   max-width: 300px

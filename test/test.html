@@ -28,6 +28,8 @@
       'phone-numbers': ['1-800-938-3000', '1-234-567-8900 x1337'],
       'post-office-box': null,
       'extended-address': {1:2},
+      'coords1': {x:52, y:98},
+      'coords2': {x:52, y:98, z:100},
       'street-address': '2338 1/2 Roosevelt Ave'
     };
     schema = {
@@ -35,7 +37,9 @@
       "description": "An Address following the convention of http://microformats.org/wiki/hcard",
       "type": "object",
       "properties": {
-        "post-office-box": { title: "PO Box" },
+        "coords1": { type: 'object', format: 'point2d' } ,
+        "coords2": { type: 'object', format: 'point3d' } ,
+        "post-office-box": { title: "PO Box", type: ['null', 'string'] },
         "street-address": { title: "Address 1", description: "Don't forget the number." },
         "extended-address": { title: "Address 2" },
         "locality":{ "type": "string", title: "Locality", 'default': 'Berkeley', minLength:2 },

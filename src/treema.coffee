@@ -79,9 +79,9 @@ class TreemaNode
     input
 
   onEditInputBlur: =>
-    @saveChanges()
+    @saveChanges(@getValEl())
     input = @getValEl().find('input, textarea, select')
-    if @isValid() then @toggleEdit('treema-read') if @isEditing() else input.focus().select()
+    if @isValid() then @read() if @isEditing() else input.focus().select()
 
   limitChoices: (options) ->
     @enum = options
@@ -95,8 +95,8 @@ class TreemaNode
       input.blur @onEditInputBlur
       input
       
-    @saveChanges = =>
-      index = @getValEl().find('select').prop('selectedIndex')
+    @saveChanges = (valEl) =>
+      index = valEl.find('select').prop('selectedIndex')
       @data = @enum[index]
 
   # Initialization ------------------------------------------------------------
@@ -187,24 +187,24 @@ class TreemaNode
   onEscapePressed: ->
     return unless @isEditing()
     return @remove() if @justAdded
-    @toggleEdit('treema-read') if @isEditing()
+    @read() if @isEditing()
     @select() unless @isRoot()
     @getRootEl().focus()
 
   onEnterPressed: (e) ->
     if @editingIsHappening()
-      @saveChanges()
+      @saveChanges(@getValEl())
       @flushChanges()
       @endExistingEdits()
       targetTreema = @getNextEditableTreema(if e.shiftKey then -1 else 1)
-      if targetTreema then targetTreema.toggleEdit('treema-edit') else @parent?.addNewChild()
+      if targetTreema then targetTreema.edit() else @parent?.addNewChild()
       return
       
     selected = @getLastSelectedTreema()
     return unless selected?.editable
     return selected.toggleOpen() if selected.collection
     selected.select()
-    selected.toggleEdit('treema-edit')
+    selected.edit()
 
   onNPressed: (e) ->
     return if @editingIsHappening()
@@ -214,26 +214,40 @@ class TreemaNode
     e.preventDefault()
     
   onTabPressed: (e) ->
-    e.preventDefault()
     offset = if e.shiftKey then -1 else 1
+    return if @hasMoreInputs(offset)
+    
+    e.preventDefault()
     if not @editingIsHappening()
       targetTreema = @getLastSelectedTreema()
       return unless targetTreema?.canEdit()
-      return targetTreema.toggleEdit('treema-edit')
+      return targetTreema.edit(offset: offset)
       
     inputValues = (Boolean($(input).val()) for input in @getValEl().find('input, textarea, select'))
     unless true in inputValues
       targetTreema = @getNextEditableTreemaFromElement(@$el, offset)
       @remove()
-      return targetTreema.toggleEdit('treema-edit')
+      return targetTreema.edit(offset: offset)
       
-    @saveChanges()
+    @saveChanges(@getValEl())
     @flushChanges()
     return unless @isValid()
     @endExistingEdits()
     targetTreema = @getNextEditableTreema(offset)
-    if targetTreema then targetTreema.toggleEdit('treema-edit') else @parent?.addNewChild()
+    if targetTreema then targetTreema.edit(offset:offset) else @parent?.addNewChild()
     
+  hasMoreInputs: (offset) ->
+    inputs = @getInputs().toArray()
+    inputs = inputs.reverse() if offset < 0
+    passedFocusedEl = false
+    for input in inputs
+      if input is document.activeElement
+        passedFocusedEl = true
+        continue
+      continue unless passedFocusedEl
+      return true
+    return false
+  
   # Tree traversing -----------------------------------------------------------
 
   getNextEditableTreemaFromElement: (el, offset) ->
@@ -304,6 +318,13 @@ class TreemaNode
     return true
 
   # Editing values ------------------------------------------------------------
+  read: ->
+    @toggleEdit('treema-read')
+
+  edit: (options={}) ->
+    @toggleEdit('treema-edit')
+    @focusLastInput() if options.offset? and options.offset < 0
+    
   toggleEdit: (toClass=null) ->
     return unless @editable
     valEl = @getValEl()
@@ -321,13 +342,18 @@ class TreemaNode
 
   endExistingEdits: ->
     editing = @getRootEl().find('.treema-edit').closest('.treema-node')
-    $(elem).data('instance').toggleEdit('treema-read') for elem in editing
+    $(elem).data('instance').read() for elem in editing
       
   flushChanges: ->
     @justAdded = false
     return @refreshErrors() unless @parent
     @parent.data[@keyForParent] = @data
     @parent.refreshErrors()
+    
+  focusLastInput: ->
+    inputs = @getInputs()
+    last = inputs[inputs.length-1]
+    $(last).focus().select()
     
   # Removing nodes ------------------------------------------------------------
   removeSelectedNodes: ->
@@ -506,7 +532,11 @@ class TreemaNode
 
   getValEl: -> @$el.find('> .treema-value')
   getRootEl: -> @$el.closest('.treema-root')
-  
+  getInputs: -> @getValEl().find('input, textarea')
+  getSelectedTreemas: -> ($(el).data('instance') for el in @getRootEl().find('.treema-selected'))
+  getLastSelectedTreema: -> @getRootEl().find('.treema-last-selected').data('instance')
+  getAddButtonEl: -> @$el.find('> .treema-children > .treema-add-child')
+
   isRoot: -> @$el.hasClass('treema-root')
   isEditing: -> @getValEl().hasClass('treema-edit')
   isReading: -> @getValEl().hasClass('treema-read')
@@ -515,12 +545,9 @@ class TreemaNode
   isSelected: -> @$el.hasClass('treema-selected')
   wasSelectedLast: -> @$el.hasClass('treema-last-selected')
   editingIsHappening: -> @getRootEl().find('.treema-edit').length
-  keepFocus: -> @getRootEl().focus()
-  
   rootSelected: -> $(document.activeElement).hasClass('treema-root')
-  getSelectedTreemas: -> ($(el).data('instance') for el in @getRootEl().find('.treema-selected'))
-  getLastSelectedTreema: -> @getRootEl().find('.treema-last-selected').data('instance')
-  getAddButtonEl: -> @$el.find('> .treema-children > .treema-add-child')
+
+  keepFocus: -> @getRootEl().focus()
   updateMyAddButton: ->
     @$el.removeClass('treema-full')
     @$el.addClass('treema-full') unless @canAddChild()
@@ -528,6 +555,42 @@ class TreemaNode
 
 
 # TreemaNode subclasses -------------------------------------------------------
+
+class Point2DTreemaNode extends TreemaNode
+  valueClass: 'treema-point2d'
+  getDefaultValue: -> {x:0, y:0}
+
+  setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, "(#{@data.x}, #{@data.y})")
+
+  setValueForEditing: (valEl) ->
+    xInput = $('<input />').val(@data.x)
+    yInput = $('<input />').val(@data.y)
+    valEl.append('(').append(xInput).append(', ').append(yInput).append(')')
+    valEl.find('input:first').focus().select()
+
+  saveChanges: (valEl) ->
+    @data.x = parseFloat(valEl.find('input:first').val())
+    @data.y = parseFloat(valEl.find('input:last').val())
+
+class Point3DTreemaNode extends TreemaNode
+  valueClass: 'treema-point3d'
+  getDefaultValue: -> {x:0, y:0, z:0}
+
+  setValueForReading: (valEl) ->
+    @setValueForReadingSimply(valEl, "(#{@data.x}, #{@data.y}, #{@data.z})")
+
+  setValueForEditing: (valEl) ->
+    xInput = $('<input />').val(@data.x)
+    yInput = $('<input />').val(@data.y)
+    zInput = $('<input />').val(@data.z)
+    valEl.append('(').append(xInput).append(', ').append(yInput).append(', ').append(zInput).append(')')
+    valEl.find('input:first').focus().select()
+
+  saveChanges: ->
+    inputs = @getInputs()
+    @data.x = parseFloat($(inputs[0]).val())
+    @data.y = parseFloat($(inputs[1]).val())
+    @data.z = parseFloat($(inputs[2]).val())
 
 class StringTreemaNode extends TreemaNode
   valueClass: 'treema-string'
@@ -615,7 +678,7 @@ class ArrayTreemaNode extends TreemaNode
     newTreema.tv4 = @tv4
     childNode = @createChildNode(newTreema)
     @getAddButtonEl().before(childNode)
-    newTreema.toggleEdit('treema-edit')
+    newTreema.edit()
     true
 
 
@@ -716,7 +779,7 @@ class ObjectTreemaNode extends TreemaNode
     newTreema.tv4 = @tv4
     childNode = @createChildNode(newTreema)
     @findObjectInsertionPoint(key).before(childNode)
-    if newTreema.collection then newTreema.addNewChild() else newTreema.toggleEdit('treema-edit')
+    if newTreema.collection then newTreema.addNewChild() else newTreema.edit()
     @updateMyAddButton()
 
   findObjectInsertionPoint: (key) ->
@@ -762,7 +825,7 @@ class ObjectTreemaNode extends TreemaNode
     return keyInput.blur() if keyInput.val() # pass to onNewPropertyBlur
     targetTreema = @getNextEditableTreemaFromElement(keyInput, if e.shiftKey then -1 else 1)
     keyInput.remove()
-    targetTreema.toggleEdit('treema-edit') if targetTreema
+    targetTreema.edit() if targetTreema
     
 
 
@@ -839,6 +902,8 @@ TreemaNodeMap =
   'null': NullTreemaNode
   'boolean': BooleanTreemaNode
   'any': AnyTreemaNode
+  'point2d': Point2DTreemaNode
+  'point3d': Point3DTreemaNode
 
 makeTreema = (schema, data, options, parent) ->
   NodeClass = TreemaNodeMap[schema.format]
