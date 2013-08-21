@@ -5,6 +5,8 @@ treema
 
 A library for creating HTML interfaces to edit JSON data defined by
  [json-schema](http://json-schema.org/), written in CoffeeScript and Sass.
+ 
+<script type="text/javascript">alert('test!');</script>
 
 Editing JSON in the browser? Forget the syntax quibbles--GUI it up! 
 Trying to edit configuration? Validate it!
