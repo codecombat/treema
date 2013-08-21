@@ -2,9 +2,9 @@ TreemaNode.setNodeSubclass 'point2d', class Point2DNode extends TreemaNode
   valueClass: 'treema-point2d'
   getDefaultValue: -> {x:0, y:0}
 
-  setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, "(#{@data.x}, #{@data.y})")
+  buildValueForDisplay: (valEl) -> @buildValueForDisplaySimply(valEl, "(#{@data.x}, #{@data.y})")
 
-  setValueForEditing: (valEl) ->
+  buildValueForEditing: (valEl) ->
     xInput = $('<input />').val(@data.x)
     yInput = $('<input />').val(@data.y)
     valEl.append('(').append(xInput).append(', ').append(yInput).append(')')
@@ -18,10 +18,10 @@ TreemaNode.setNodeSubclass 'point3d', class Point3DNode extends TreemaNode
   valueClass: 'treema-point3d'
   getDefaultValue: -> {x:0, y:0, z:0}
 
-  setValueForReading: (valEl) ->
-    @setValueForReadingSimply(valEl, "(#{@data.x}, #{@data.y}, #{@data.z})")
+  buildValueForDisplay: (valEl) ->
+    @buildValueForDisplaySimply(valEl, "(#{@data.x}, #{@data.y}, #{@data.z})")
 
-  setValueForEditing: (valEl) ->
+  buildValueForEditing: (valEl) ->
     xInput = $('<input />').val(@data.x)
     yInput = $('<input />').val(@data.y)
     zInput = $('<input />').val(@data.z)
@@ -41,14 +41,14 @@ class DatabaseSearchTreemaNode extends TreemaNode
   url: null
   lastTerm: null
 
-  setValueForReading: (valEl) ->
-    @setValueForReadingSimply(valEl, if @data then @formatDocument(@data) else 'None')
+  buildValueForDisplay: (valEl) ->
+    @buildValueForDisplaySimply(valEl, if @data then @formatDocument(@data) else 'None')
 
   formatDocument: (doc) ->
     return doc if $.isString(doc)
     JSON.stringify(doc)
 
-  setValueForEditing: (valEl) ->
+  buildValueForEditing: (valEl) ->
     valEl.html(@searchValueTemplate)
     input = valEl.find('input')
     input.focus().keyup @search
@@ -100,7 +100,7 @@ class DatabaseSearchTreemaNode extends TreemaNode
     @getSelectedResultEl().removeClass('treema-search-selected')
     newSelection.addClass('treema-search-selected')
     @saveChanges()
-    @read()
+    @display()
 
 
 # Source: http://coffeescriptcookbook.com/chapters/functions/debounce
@@ -127,15 +127,15 @@ TreemaNode.setNodeSubclass 'ace', class AceNode extends TreemaNode
 
   getDefaultValue: -> ''
 
-  setValueForReading: (valEl) ->
+  buildValueForDisplay: (valEl) ->
     @editor?.destroy()
-    @setValueForReadingSimply(valEl, "#{@data}" or "-empty-")
+    @buildValueForDisplaySimply(valEl, "#{@data}" or "-empty-")
 
-  setValueForEditing: (valEl) ->
+  buildValueForEditing: (valEl) ->
     d = $('<div></div>').text(@data)
     valEl.append(d)
     @editor = ace.edit(d[0])
-    @editor.setReadOnly(false)
+    @editor.setDisplayOnly(false)
     @editor.getSession().setMode(@schema.aceMode) if @schema.aceMode?
     @editor.setTheme(@schema.aceTheme) if @schema.aceTheme?
     valEl.find('textarea').focus()

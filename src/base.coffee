@@ -1,8 +1,9 @@
 class TreemaNode
   # Abstract node class
 
-  # constructor arguments
+  # constructor defined
   schema: {}
+  $el: null
   data: null
   options: null
   parent: null
@@ -14,7 +15,7 @@ class TreemaNode
   tempErrorTemplate: '<span class="treema-temp-error"></span>'
   toggleTemplate: '<span class="treema-toggle"></span>'
   keyTemplate: '<span class="treema-key"></span>'
-  templateString: '<div class="treema-error"></div>'
+  errorTemplate: '<div class="treema-error"></div>'
 
   # behavior settings (overridden by subclasses)
   collection: false      # acts like an array or object
@@ -27,7 +28,6 @@ class TreemaNode
   
   # dynamically managed properties
   keyForParent: null
-  $el: null
   childrenTreemas: null
   justAdded: false
 
@@ -53,10 +53,10 @@ class TreemaNode
   # Abstract functions --------------------------------------------------------
   saveChanges: -> console.error('"saveChanges" has not been overridden.')
   getDefaultValue: -> null
-  setValueForReading: -> console.error('"setValueForReading" has not been overridden.')
-  setValueForEditing: ->
+  buildValueForDisplay: -> console.error('"buildValueForDisplay" has not been overridden.')
+  buildValueForEditing: ->
     return unless @editable
-    console.error('"setValueForEditing" has not been overridden.')
+    console.error('"buildValueForEditing" has not been overridden.')
   
   # collection specific
   getChildren: -> console.error('"getChildren" has not been overridden.') # should return a list of key-value-schema tuples
@@ -66,11 +66,11 @@ class TreemaNode
   addNewChild: -> false
 
   # Subclass helper functions -------------------------------------------------
-  setValueForReadingSimply: (valEl, text) ->
+  buildValueForDisplaySimply: (valEl, text) ->
     text = text.slice(0,200) + '...' if text.length > 200
     valEl.append($("<pre></pre>").addClass('treema-shortened').text(text))
 
-  setValueForEditingSimply: (valEl, value, inputType=null) ->
+  buildValueForEditingSimply: (valEl, value, inputType=null) ->
     input = $('<input />')
     input.attr('type', inputType) if inputType
     input.val(value) unless value is null
@@ -82,11 +82,11 @@ class TreemaNode
   onEditInputBlur: =>
     @saveChanges(@getValEl())
     input = @getValEl().find('input, textarea, select')
-    if @isValid() then @read() if @isEditing() else input.focus().select()
+    if @isValid() then @display() if @isEditing() else input.focus().select()
 
   limitChoices: (options) ->
     @enum = options
-    @setValueForEditing = (valEl) =>
+    @buildValueForEditing = (valEl) =>
       input = $('<select></select>')
       input.append($('<option></option>').text(option)) for option in @enum
       index = @enum.indexOf(@data)
@@ -127,8 +127,8 @@ class TreemaNode
     @$el.append($(@childrenTemplate)).addClass('treema-closed') if @collection
     valEl = @getValEl()
     valEl.addClass(@valueClass) if @valueClass
-    valEl.addClass('treema-read') if @directlyEditable
-    @setValueForReading(valEl)
+    valEl.addClass('treema-display') if @directlyEditable
+    @buildValueForDisplay(valEl)
     @open() if @collection and not @parent
     @setUpEvents() unless @parent
     @updateMyAddButton() if @collection
@@ -150,7 +150,7 @@ class TreemaNode
     clickedToggle = $(e.target).hasClass('treema-toggle')
     usedModKey = e.shiftKey or e.ctrlKey or e.metaKey
     @keepFocus() unless clickedValue and not @collection
-    return @toggleEdit() if @isReading() and clickedValue and @canEdit() and not usedModKey
+    return @toggleEdit() if @isDisplaying() and clickedValue and @canEdit() and not usedModKey
     return @toggleOpen() if clickedToggle or (clickedValue and @collection)
     return @addNewChild() if $(e.target).closest('.treema-add-child').length and @collection
     return if @isRoot() or @isEditing()
@@ -200,7 +200,7 @@ class TreemaNode
   onEscapePressed: ->
     return unless @isEditing()
     return @remove() if @justAdded
-    @read() if @isEditing()
+    @display() if @isEditing()
     @select() unless @isRoot()
     @getRootEl().focus()
 
@@ -333,8 +333,8 @@ class TreemaNode
     return true
 
   # Editing values ------------------------------------------------------------
-  read: ->
-    @toggleEdit('treema-read')
+  display: ->
+    @toggleEdit('treema-display')
 
   edit: (options={}) ->
     @toggleEdit('treema-edit')
@@ -344,15 +344,15 @@ class TreemaNode
     return unless @editable
     valEl = @getValEl()
     return if toClass and valEl.hasClass(toClass)
-    toClass = toClass or (if valEl.hasClass('treema-read') then 'treema-edit' else 'treema-read')
+    toClass = toClass or (if valEl.hasClass('treema-display') then 'treema-edit' else 'treema-display')
     @endExistingEdits() if toClass is 'treema-edit'
-    valEl.removeClass('treema-read').removeClass('treema-edit').addClass(toClass)
+    valEl.removeClass('treema-display').removeClass('treema-edit').addClass(toClass)
 
     valEl.empty()
-    @setValueForReading(valEl) if @isReading()
+    @buildValueForDisplay(valEl) if @isDisplaying()
 
     if @isEditing()
-      @setValueForEditing(valEl)
+      @buildValueForEditing(valEl)
       @deselectAll()
 
   endExistingEdits: ->
@@ -360,7 +360,7 @@ class TreemaNode
     for elem in editing
       treema = $(elem).data('instance')
       treema.saveChanges(treema.getValEl())
-      treema.read()
+      treema.display()
       
   flushChanges: ->
     @justAdded = false
@@ -439,7 +439,7 @@ class TreemaNode
     @$el.addClass('treema-closed').removeClass('treema-open')
     @childrenTreemas = null
     @refreshErrors()
-    @setValueForReading(@getValEl().empty())
+    @buildValueForDisplay(@getValEl().empty())
 
   # Selecting/deselecting nodes -----------------------------------------------
   select: ->
@@ -530,7 +530,7 @@ class TreemaNode
       treema.showError(messages.join('<br />'))
 
   showError: (message) ->
-    @$el.prepend($(@templateString))
+    @$el.prepend($(@errorTemplate))
     @$el.find('> .treema-error').html(message).show()
     @$el.addClass('treema-has-error')
 
@@ -557,7 +557,7 @@ class TreemaNode
 
   isRoot: -> @$el.hasClass('treema-root')
   isEditing: -> @getValEl().hasClass('treema-edit')
-  isReading: -> @getValEl().hasClass('treema-read')
+  isDisplaying: -> @getValEl().hasClass('treema-display')
   isOpen: -> @$el.hasClass('treema-open')
   isClosed: -> @$el.hasClass('treema-closed')
   isSelected: -> @$el.hasClass('treema-selected')

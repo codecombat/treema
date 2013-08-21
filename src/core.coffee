@@ -7,10 +7,10 @@ do __init = ->
                    'email', 'month', 'range', 'search',
                    'tel', 'text', 'time', 'url', 'week']
   
-    setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, "\"#{@data}\"")
+    buildValueForDisplay: (valEl) -> @buildValueForDisplaySimply(valEl, "\"#{@data}\"")
   
-    setValueForEditing: (valEl) ->
-      input = @setValueForEditingSimply(valEl, @data)
+    buildValueForEditing: (valEl) ->
+      input = @buildValueForEditingSimply(valEl, @data)
       input.attr('maxlength', @schema.maxLength) if @schema.maxLength
       input.attr('type', @schema.format) if @schema.format in StringNode.inputTypes
   
@@ -22,10 +22,10 @@ do __init = ->
     valueClass: 'treema-number'
     getDefaultValue: -> 0
   
-    setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, JSON.stringify(@data))
+    buildValueForDisplay: (valEl) -> @buildValueForDisplaySimply(valEl, JSON.stringify(@data))
   
-    setValueForEditing: (valEl) ->
-      input = @setValueForEditingSimply(valEl, JSON.stringify(@data), 'number')
+    buildValueForEditing: (valEl) ->
+      input = @buildValueForEditingSimply(valEl, JSON.stringify(@data), 'number')
       input.attr('max', @schema.maximum) if @schema.maximum
       input.attr('min', @schema.minimum) if @schema.minimum
   
@@ -36,7 +36,7 @@ do __init = ->
   TreemaNode.setNodeSubclass 'null', NullNode = class NullNode extends TreemaNode
     valueClass: 'treema-null'
     editable: false
-    setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, 'null')
+    buildValueForDisplay: (valEl) -> @buildValueForDisplaySimply(valEl, 'null')
 
 
 
@@ -44,10 +44,10 @@ do __init = ->
     valueClass: 'treema-boolean'
     getDefaultValue: -> false
   
-    setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, JSON.stringify(@data))
+    buildValueForDisplay: (valEl) -> @buildValueForDisplaySimply(valEl, JSON.stringify(@data))
   
-    setValueForEditing: (valEl) ->
-      input = @setValueForEditingSimply(valEl, JSON.stringify(@data))
+    buildValueForEditing: (valEl) ->
+      input = @buildValueForEditingSimply(valEl, JSON.stringify(@data))
       $('<span></span>').text(JSON.stringify(@data)).insertBefore(input)
       input.focus()
   
@@ -55,7 +55,7 @@ do __init = ->
       @data = not @data
       @data = newValue if newValue?
       valEl = @getValEl().empty()
-      if @isReading() then @setValueForReading(valEl) else @setValueForEditing(valEl)
+      if @isDisplaying() then @buildValueForDisplay(valEl) else @buildValueForEditing(valEl)
   
     onSpacePressed: -> @toggleValue()
     onFPressed: -> @toggleValue(false)
@@ -73,19 +73,19 @@ do __init = ->
   
     getChildren: -> ([key, value, @getChildSchema()] for value, key in @data)
     getChildSchema: -> @schema.items or {}
-    setValueForReading: (valEl) ->
+    buildValueForDisplay: (valEl) ->
       text = []
       return unless @data
       for child in @data[..2]
         helperTreema = TreemaNode.make(null, {schema: @getChildSchema(), data:child}, @)
         val = $('<div></div>')
-        helperTreema.setValueForReading(val)
+        helperTreema.buildValueForDisplay(val)
         text.push(val.text())
       text.push('...') if @data.length > 3
   
-      @setValueForReadingSimply(valEl, text.join(', '))
+      @buildValueForDisplaySimply(valEl, text.join(', '))
   
-    setValueForEditing: (valEl) -> @setValueForEditingSimply(valEl, JSON.stringify(@data))
+    buildValueForEditing: (valEl) -> @buildValueForEditingSimply(valEl, JSON.stringify(@data))
   
     canAddChild: ->
       return false if @schema.additionalItems is false and @data.length >= @schema.items.length
@@ -135,8 +135,8 @@ do __init = ->
         return child_schema if key is key_or_title or child_schema.title is key_or_title
       {}
   
-    setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, JSON.stringify(@data))
-    setValueForEditing: (valEl) -> @setValueForEditingSimply(valEl, JSON.stringify(@data))
+    buildValueForDisplay: (valEl) -> @buildValueForDisplaySimply(valEl, JSON.stringify(@data))
+    buildValueForEditing: (valEl) -> @buildValueForEditingSimply(valEl, JSON.stringify(@data))
   
     populateData: ->
       super()
@@ -273,7 +273,7 @@ do __init = ->
       super(splat...)
       @updateShadowMethods()
   
-    setValueForEditing: (valEl) -> @setValueForEditingSimply(valEl, JSON.stringify(@data))
+    buildValueForEditing: (valEl) -> @buildValueForEditingSimply(valEl, JSON.stringify(@data))
     saveChanges: (valEl) ->
       @data =$('input', valEl).val()
       if @data[0] is "'" and @data[@data.length-1] isnt "'"
@@ -298,7 +298,7 @@ do __init = ->
       @helper = new NodeClass(@schema, @data, @parent)
       @helper.tv4 = @tv4
       for prop in ['collection', 'ordered', 'keyed', 'getChildSchema', 'getChildren', 'getChildSchema',
-                   'setValueForReading']
+                   'buildValueForDisplay']
         @[prop] = @helper[prop]
   
     rebuild: ->

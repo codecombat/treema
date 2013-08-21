@@ -7,6 +7,8 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.schema = {};
 
+  TreemaNode.prototype.$el = null;
+
   TreemaNode.prototype.data = null;
 
   TreemaNode.prototype.options = null;
@@ -25,7 +27,7 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.keyTemplate = '<span class="treema-key"></span>';
 
-  TreemaNode.prototype.templateString = '<div class="treema-error"></div>';
+  TreemaNode.prototype.errorTemplate = '<div class="treema-error"></div>';
 
   TreemaNode.prototype.collection = false;
 
@@ -42,8 +44,6 @@ TreemaNode = (function() {
   TreemaNode.prototype.valueClass = null;
 
   TreemaNode.prototype.keyForParent = null;
-
-  TreemaNode.prototype.$el = null;
 
   TreemaNode.prototype.childrenTreemas = null;
 
@@ -90,15 +90,15 @@ TreemaNode = (function() {
     return null;
   };
 
-  TreemaNode.prototype.setValueForReading = function() {
-    return console.error('"setValueForReading" has not been overridden.');
+  TreemaNode.prototype.buildValueForDisplay = function() {
+    return console.error('"buildValueForDisplay" has not been overridden.');
   };
 
-  TreemaNode.prototype.setValueForEditing = function() {
+  TreemaNode.prototype.buildValueForEditing = function() {
     if (!this.editable) {
       return;
     }
-    return console.error('"setValueForEditing" has not been overridden.');
+    return console.error('"buildValueForEditing" has not been overridden.');
   };
 
   TreemaNode.prototype.getChildren = function() {
@@ -121,14 +121,14 @@ TreemaNode = (function() {
     return false;
   };
 
-  TreemaNode.prototype.setValueForReadingSimply = function(valEl, text) {
+  TreemaNode.prototype.buildValueForDisplaySimply = function(valEl, text) {
     if (text.length > 200) {
       text = text.slice(0, 200) + '...';
     }
     return valEl.append($("<pre></pre>").addClass('treema-shortened').text(text));
   };
 
-  TreemaNode.prototype.setValueForEditingSimply = function(valEl, value, inputType) {
+  TreemaNode.prototype.buildValueForEditingSimply = function(valEl, value, inputType) {
     var input;
     if (inputType == null) {
       inputType = null;
@@ -152,7 +152,7 @@ TreemaNode = (function() {
     input = this.getValEl().find('input, textarea, select');
     if (this.isValid()) {
       if (this.isEditing()) {
-        return this.read();
+        return this.display();
       }
     } else {
       return input.focus().select();
@@ -162,7 +162,7 @@ TreemaNode = (function() {
   TreemaNode.prototype.limitChoices = function(options) {
     var _this = this;
     this["enum"] = options;
-    this.setValueForEditing = function(valEl) {
+    this.buildValueForEditing = function(valEl) {
       var index, input, option, _i, _len, _ref;
       input = $('<select></select>');
       _ref = _this["enum"];
@@ -229,9 +229,9 @@ TreemaNode = (function() {
       valEl.addClass(this.valueClass);
     }
     if (this.directlyEditable) {
-      valEl.addClass('treema-read');
+      valEl.addClass('treema-display');
     }
-    this.setValueForReading(valEl);
+    this.buildValueForDisplay(valEl);
     if (this.collection && !this.parent) {
       this.open();
     }
@@ -278,7 +278,7 @@ TreemaNode = (function() {
     if (!(clickedValue && !this.collection)) {
       this.keepFocus();
     }
-    if (this.isReading() && clickedValue && this.canEdit() && !usedModKey) {
+    if (this.isDisplaying() && clickedValue && this.canEdit() && !usedModKey) {
       return this.toggleEdit();
     }
     if (clickedToggle || (clickedValue && this.collection)) {
@@ -404,7 +404,7 @@ TreemaNode = (function() {
       return this.remove();
     }
     if (this.isEditing()) {
-      this.read();
+      this.display();
     }
     if (!this.isRoot()) {
       this.select();
@@ -649,8 +649,8 @@ TreemaNode = (function() {
     return true;
   };
 
-  TreemaNode.prototype.read = function() {
-    return this.toggleEdit('treema-read');
+  TreemaNode.prototype.display = function() {
+    return this.toggleEdit('treema-display');
   };
 
   TreemaNode.prototype.edit = function(options) {
@@ -675,17 +675,17 @@ TreemaNode = (function() {
     if (toClass && valEl.hasClass(toClass)) {
       return;
     }
-    toClass = toClass || (valEl.hasClass('treema-read') ? 'treema-edit' : 'treema-read');
+    toClass = toClass || (valEl.hasClass('treema-display') ? 'treema-edit' : 'treema-display');
     if (toClass === 'treema-edit') {
       this.endExistingEdits();
     }
-    valEl.removeClass('treema-read').removeClass('treema-edit').addClass(toClass);
+    valEl.removeClass('treema-display').removeClass('treema-edit').addClass(toClass);
     valEl.empty();
-    if (this.isReading()) {
-      this.setValueForReading(valEl);
+    if (this.isDisplaying()) {
+      this.buildValueForDisplay(valEl);
     }
     if (this.isEditing()) {
-      this.setValueForEditing(valEl);
+      this.buildValueForEditing(valEl);
       return this.deselectAll();
     }
   };
@@ -698,7 +698,7 @@ TreemaNode = (function() {
       elem = editing[_i];
       treema = $(elem).data('instance');
       treema.saveChanges(treema.getValEl());
-      _results.push(treema.read());
+      _results.push(treema.display());
     }
     return _results;
   };
@@ -825,7 +825,7 @@ TreemaNode = (function() {
     this.$el.addClass('treema-closed').removeClass('treema-open');
     this.childrenTreemas = null;
     this.refreshErrors();
-    return this.setValueForReading(this.getValEl().empty());
+    return this.buildValueForDisplay(this.getValEl().empty());
   };
 
   TreemaNode.prototype.select = function() {
@@ -1008,7 +1008,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.showError = function(message) {
-    this.$el.prepend($(this.templateString));
+    this.$el.prepend($(this.errorTemplate));
     this.$el.find('> .treema-error').html(message).show();
     return this.$el.addClass('treema-has-error');
   };
@@ -1075,8 +1075,8 @@ TreemaNode = (function() {
     return this.getValEl().hasClass('treema-edit');
   };
 
-  TreemaNode.prototype.isReading = function() {
-    return this.getValEl().hasClass('treema-read');
+  TreemaNode.prototype.isDisplaying = function() {
+    return this.getValEl().hasClass('treema-display');
   };
 
   TreemaNode.prototype.isOpen = function() {
@@ -1172,13 +1172,13 @@ var __init,
 
     StringNode.inputTypes = ['color', 'date', 'datetime', 'datetime-local', 'email', 'month', 'range', 'search', 'tel', 'text', 'time', 'url', 'week'];
 
-    StringNode.prototype.setValueForReading = function(valEl) {
-      return this.setValueForReadingSimply(valEl, "\"" + this.data + "\"");
+    StringNode.prototype.buildValueForDisplay = function(valEl) {
+      return this.buildValueForDisplaySimply(valEl, "\"" + this.data + "\"");
     };
 
-    StringNode.prototype.setValueForEditing = function(valEl) {
+    StringNode.prototype.buildValueForEditing = function(valEl) {
       var input, _ref1;
-      input = this.setValueForEditingSimply(valEl, this.data);
+      input = this.buildValueForEditingSimply(valEl, this.data);
       if (this.schema.maxLength) {
         input.attr('maxlength', this.schema.maxLength);
       }
@@ -1208,13 +1208,13 @@ var __init,
       return 0;
     };
 
-    NumberNode.prototype.setValueForReading = function(valEl) {
-      return this.setValueForReadingSimply(valEl, JSON.stringify(this.data));
+    NumberNode.prototype.buildValueForDisplay = function(valEl) {
+      return this.buildValueForDisplaySimply(valEl, JSON.stringify(this.data));
     };
 
-    NumberNode.prototype.setValueForEditing = function(valEl) {
+    NumberNode.prototype.buildValueForEditing = function(valEl) {
       var input;
-      input = this.setValueForEditingSimply(valEl, JSON.stringify(this.data), 'number');
+      input = this.buildValueForEditingSimply(valEl, JSON.stringify(this.data), 'number');
       if (this.schema.maximum) {
         input.attr('max', this.schema.maximum);
       }
@@ -1242,8 +1242,8 @@ var __init,
 
     NullNode.prototype.editable = false;
 
-    NullNode.prototype.setValueForReading = function(valEl) {
-      return this.setValueForReadingSimply(valEl, 'null');
+    NullNode.prototype.buildValueForDisplay = function(valEl) {
+      return this.buildValueForDisplaySimply(valEl, 'null');
     };
 
     return NullNode;
@@ -1263,13 +1263,13 @@ var __init,
       return false;
     };
 
-    BooleanNode.prototype.setValueForReading = function(valEl) {
-      return this.setValueForReadingSimply(valEl, JSON.stringify(this.data));
+    BooleanNode.prototype.buildValueForDisplay = function(valEl) {
+      return this.buildValueForDisplaySimply(valEl, JSON.stringify(this.data));
     };
 
-    BooleanNode.prototype.setValueForEditing = function(valEl) {
+    BooleanNode.prototype.buildValueForEditing = function(valEl) {
       var input;
-      input = this.setValueForEditingSimply(valEl, JSON.stringify(this.data));
+      input = this.buildValueForEditingSimply(valEl, JSON.stringify(this.data));
       $('<span></span>').text(JSON.stringify(this.data)).insertBefore(input);
       return input.focus();
     };
@@ -1284,10 +1284,10 @@ var __init,
         this.data = newValue;
       }
       valEl = this.getValEl().empty();
-      if (this.isReading()) {
-        return this.setValueForReading(valEl);
+      if (this.isDisplaying()) {
+        return this.buildValueForDisplay(valEl);
       } else {
-        return this.setValueForEditing(valEl);
+        return this.buildValueForEditing(valEl);
       }
     };
 
@@ -1343,7 +1343,7 @@ var __init,
       return this.schema.items || {};
     };
 
-    ArrayNode.prototype.setValueForReading = function(valEl) {
+    ArrayNode.prototype.buildValueForDisplay = function(valEl) {
       var child, helperTreema, text, val, _i, _len, _ref5;
       text = [];
       if (!this.data) {
@@ -1357,17 +1357,17 @@ var __init,
           data: child
         }, this);
         val = $('<div></div>');
-        helperTreema.setValueForReading(val);
+        helperTreema.buildValueForDisplay(val);
         text.push(val.text());
       }
       if (this.data.length > 3) {
         text.push('...');
       }
-      return this.setValueForReadingSimply(valEl, text.join(', '));
+      return this.buildValueForDisplaySimply(valEl, text.join(', '));
     };
 
-    ArrayNode.prototype.setValueForEditing = function(valEl) {
-      return this.setValueForEditingSimply(valEl, JSON.stringify(this.data));
+    ArrayNode.prototype.buildValueForEditing = function(valEl) {
+      return this.buildValueForEditingSimply(valEl, JSON.stringify(this.data));
     };
 
     ArrayNode.prototype.canAddChild = function() {
@@ -1461,12 +1461,12 @@ var __init,
       return {};
     };
 
-    ObjectNode.prototype.setValueForReading = function(valEl) {
-      return this.setValueForReadingSimply(valEl, JSON.stringify(this.data));
+    ObjectNode.prototype.buildValueForDisplay = function(valEl) {
+      return this.buildValueForDisplaySimply(valEl, JSON.stringify(this.data));
     };
 
-    ObjectNode.prototype.setValueForEditing = function(valEl) {
-      return this.setValueForEditingSimply(valEl, JSON.stringify(this.data));
+    ObjectNode.prototype.buildValueForEditing = function(valEl) {
+      return this.buildValueForEditingSimply(valEl, JSON.stringify(this.data));
     };
 
     ObjectNode.prototype.populateData = function() {
@@ -1709,8 +1709,8 @@ var __init,
       this.updateShadowMethods();
     }
 
-    AnyNode.prototype.setValueForEditing = function(valEl) {
-      return this.setValueForEditingSimply(valEl, JSON.stringify(this.data));
+    AnyNode.prototype.buildValueForEditing = function(valEl) {
+      return this.buildValueForEditingSimply(valEl, JSON.stringify(this.data));
     };
 
     AnyNode.prototype.saveChanges = function(valEl) {
@@ -1743,7 +1743,7 @@ var __init,
       });
       this.helper = new NodeClass(this.schema, this.data, this.parent);
       this.helper.tv4 = this.tv4;
-      _ref6 = ['collection', 'ordered', 'keyed', 'getChildSchema', 'getChildren', 'getChildSchema', 'setValueForReading'];
+      _ref6 = ['collection', 'ordered', 'keyed', 'getChildSchema', 'getChildren', 'getChildSchema', 'buildValueForDisplay'];
       _results = [];
       for (_i = 0, _len = _ref6.length; _i < _len; _i++) {
         prop = _ref6[_i];
@@ -1803,11 +1803,11 @@ TreemaNode.setNodeSubclass('point2d', Point2DNode = (function(_super) {
     };
   };
 
-  Point2DNode.prototype.setValueForReading = function(valEl) {
-    return this.setValueForReadingSimply(valEl, "(" + this.data.x + ", " + this.data.y + ")");
+  Point2DNode.prototype.buildValueForDisplay = function(valEl) {
+    return this.buildValueForDisplaySimply(valEl, "(" + this.data.x + ", " + this.data.y + ")");
   };
 
-  Point2DNode.prototype.setValueForEditing = function(valEl) {
+  Point2DNode.prototype.buildValueForEditing = function(valEl) {
     var xInput, yInput;
     xInput = $('<input />').val(this.data.x);
     yInput = $('<input />').val(this.data.y);
@@ -1842,11 +1842,11 @@ TreemaNode.setNodeSubclass('point3d', Point3DNode = (function(_super) {
     };
   };
 
-  Point3DNode.prototype.setValueForReading = function(valEl) {
-    return this.setValueForReadingSimply(valEl, "(" + this.data.x + ", " + this.data.y + ", " + this.data.z + ")");
+  Point3DNode.prototype.buildValueForDisplay = function(valEl) {
+    return this.buildValueForDisplaySimply(valEl, "(" + this.data.x + ", " + this.data.y + ", " + this.data.z + ")");
   };
 
-  Point3DNode.prototype.setValueForEditing = function(valEl) {
+  Point3DNode.prototype.buildValueForEditing = function(valEl) {
     var xInput, yInput, zInput;
     xInput = $('<input />').val(this.data.x);
     yInput = $('<input />').val(this.data.y);
@@ -1885,8 +1885,8 @@ DatabaseSearchTreemaNode = (function(_super) {
 
   DatabaseSearchTreemaNode.prototype.lastTerm = null;
 
-  DatabaseSearchTreemaNode.prototype.setValueForReading = function(valEl) {
-    return this.setValueForReadingSimply(valEl, this.data ? this.formatDocument(this.data) : 'None');
+  DatabaseSearchTreemaNode.prototype.buildValueForDisplay = function(valEl) {
+    return this.buildValueForDisplaySimply(valEl, this.data ? this.formatDocument(this.data) : 'None');
   };
 
   DatabaseSearchTreemaNode.prototype.formatDocument = function(doc) {
@@ -1896,7 +1896,7 @@ DatabaseSearchTreemaNode = (function(_super) {
     return JSON.stringify(doc);
   };
 
-  DatabaseSearchTreemaNode.prototype.setValueForEditing = function(valEl) {
+  DatabaseSearchTreemaNode.prototype.buildValueForEditing = function(valEl) {
     var input;
     valEl.html(this.searchValueTemplate);
     input = valEl.find('input');
@@ -1991,7 +1991,7 @@ DatabaseSearchTreemaNode = (function(_super) {
     this.getSelectedResultEl().removeClass('treema-search-selected');
     newSelection.addClass('treema-search-selected');
     this.saveChanges();
-    return this.read();
+    return this.display();
   };
 
   return DatabaseSearchTreemaNode;
@@ -2038,20 +2038,20 @@ TreemaNode.setNodeSubclass('ace', AceNode = (function(_super) {
     return '';
   };
 
-  AceNode.prototype.setValueForReading = function(valEl) {
+  AceNode.prototype.buildValueForDisplay = function(valEl) {
     var _ref4;
     if ((_ref4 = this.editor) != null) {
       _ref4.destroy();
     }
-    return this.setValueForReadingSimply(valEl, ("" + this.data) || "-empty-");
+    return this.buildValueForDisplaySimply(valEl, ("" + this.data) || "-empty-");
   };
 
-  AceNode.prototype.setValueForEditing = function(valEl) {
+  AceNode.prototype.buildValueForEditing = function(valEl) {
     var d;
     d = $('<div></div>').text(this.data);
     valEl.append(d);
     this.editor = ace.edit(d[0]);
-    this.editor.setReadOnly(false);
+    this.editor.setDisplayOnly(false);
     if (this.schema.aceMode != null) {
       this.editor.getSession().setMode(this.schema.aceMode);
     }

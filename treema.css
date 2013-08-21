@@ -194,7 +194,7 @@
   text-overflow: ellipsis; }
 
 @media -sass-debug-info{filename{}line{font-family:\0000323}}
-.treema-ace.treema-read .treema-shortened {
+.treema-ace.treema-display .treema-shortened {
   font-family: monospace; }
 
 @media -sass-debug-info{filename{}line{font-family:\0000326}}
