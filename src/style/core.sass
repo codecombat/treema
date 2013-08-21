@@ -1,0 +1,27 @@
+@import "variables"
+
+.treema-string
+  color: #998500
+
+.treema-number
+  color: #699900
+
+.treema-null
+  color: #524059
+  font-weight: bold
+
+.treema-array
+  color: #009905
+  cursor: row-resize
+
+.treema-object
+  color: #008799
+  cursor: row-resize
+
+.treema-boolean
+  color: #140099
+  cursor: pointer
+  &.treema-edit
+    background-color: $selectedColor
+  input
+    opacity: 0 // hacky way to get tab selection and keyboard inputs to work

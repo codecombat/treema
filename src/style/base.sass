@@ -1,9 +1,4 @@
-// Base styles
-
-$fontSize: 13px
-$rowVerticalPadding: 3px
-$rowInternalVerticalPadding: 2px
-$selectedColor: rgba(64, 128, 255, 0.25)
+@import "variables"
 
 .treema-node
   user-select: none
@@ -126,67 +121,7 @@ $selectedColor: rgba(64, 128, 255, 0.25)
   border-top: 8px solid #0b97c4
   top: 9px
   left: -12px
-  
-// Element value styles
-
-.treema-string
-  color: #998500
-  
-.treema-number
-  color: #699900
-  
-.treema-null
-  color: #524059
-  font-weight: bold
-  
-.treema-array
-  color: #009905
-  cursor: row-resize
-  
-.treema-object
-  color: #008799
-  cursor: row-resize
-  
-.treema-boolean
-  color: #140099
-  cursor: pointer
-  &.treema-edit
-    background-color: $selectedColor
-  input
-    opacity: 0 // hacky way to get tab selection and keyboard inputs to work
-
-.treema-point2d, .treema-point3d
-  input
-    width: 40px
-  
-.treema-search-results
-  width: 500px
-  margin-top: 10px
-  cursor: pointer
-  
-.treema-search-result-row:hover
-  background-color: lighten($selectedColor, 20%)
-  
-.treema-search-selected
-  background-color: $selectedColor !important
-
-.treema-shortened
-  max-width: 300px
-  overflow: hidden
-  text-overflow: ellipsis
-  
-.treema-ace.treema-read .treema-shortened
-  font-family: monospace
-  
-.treema-ace.treema-edit
-  border: 1px solid gray
-  margin: 2px 5px
-  
-  &, & > div
-    width: 500px
-    height: 300px
-
-  
+    
 // http://www.positioniseverything.net/easyclearing.html
 .treema-clearfix:after
   content: "."

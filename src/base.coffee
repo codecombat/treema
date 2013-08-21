@@ -8,7 +8,7 @@ class TreemaNode
   parent: null
   
   # templates
-  nodeTemplate: '<div class="treema-node treema-clearfix"><div class="treema-value"></div><div class="treema-backdrop"></div></div>'
+  nodeTemplate: '<div class="treema-value"></div><div class="treema-backdrop"></div>'
   childrenTemplate: '<div class="treema-children"></div>'
   addChildTemplate: '<div class="treema-add-child">+</div>'
   tempErrorTemplate: '<span class="treema-temp-error"></span>'
@@ -101,14 +101,26 @@ class TreemaNode
       @data = @enum[index]
 
   # Initialization ------------------------------------------------------------
-  constructor: (@schema, @data, @options, @parent) ->
-    @options = @options or {}
-    @schema = @schema or {}
+  @pluginName = "treema"
+  defaults =
+    schema: {}
+    data: {}
+    callbacks: {}
+
+  constructor: (@$el, options, @parent) ->
+    @$el = @$el or $('<div></div>')
+    @settings = $.extend {}, defaults, options
+    @schema = options.schema
+    @data = options.data
+    @callbacks = options.callbacks
+    @_defaults = defaults
+    @_name = TreemaNode.pluginName
 
   build: ->
     @populateData()
     @setUpValidator()
-    @$el = $(@nodeTemplate)
+    @$el.addClass('treema-node').addClass('treema-clearfix')
+    @$el.empty().append($(@nodeTemplate))
     @$el.data('instance', @)
     @$el.addClass('treema-root') unless @parent
     @$el.attr('tabindex', 9001) unless @parent
@@ -464,7 +476,7 @@ class TreemaNode
 
   # Child node utilities ------------------------------------------------------
   addChildTreema: (key, value, schema) ->
-    treema = makeTreema(schema, value, {}, @)
+    treema = TreemaNode.make(null, {schema: schema, data:value}, @)
     treema.keyForParent = key
     @childrenTreemas[key] = treema
     treema.populateData()
@@ -558,493 +570,33 @@ class TreemaNode
     @$el.removeClass('treema-full')
     @$el.addClass('treema-full') unless @canAddChild()
 
-
-
-# TreemaNode subclasses -------------------------------------------------------
-
-class Point2DTreemaNode extends TreemaNode
-  valueClass: 'treema-point2d'
-  getDefaultValue: -> {x:0, y:0}
-
-  setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, "(#{@data.x}, #{@data.y})")
-
-  setValueForEditing: (valEl) ->
-    xInput = $('<input />').val(@data.x)
-    yInput = $('<input />').val(@data.y)
-    valEl.append('(').append(xInput).append(', ').append(yInput).append(')')
-    valEl.find('input:first').focus().select()
-
-  saveChanges: (valEl) ->
-    @data.x = parseFloat(valEl.find('input:first').val())
-    @data.y = parseFloat(valEl.find('input:last').val())
-
-class Point3DTreemaNode extends TreemaNode
-  valueClass: 'treema-point3d'
-  getDefaultValue: -> {x:0, y:0, z:0}
-
-  setValueForReading: (valEl) ->
-    @setValueForReadingSimply(valEl, "(#{@data.x}, #{@data.y}, #{@data.z})")
-
-  setValueForEditing: (valEl) ->
-    xInput = $('<input />').val(@data.x)
-    yInput = $('<input />').val(@data.y)
-    zInput = $('<input />').val(@data.z)
-    valEl.append('(').append(xInput).append(', ').append(yInput).append(', ').append(zInput).append(')')
-    valEl.find('input:first').focus().select()
-
-  saveChanges: ->
-    inputs = @getInputs()
-    @data.x = parseFloat($(inputs[0]).val())
-    @data.y = parseFloat($(inputs[1]).val())
-    @data.z = parseFloat($(inputs[2]).val())
-
-class StringTreemaNode extends TreemaNode
-  valueClass: 'treema-string'
-  getDefaultValue: -> ''
-  @inputTypes = ['color', 'date', 'datetime', 'datetime-local', 
-                 'email', 'month', 'range', 'search',
-                 'tel', 'text', 'time', 'url', 'week']
+  @nodeMap = {}
   
-  setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, "\"#{@data}\"")
-  
-  setValueForEditing: (valEl) ->
-    input = @setValueForEditingSimply(valEl, @data)
-    input.attr('maxlength', @schema.maxLength) if @schema.maxLength
-    input.attr('type', @schema.format) if @schema.format in StringTreemaNode.inputTypes
+  @setNodeSubclass = (key, NodeClass) -> @nodeMap[key] = NodeClass
     
-  saveChanges: (valEl) -> @data = $('input', valEl).val()
-
-  
-class NumberTreemaNode extends TreemaNode
-  valueClass: 'treema-number'
-  getDefaultValue: -> 0
+  @getNodeClassForSchema = (schema) ->
+    NodeClass = null
+    NodeClass = @nodeMap[schema.format] if schema.format
+    return NodeClass if NodeClass
+    NodeClass = @nodeMap[schema.type] if schema.type
+    return NodeClass if NodeClass
+    @nodeMap['any']
     
-  setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, JSON.stringify(@data))
-  
-  setValueForEditing: (valEl) -> 
-    input = @setValueForEditingSimply(valEl, JSON.stringify(@data), 'number')
-    input.attr('max', @schema.maximum) if @schema.maximum
-    input.attr('min', @schema.minimum) if @schema.minimum
-    
-  saveChanges: (valEl) -> @data = parseFloat($('input', valEl).val())
+  @make = (element, options, parent) ->
+    NodeClass = @getNodeClassForSchema(options.schema)
+    return new NodeClass(element, options, parent)
 
-  
-class NullTreemaNode extends TreemaNode
-  valueClass: 'treema-null'
-  editable: false
-  setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, 'null')
+#TreemaNodeMap =
+#  'array': ArrayNode
+#  'string': StringNode
+#  'object': ObjectNode
+#  'number': NumberNode
+#  'null': NullNode
+#  'boolean': BooleanNode
+#  'any': AnyNode
+#  'point2d': Point2DNode
+#  'point3d': Point3DNode
+#  'restaurant': RestaurantSearchNode
+#  'ace': AceNode
+#
 
-  
-class BooleanTreemaNode extends TreemaNode
-  valueClass: 'treema-boolean'
-  getDefaultValue: -> false
-    
-  setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, JSON.stringify(@data))
-  
-  setValueForEditing: (valEl) -> 
-    input = @setValueForEditingSimply(valEl, JSON.stringify(@data))
-    $('<span></span>').text(JSON.stringify(@data)).insertBefore(input)
-    input.focus()
-    
-  toggleValue: (newValue=null) ->
-    @data = not @data
-    @data = newValue if newValue?
-    valEl = @getValEl().empty()
-    if @isReading() then @setValueForReading(valEl) else @setValueForEditing(valEl) 
-    
-  onSpacePressed: -> @toggleValue()
-  onFPressed: -> @toggleValue(false)
-  onTPressed: -> @toggleValue(true)
-  saveChanges: ->
-    
-class ArrayTreemaNode extends TreemaNode
-  valueClass: 'treema-array'
-  getDefaultValue: -> []
-  collection: true
-  ordered: true
-  directlyEditable: false
-
-  getChildren: -> ([key, value, @getChildSchema()] for value, key in @data)
-  getChildSchema: -> @schema.items or {}
-  setValueForReading: (valEl) ->
-    text = []
-    return unless @data
-    for child in @data[..2]
-      helperTreema = makeTreema(@getChildSchema(), child, {}, @)
-      val = $('<div></div>')
-      helperTreema.setValueForReading(val)
-      text.push(val.text())
-    text.push('...') if @data.length > 3
-      
-    @setValueForReadingSimply(valEl, text.join(', '))
-    
-  setValueForEditing: (valEl) -> @setValueForEditingSimply(valEl, JSON.stringify(@data))
-
-  canAddChild: ->
-    return false if @schema.additionalItems is false and @data.length >= @schema.items.length
-    return false if @schema.maxItems? and @data.length >= @schema.maxItems
-    return true
-    
-  addNewChild: ->
-    return unless @canAddChild()
-    @open() if @isClosed()
-    new_index = Object.keys(@childrenTreemas).length
-    schema = @getChildSchema()
-    newTreema = @addChildTreema(new_index, undefined, schema)
-    newTreema.justAdded = true
-    newTreema.tv4 = @tv4
-    childNode = @createChildNode(newTreema)
-    @getAddButtonEl().before(childNode)
-    newTreema.edit()
-    true
-
-
-class ObjectTreemaNode extends TreemaNode
-  valueClass: 'treema-object'
-  getDefaultValue: -> {}
-  collection: true
-  keyed: true
-  newPropertyTemplate: '<input class="treema-new-prop" />'
-  directlyEditable: false
-
-  getChildren: ->
-    # order based on properties object first
-    children = []
-    keysAccountedFor = []
-    if @schema.properties
-      for key of @schema.properties
-        continue if typeof @data[key] is 'undefined'
-        keysAccountedFor.push(key)
-        children.push([key, @data[key], @getChildSchema(key)])
-        
-    for key, value of @data
-      continue if key in keysAccountedFor
-      children.push([key, value, @getChildSchema(key)])
-    children
-      
-  getChildSchema: (key_or_title) ->
-    for key, child_schema of @schema.properties
-      return child_schema if key is key_or_title or child_schema.title is key_or_title
-    {}
-
-  setValueForReading: (valEl) -> @setValueForReadingSimply(valEl, JSON.stringify(@data))
-  setValueForEditing: (valEl) -> @setValueForEditingSimply(valEl, JSON.stringify(@data))
-
-  populateData: ->
-    super()
-    return unless @schema.required
-    for key in @schema.required
-      continue if @data[key]
-      helperTreema = makeTreema(@getChildSchema(key), null, {}, @)
-      helperTreema.populateData()
-      @data[key] = helperTreema.data
-
-  canAddChild: ->
-    return false if @schema.maxProperties? and Object.keys(@data).length >= @schema.maxProperties
-    return true if @schema.additionalProperties is false
-    return true if @schema.patternProperties?
-    return true if @childPropertiesAvailable().length
-    return false
-
-  canAddProperty: (key) ->
-    return true unless @schema.additionalProperties is false
-    return true if @schema.properties[key]?
-    if @schema.patternProperties?
-      return true if RegExp(pattern).test(key) for pattern of @schema.patternProperties
-    return false
-    
-  addNewChild: ->
-    return unless @canAddChild()
-    properties = @childPropertiesAvailable()
-    keyInput = $(@newPropertyTemplate)
-    keyInput.autocomplete?(source: properties, minLength: 0, delay: 0, autoFocus: true)
-    @getAddButtonEl().before(keyInput)
-    keyInput.focus()
-    keyInput.blur @onNewPropertyBlur
-    keyInput.autocomplete('search')
-    true
-    
-  addingNewProperty: -> document.activeElement is @$el.find('.treema-new-prop')[0]
-    
-  onNewPropertyBlur: (e) =>
-    keyInput = $(e.target)
-    @clearTemporaryErrors()
-    key = @getPropertyKey(keyInput)
-    return @showBadPropertyError(keyInput) if key.length and not @canAddProperty(key)
-    keyInput.remove()
-    return unless key.length
-    return @childrenTreemas[key].toggleEdit() if @childrenTreemas[key]?
-    @addNewChildForKey(key)
-    
-  getPropertyKey: (keyInput) ->
-    key = keyInput.val()
-    if @schema.properties
-      for child_key, child_schema of @schema.properties
-        key = child_key if child_schema.title is key
-    key
-    
-  showBadPropertyError: (keyInput) ->
-    keyInput.focus()
-    tempError = @createTemporaryError('Invalid property name.')
-    tempError.insertAfter(keyInput)
-    return
-    
-  addNewChildForKey: (key) ->
-    schema = @getChildSchema(key)
-    newTreema = @addChildTreema(key, null, schema)
-    newTreema.justAdded = true
-    newTreema.tv4 = @tv4
-    childNode = @createChildNode(newTreema)
-    @findObjectInsertionPoint(key).before(childNode)
-    if newTreema.collection then newTreema.addNewChild() else newTreema.edit()
-    @updateMyAddButton()
-
-  findObjectInsertionPoint: (key) ->
-    # Object children should be in the order of the schema.properties objects as much as possible
-    return @getAddButtonEl() unless @schema.properties?[key]
-    allProps = Object.keys(@schema.properties)
-    afterKeys = allProps.slice(allProps.indexOf(key)+1)
-    allChildren = @$el.find('> .treema-children > .treema-node')
-    for child in allChildren
-      if $(child).data('instance').keyForParent in afterKeys
-        return $(child)
-    return @getAddButtonEl()
-
-  childPropertiesAvailable: ->
-    return [] unless @schema.properties
-    properties = []
-    for property, childSchema of @schema.properties
-      continue if @childrenTreemas[property]?
-      properties.push(childSchema.title or property)
-    properties.sort()
-
-  onDeletePressed: (e) ->
-    super(e)
-    return unless @addingNewProperty()
-    keyInput = $(e.target)
-    return unless keyInput.hasClass('treema-new-prop')
-    if not keyInput.val()
-      @clearTemporaryErrors()
-      keyInput.remove()
-      e.preventDefault()
-      
-  onEscapePressed: (e) ->
-    keyInput = $(e.target)
-    return unless keyInput.hasClass('treema-new-prop')
-    @clearTemporaryErrors()
-    keyInput.remove()
-    e.preventDefault()
-
-  onTabPressed: (e) ->
-    e.preventDefault()
-    keyInput = $(e.target)
-    return super(e) unless keyInput.hasClass('treema-new-prop')
-    return keyInput.blur() if keyInput.val() # pass to onNewPropertyBlur
-    targetTreema = @getNextEditableTreemaFromElement(keyInput, if e.shiftKey then -1 else 1)
-    keyInput.remove()
-    targetTreema.edit() if targetTreema
-    
-
-
-class AnyTreemaNode extends TreemaNode
-  """
-  Super flexible input, can handle inputs like:
-    true      -> true
-    'true     -> 'true'
-    'true'    -> 'true'
-    1.2       -> 1.2
-    [         -> []
-    {         -> {}
-    [1,2,3]   -> [1,2,3]
-    null      -> null
-  """
-
-  helper: null
-
-  constructor: (splat...) ->
-    super(splat...)
-    @updateShadowMethods()
-
-  setValueForEditing: (valEl) -> @setValueForEditingSimply(valEl, JSON.stringify(@data))
-  saveChanges: (valEl) ->
-    @data =$('input', valEl).val()
-    if @data[0] is "'" and @data[@data.length-1] isnt "'"
-      @data = @data[1..]
-    else if @data[0] is '"' and @data[@data.length-1] isnt '"'
-      @data = @data[1..]
-    else if @data.trim() is '['
-      @data = []
-    else if @data.trim() is '{'
-      @data = {}
-    else
-      try
-        @data = JSON.parse(@data)
-      catch e
-        console.log('could not parse data', @data)
-    @updateShadowMethods()
-    @rebuild()
-
-  updateShadowMethods: ->
-    # This node takes on the behaviors of the other basic nodes.
-    dataType = $.type(@data)
-    NodeClass = TreemaNodeMap[dataType]
-    @helper = new NodeClass(@schema, @data, @options, @parent)
-    @helper.tv4 = @tv4
-    for prop in ['collection', 'ordered', 'keyed', 'getChildSchema', 'getChildren', 'getChildSchema',
-                 'setValueForReading']
-      @[prop] = @helper[prop]
-
-  rebuild: ->
-    oldEl = @$el
-    if @parent
-      newNode = @parent.createChildNode(@)
-    else
-      newNode = @build()
-
-    oldEl.replaceWith(newNode)
-
-  onClick: (e) ->
-    return if e.target.nodeName in ['INPUT', 'TEXTAREA']
-    clickedValue = $(e.target).closest('.treema-value').length  # Clicks are in children of .treema-value nodes
-    usedModKey = e.shiftKey or e.ctrlKey or e.metaKey
-    return @toggleEdit() if clickedValue and not usedModKey
-    super(e)
-
-    
-
-class DatabaseSearchNode extends TreemaNode
-  valueClass: 'treema-search'
-  searchValueTemplate: '<input placeholder="Search" /><div class="treema-search-results"></div>'
-  url: null
-  lastTerm: null
-
-  setValueForReading: (valEl) ->
-    @setValueForReadingSimply(valEl, if @data then @formatDocument(@data) else 'None')
-    
-  formatDocument: (doc) ->
-    return doc if $.isString(doc)
-    JSON.stringify(doc)
-    
-  setValueForEditing: (valEl) ->
-    valEl.html(@searchValueTemplate)
-    input = valEl.find('input')
-    input.focus().keyup @search
-    input.attr('placeholder', @formatDocument(@data)) if @data
-  
-  search: =>
-    term = @getValEl().find('input').val()
-    return if term is @lastTerm
-    @getSearchResultsEl().empty() if @lastTerm and not term
-    return unless term
-    @lastTerm = term
-    @getSearchResultsEl().empty().append('Searching')
-    $.ajax(@url+'?term='+term, {dataType: 'json', success: @searchCallback})
-    
-  searchCallback: (results) =>
-    container = @getSearchResultsEl().detach().empty()
-    for result, i in results
-      row = $('<div></div>').addClass('treema-search-result-row')
-      row.addClass('treema-search-selected') if i is 0
-      row.text(@formatDocument(result))
-      row.data('value', result)
-      container.append(row)
-    if not results.length
-      container.append($('<div>No results</div>'))
-    @getValEl().append(container)
-    
-  getSearchResultsEl: -> @getValEl().find('.treema-search-results')
-  getSelectedResultEl: -> @getValEl().find('.treema-search-selected')
-
-  saveChanges: ->
-    selected = @getSelectedResultEl()
-    return unless selected.length
-    @data = selected.data('value')
-    
-  onDownArrowPressed: -> @navigateSearch(1)
-  onUpArrowPressed: -> @navigateSearch(-1)
-    
-  navigateSearch: (offset) ->
-    selected = @getSelectedResultEl()
-    func = if offset > 0 then 'next' else 'prev'
-    next = selected[func]('.treema-search-result-row')
-    return unless next.length
-    selected.removeClass('treema-search-selected')
-    next.addClass('treema-search-selected')
-    
-  onClick: (e) ->
-    newSelection = $(e.target).closest('.treema-search-result-row')
-    return super(e) unless newSelection.length
-    @getSelectedResultEl().removeClass('treema-search-selected')
-    newSelection.addClass('treema-search-selected')
-    @saveChanges()
-    @read()
-    
-
-# Source: http://coffeescriptcookbook.com/chapters/functions/debounce
-
-debounce = (func, threshold, execAsap) ->
-  timeout = null
-  (args...) ->
-    obj = this
-    delayed = ->
-      func.apply(obj, args) unless execAsap
-      timeout = null
-    if timeout
-      clearTimeout(timeout)
-    else if (execAsap)
-      func.apply(obj, args)
-    timeout = setTimeout delayed, threshold || 100
-
-DatabaseSearchNode.prototype.search = debounce(DatabaseSearchNode.prototype.search, 200)
-    
-class RestaurantSearchNode extends DatabaseSearchNode
-  url: '/db/fastfood'
-  formatDocument: (doc) -> doc.name
-
-
-class AceNode extends TreemaNode
-  valueClass: 'treema-ace'
-
-  getDefaultValue: -> ''
-
-  setValueForReading: (valEl) ->
-    @editor?.destroy()
-    @setValueForReadingSimply(valEl, "#{@data}" or "-empty-")
-    
-  setValueForEditing: (valEl) ->
-    d = $('<div></div>').text(@data)
-    valEl.append(d)
-    @editor = ace.edit(d[0])
-    @editor.setReadOnly(false)
-    @editor.getSession().setMode(@schema.aceMode) if @schema.aceMode?
-    @editor.setTheme(@schema.aceTheme) if @schema.aceTheme?
-    valEl.find('textarea').focus()
-    
-  saveChanges: ->
-    @data = @editor.getValue()
-    
-  onTabPressed: ->
-  onEnterPressed: ->
-
-
-TreemaNodeMap =
-  'array': ArrayTreemaNode
-  'string': StringTreemaNode
-  'object': ObjectTreemaNode
-  'number': NumberTreemaNode
-  'null': NullTreemaNode
-  'boolean': BooleanTreemaNode
-  'any': AnyTreemaNode
-  'point2d': Point2DTreemaNode
-  'point3d': Point3DTreemaNode
-  'restaurant': RestaurantSearchNode
-  'ace': AceNode
-
-makeTreema = (schema, data, options, parent) ->
-  NodeClass = TreemaNodeMap[schema.format]
-  unless NodeClass
-    NodeClass = TreemaNodeMap[schema.type]
-  unless NodeClass
-    NodeClass = TreemaNodeMap['any']
-    
-  return new NodeClass(schema, data, options, parent)

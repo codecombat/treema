@@ -12,6 +12,11 @@ exports.config =
       joinTo:
         'treema.js': /^src/
         'test/treema.js': /^src/
+      order:
+        before: [
+          'src/node.coffee',
+          'src/core.coffee',
+        ]
     stylesheets:
       defaultExtension: 'sass'
       joinTo:

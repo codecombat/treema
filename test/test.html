@@ -61,8 +61,11 @@
       }
     };
 
-    treema = makeTreema(schema, data);
-    $('#test-area').append(treema.build())
+    var el = $('#test-area');
+    var options = {schema:schema, data:data};
+//    var treema = TreemaNode.make(el, options);
+    var treema = el.treema(options);
+    treema.build();
     window.treema = treema
   });
   
