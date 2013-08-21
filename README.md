@@ -23,7 +23,7 @@ You can use the [GitHub issues](https://github.com/sderickson/treema/issues), th
  [team](http://codecombat.com/about).
 
 ## Status
-Still in initial development, but it works. It's not a jQuery plugin yet.
+Still in initial development, but it works.
 
 To use it, just grab [treema.js](https://github.com/sderickson/treema/blob/master/treema.js) 
 and [treema.css](https://github.com/sderickson/treema/blob/master/treema.css), then invoke it 
