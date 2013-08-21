@@ -1,6 +1,8 @@
 treema
 ======
 
+<script src="https://raw.github.com/sderickson/treema/master/treema.js" type="text/javascript"></script>
+
 A library for creating HTML interfaces to edit JSON data defined by
  [json-schema](http://json-schema.org/), written in CoffeeScript and Sass.
 
