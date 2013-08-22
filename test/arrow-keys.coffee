@@ -23,13 +23,16 @@ do ->
   nameTreema = treema.childrenTreemas.name
   phoneTreema = treema.childrenTreemas.numbers
   addressTreema = treema.childrenTreemas.address
+  
+  beforeEach ->
+    treema.deselectAll()
+    phoneTreema.close()
     
   describe 'Down arrow key press', ->
     it 'selects the top row if nothing is selected', ->
       expect(treema.getSelectedTreemas().length).toBe(0)
       downArrowPress(treema.$el)
       expect(nameTreema.isSelected()).toBeTruthy()
-      treema.deselectAll()
       
     it 'skips past closed collections', ->
       expect(treema.getSelectedTreemas().length).toBe(0)
@@ -39,7 +42,6 @@ do ->
       expectOneSelected(phoneTreema)
       downArrowPress(treema.$el)
       expectOneSelected(addressTreema)
-      treema.deselectAll()
       
     it 'traverses open collections', ->
       expect(treema.getSelectedTreemas().length).toBe(0)
@@ -54,8 +56,6 @@ do ->
       expectOneSelected(phoneTreema.childrenTreemas[1])
       downArrowPress(treema.$el)
       expectOneSelected(addressTreema)
-      treema.deselectAll()
-      phoneTreema.close()
       
     it 'does nothing if the last treema is selected', ->
       expect(treema.getSelectedTreemas().length).toBe(0)
@@ -63,14 +63,12 @@ do ->
       expectOneSelected(addressTreema)
       downArrowPress(treema.$el)
       expectOneSelected(addressTreema)
-      treema.deselectAll()
 
   describe 'Up arrow key press', ->
     it 'selects the bottom row if nothing is selected', ->
       expect(treema.getSelectedTreemas().length).toBe(0)
       upArrowPress(treema.$el)
       expect(addressTreema.isSelected()).toBeTruthy()
-      treema.deselectAll()
 
     it 'skips past closed collections', ->
       expect(treema.getSelectedTreemas().length).toBe(0)
@@ -80,7 +78,6 @@ do ->
       expectOneSelected(phoneTreema)
       upArrowPress(treema.$el)
       expectOneSelected(nameTreema)
-      treema.deselectAll()
 
     it 'traverses open collections', ->
       expect(treema.getSelectedTreemas().length).toBe(0)
@@ -95,15 +92,12 @@ do ->
       expectOneSelected(phoneTreema)
       upArrowPress(treema.$el)
       expectOneSelected(nameTreema)
-      treema.deselectAll()
-      phoneTreema.close()
 
     it 'does nothing if the first treema is selected', ->
       nameTreema.select()
       expectOneSelected(nameTreema)
       upArrowPress(treema.$el)
       expectOneSelected(nameTreema)
-      treema.deselectAll()
 
   describe 'Right arrow key press', ->
     it 'does nothing if the selected row isn\'t a collection', ->
@@ -111,7 +105,6 @@ do ->
       expectOneSelected(nameTreema)
       rightArrowPress(treema.$el)
       expectOneSelected(nameTreema)
-      treema.deselectAll()
       
     it 'opens a collection if a collection is selected', ->
       expect(phoneTreema.isClosed()).toBeTruthy()
@@ -119,8 +112,6 @@ do ->
       rightArrowPress(treema.$el)
       expect(phoneTreema.isOpen()).toBeTruthy()
       expectOneSelected(phoneTreema)
-      treema.deselectAll()
-      phoneTreema.close()
       
   describe 'Left arrow key press', ->
     it 'closes an open, selected collection', ->
@@ -129,7 +120,6 @@ do ->
       leftArrowPress(treema.$el)
       expect(phoneTreema.isClosed()).toBeTruthy()
       expectOneSelected(phoneTreema)
-      treema.deselectAll()
     
     it 'closes the non-root parent collection of a selected value', ->
       phoneTreema.open()
@@ -137,7 +127,6 @@ do ->
       leftArrowPress(treema.$el)
       expect(phoneTreema.isClosed()).toBeTruthy()
       expectOneSelected(phoneTreema)
-      treema.deselectAll()
       
     it 'closes one collection at a time, deepest first', ->
       phoneTreema.open()
@@ -152,4 +141,3 @@ do ->
       leftArrowPress(treema.$el)
       expect(phoneTreema.isClosed()).toBeTruthy()
       expectOneSelected(phoneTreema)
-      treema.deselectAll()
