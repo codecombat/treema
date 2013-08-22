@@ -1,8 +1,8 @@
 .idea/
 node_modules/
-test/treema.css
-test/treema.css.map
-test/treema.js
-test/treema.js.map
+dev/css/treema.css
+dev/css/treema.css.map
+dev/js/treema.js
+dev/js/treema.js.map
 treema.css.map
 treema.js.map

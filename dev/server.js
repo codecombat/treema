@@ -1,3 +1,10 @@
+/*
+  This server is for development of treema. It serves static files, and can be
+  used to simulate real servers for nodes that do server interaction.
+  
+  Run 
+ */
+
 /* Source: http://stackoverflow.com/questions/10434001/static-files-with-express-js */
 
 module.exports.startServer = startServer = function() {

@@ -2,7 +2,7 @@
 exports.config =
   # See https://github.com/brunch/brunch/blob/master/docs/config.md
   server:
-    path: 'test/test_server.js'
+    path: 'dev/server.js'
   paths:
     'public': './'
     watched: ['src']
@@ -11,22 +11,16 @@ exports.config =
       defaultExtension: 'coffee'
       joinTo:
         'treema.js': /^src/
-        'test/treema.js': /^src/
+        'dev/js/treema.js': /^src/
       order:
         before: [
           'src/node.coffee',
-          #'src/core.coffee',
         ]
     stylesheets:
       defaultExtension: 'sass'
       joinTo:
         'treema.css': /^src/
-        'test/treema.css': /^src/
-    templates:
-      defaultExtension: 'jade'
-      joinTo:
-        'treema.js': /^src/
-        'test/treema.js': /^src/
+        'dev/css/treema.css': /^src/
 
   plugins:
     coffeelint:
@@ -38,7 +32,7 @@ exports.config =
         max_line_length:
           level: "ignore"
         no_trailing_whitespace:
-          level: "ignore"  # PyCharm can't just autostrip for .coffee, needed for .jade
+          level: "ignore"
     # https://gist.github.com/toolmantim/4958966
     uglify:
       output:

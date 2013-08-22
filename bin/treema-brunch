@@ -1,7 +1,12 @@
 #!/bin/bash
 
+# http://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 ulimit -n 10000
-cd ~/Desktop/treema
+
+cd $DIR/..
+
 until brunch w -c brunch_config.coffee -s; do
     echo "Brunch Crashed. Recompiling entire project. Press Ctrl-C quickly to quit." >&2
     sleep 1
