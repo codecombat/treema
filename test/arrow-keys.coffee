@@ -1,9 +1,4 @@
 do ->
-  keyDown = ($el, which) ->
-    event = jQuery.Event("keydown")
-    event.which = which
-    $el.trigger(event)
-  
   leftArrowPress = ($el) -> keyDown($el, 37)
   upArrowPress = ($el) -> keyDown($el, 38)
   rightArrowPress = ($el) -> keyDown($el, 39)

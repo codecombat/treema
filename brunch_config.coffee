@@ -16,6 +16,7 @@ exports.config =
       order:
         before: [
           'src/node.coffee',
+          'test/common.coffee',
         ]
     stylesheets:
       defaultExtension: 'sass'
