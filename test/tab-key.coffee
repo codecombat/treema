@@ -1,6 +1,8 @@
-describe 'Enter key press', ->
-  enterKeyPress = ($el) -> keyDown($el, 13)
+# almost exactly the same as enter, except it keeps focus on a row that is invalid
 
+describe 'Tab key press', ->
+  tabKeyPress = ($el) -> keyDown($el, 9)
+  
   schema = {
     type: 'object',
     properties: {
@@ -22,40 +24,40 @@ describe 'Enter key press', ->
   
   it 'edits the last selected row', ->
     nameTreema.select()
-    enterKeyPress(treema.$el)
+    tabKeyPress(treema.$el)
     expect(nameTreema.isEditing()).toBeTruthy()
-    
+
   it 'saves the current row and goes on to the next value in the collection if there is one', ->
     phoneTreema.open()
     phoneTreema.childrenTreemas[0].edit()
     phoneTreema.childrenTreemas[0].$el.find('input').val('4321')
-    enterKeyPress(phoneTreema.childrenTreemas[0].$el)
+    tabKeyPress(phoneTreema.childrenTreemas[0].$el)
     expect(phoneTreema.childrenTreemas[0].isDisplaying()).toBeTruthy()
     expect(phoneTreema.childrenTreemas[1].isEditing()).toBeTruthy()
     expect(treema.data.numbers[0]).toBe('4321')
-    
+
   it 'traverses into and out of open collections', ->
     phoneTreema.open()
     nameTreema.edit()
-    enterKeyPress(nameTreema.$el)
+    tabKeyPress(nameTreema.$el)
     expect(phoneTreema.childrenTreemas[0].isEditing()).toBeTruthy()
-    enterKeyPress(phoneTreema.childrenTreemas[0].$el)
+    tabKeyPress(phoneTreema.childrenTreemas[0].$el)
     expect(phoneTreema.childrenTreemas[1].isEditing()).toBeTruthy()
-    enterKeyPress(phoneTreema.childrenTreemas[1].$el)
+    tabKeyPress(phoneTreema.childrenTreemas[1].$el)
     expect(addressTreema.isEditing()).toBeTruthy()
-    
+
   it 'skips over closed collections', ->
     nameTreema.edit()
-    enterKeyPress(nameTreema.$el)
+    tabKeyPress(nameTreema.$el)
     expect(addressTreema.isEditing()).toBeTruthy()
-    
-  it 'shows errors and moves on when saving an invalid row', ->
+
+  it 'shows errors and stays put when saving an invalid row', ->
     phoneTreema.open()
     phoneTreema.childrenTreemas[0].edit()
     phoneTreema.childrenTreemas[0].$el.find('input').val('1')
-    enterKeyPress(phoneTreema.childrenTreemas[0].$el)
-    expect(phoneTreema.childrenTreemas[0].isDisplaying()).toBeTruthy()
-    expect(phoneTreema.childrenTreemas[1].isEditing()).toBeTruthy()
+    tabKeyPress(phoneTreema.childrenTreemas[0].$el)
+    expect(phoneTreema.childrenTreemas[1].isDisplaying()).toBeTruthy()
+    expect(phoneTreema.childrenTreemas[0].isEditing()).toBeTruthy()
     expect(treema.data.numbers[0]).toBe('1')
     expect(treema.isValid()).toBeFalsy()
 
@@ -64,7 +66,7 @@ describe 'Enter key press', ->
     phoneTreema.childrenTreemas[1].edit()
 
     event = jQuery.Event("keydown")
-    event.which = 13
+    event.which = 9
     event.shiftKey = true
     phoneTreema.childrenTreemas[1].$el.trigger(event)
 
