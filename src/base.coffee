@@ -190,7 +190,9 @@ class TreemaNode
     
   onDeletePressed: (e) ->
     if @editingIsHappening() and not $(e.target).val()
-      @remove()
+      @display()
+      @select()
+      @removeSelectedNodes()
       e.preventDefault()
     return if e.target.nodeName in ['INPUT', 'TEXTAREA']
     e.preventDefault()

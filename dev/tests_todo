@@ -1,11 +1,3 @@
-Describe delete key press behavior
-  it is ignored when there's a value in the focused input
-  it removes the row when there's no value in the focused input
-  it removes selected rows
-
-Describe escape key press behavior
-  it closes current input, ignoring changes
-
 Describe enter key press behavior
   it starts editing the last selected row
   it saves the current row and goes on to the next value in the collection if there is one

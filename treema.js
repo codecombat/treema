@@ -385,7 +385,9 @@ TreemaNode = (function() {
   TreemaNode.prototype.onDeletePressed = function(e) {
     var _ref;
     if (this.editingIsHappening() && !$(e.target).val()) {
-      this.remove();
+      this.display();
+      this.select();
+      this.removeSelectedNodes();
       e.preventDefault();
     }
     if ((_ref = e.target.nodeName) === 'INPUT' || _ref === 'TEXTAREA') {
