@@ -31,4 +31,4 @@ Describe "N" key press behavior
   it creates a new row for the currently selected collection
   it does nothing if the current collection cannot add more
   
-  
+Describe core node subclasses

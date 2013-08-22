@@ -104,15 +104,14 @@ class TreemaNode
   @pluginName = "treema"
   defaults =
     schema: {}
-    data: {}
     callbacks: {}
 
   constructor: (@$el, options, @parent) ->
     @$el = @$el or $('<div></div>')
     @settings = $.extend {}, defaults, options
-    @schema = options.schema
+    @schema = @settings.schema
     @data = options.data
-    @callbacks = options.callbacks
+    @callbacks = @settings.callbacks
     @_defaults = defaults
     @_name = TreemaNode.pluginName
     @setUpValidator()
@@ -295,10 +294,21 @@ class TreemaNode
     targetTreema
   
   navigateSelection: (offset) ->
+    treemas = @getVisibleTreemas()
+    return unless treemas.length
     selected = @getLastSelectedTreema()
-    return unless selected
-    next = if offset > 0 then selected.getNextTreema() else selected.getPreviousTreema()
-    next?.select()
+    firstTreema = treemas[0]
+    lastTreema = treemas[treemas.length-1]
+    
+    if not selected
+      targetTreema = if offset > 0 then firstTreema else lastTreema
+      return targetTreema.select()
+      
+    return if offset < 0 and selected is firstTreema
+    return if offset > 0 and selected is lastTreema
+
+    targetTreema = treemas[treemas.indexOf(selected) + offset]
+    targetTreema.select()
 
   navigateOut: ->
     treema.close() if treema.isOpen() for treema in @getSelectedTreemas()
@@ -453,12 +463,15 @@ class TreemaNode
     for treema in @getSelectedTreemas()
       continue if excludeSelf and treema is @
       treema.$el.removeClass('treema-selected')
+    @clearLastSelected()
 
   toggleSelect: ->
+    @clearLastSelected()
     @$el.toggleClass('treema-selected') unless @isRoot()
-    if @isSelected()
-      @getRootEl().find('.treema-last-selected').removeClass('treema-last-selected')
-      @$el.addClass('treema-last-selected')
+    @$el.addClass('treema-last-selected') if @isSelected()
+    
+  clearLastSelected: ->
+    @getRootEl().find('.treema-last-selected').removeClass('treema-last-selected')
       
   shiftSelect: ->
     lastSelected = @getRootEl().find('.treema-last-selected')
@@ -476,6 +489,8 @@ class TreemaNode
       node.$el.addClass('treema-selected')
     @$el.addClass('treema-selected')
     lastSelected.addClass('treema-selected')
+    lastSelected.removeClass('treema-last-selected')
+    @$el.addClass('treema-last-selected')
 
   # Child node utilities ------------------------------------------------------
   addChildTreema: (key, value, schema) ->
@@ -557,6 +572,7 @@ class TreemaNode
   getSelectedTreemas: -> ($(el).data('instance') for el in @getRootEl().find('.treema-selected'))
   getLastSelectedTreema: -> @getRootEl().find('.treema-last-selected').data('instance')
   getAddButtonEl: -> @$el.find('> .treema-children > .treema-add-child')
+  getVisibleTreemas: -> ($(el).data('instance') for el in @getRootEl().find('.treema-node'))
 
   isRoot: -> @$el.hasClass('treema-root')
   isEditing: -> @getValEl().hasClass('treema-edit')

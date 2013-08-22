@@ -190,7 +190,6 @@ TreemaNode = (function() {
 
   defaults = {
     schema: {},
-    data: {},
     callbacks: {}
   };
 
@@ -201,9 +200,9 @@ TreemaNode = (function() {
     this.onEditInputBlur = __bind(this.onEditInputBlur, this);
     this.$el = this.$el || $('<div></div>');
     this.settings = $.extend({}, defaults, options);
-    this.schema = options.schema;
+    this.schema = this.settings.schema;
     this.data = options.data;
-    this.callbacks = options.callbacks;
+    this.callbacks = this.settings.callbacks;
     this._defaults = defaults;
     this._name = TreemaNode.pluginName;
     this.setUpValidator();
@@ -563,13 +562,26 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.navigateSelection = function(offset) {
-    var next, selected;
-    selected = this.getLastSelectedTreema();
-    if (!selected) {
+    var firstTreema, lastTreema, selected, targetTreema, treemas;
+    treemas = this.getVisibleTreemas();
+    if (!treemas.length) {
       return;
     }
-    next = offset > 0 ? selected.getNextTreema() : selected.getPreviousTreema();
-    return next != null ? next.select() : void 0;
+    selected = this.getLastSelectedTreema();
+    firstTreema = treemas[0];
+    lastTreema = treemas[treemas.length - 1];
+    if (!selected) {
+      targetTreema = offset > 0 ? firstTreema : lastTreema;
+      return targetTreema.select();
+    }
+    if (offset < 0 && selected === firstTreema) {
+      return;
+    }
+    if (offset > 0 && selected === lastTreema) {
+      return;
+    }
+    targetTreema = treemas[treemas.indexOf(selected) + offset];
+    return targetTreema.select();
   };
 
   TreemaNode.prototype.navigateOut = function() {
@@ -837,30 +849,33 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.deselectAll = function(excludeSelf) {
-    var treema, _i, _len, _ref, _results;
+    var treema, _i, _len, _ref;
     if (excludeSelf == null) {
       excludeSelf = false;
     }
     _ref = this.getSelectedTreemas();
-    _results = [];
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       treema = _ref[_i];
       if (excludeSelf && treema === this) {
         continue;
       }
-      _results.push(treema.$el.removeClass('treema-selected'));
+      treema.$el.removeClass('treema-selected');
     }
-    return _results;
+    return this.clearLastSelected();
   };
 
   TreemaNode.prototype.toggleSelect = function() {
+    this.clearLastSelected();
     if (!this.isRoot()) {
       this.$el.toggleClass('treema-selected');
     }
     if (this.isSelected()) {
-      this.getRootEl().find('.treema-last-selected').removeClass('treema-last-selected');
       return this.$el.addClass('treema-last-selected');
     }
+  };
+
+  TreemaNode.prototype.clearLastSelected = function() {
+    return this.getRootEl().find('.treema-last-selected').removeClass('treema-last-selected');
   };
 
   TreemaNode.prototype.shiftSelect = function() {
@@ -890,7 +905,9 @@ TreemaNode = (function() {
       node.$el.addClass('treema-selected');
     }
     this.$el.addClass('treema-selected');
-    return lastSelected.addClass('treema-selected');
+    lastSelected.addClass('treema-selected');
+    lastSelected.removeClass('treema-last-selected');
+    return this.$el.addClass('treema-last-selected');
   };
 
   TreemaNode.prototype.addChildTreema = function(key, value, schema) {
@@ -1068,6 +1085,17 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.getAddButtonEl = function() {
     return this.$el.find('> .treema-children > .treema-add-child');
+  };
+
+  TreemaNode.prototype.getVisibleTreemas = function() {
+    var el, _i, _len, _ref, _results;
+    _ref = this.getRootEl().find('.treema-node');
+    _results = [];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      el = _ref[_i];
+      _results.push($(el).data('instance'));
+    }
+    return _results;
   };
 
   TreemaNode.prototype.isRoot = function() {
@@ -1417,14 +1445,14 @@ var __init,
     ObjectNode.prototype.valueClass = 'treema-object';
 
     ObjectNode.prototype.getDefaultValue = function() {
-      var childKey, childSchema, d, _ref6;
+      var childKey, childSchema, d, _ref6, _ref7;
       d = {};
-      if (!this.schema.properties) {
+      if (!((_ref6 = this.schema) != null ? _ref6.properties : void 0)) {
         return d;
       }
-      _ref6 = this.schema.properties;
-      for (childKey in _ref6) {
-        childSchema = _ref6[childKey];
+      _ref7 = this.schema.properties;
+      for (childKey in _ref7) {
+        childSchema = _ref7[childKey];
         if (childSchema["default"]) {
           d[childKey] = childSchema["default"];
         }

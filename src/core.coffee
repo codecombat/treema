@@ -111,7 +111,7 @@ do __init = ->
     valueClass: 'treema-object'
     getDefaultValue: ->
       d = {}
-      return d unless @schema.properties
+      return d unless @schema?.properties
       for childKey, childSchema of @schema.properties
         d[childKey] = childSchema.default if childSchema.default
       d
