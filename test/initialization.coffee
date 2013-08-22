@@ -1,4 +1,4 @@
-describe 'initialization', ->
+describe 'Initialization', ->
 
   schema = { type: 'object', properties: { name: { type: 'string', 'default': 'Untitled'} } }
   data = { }
@@ -13,7 +13,7 @@ describe 'initialization', ->
     elTreema = TreemaNode.make(el, {data: data, schema: schema})
     expect(elTreema.$el).toBe(el)
     
-  it 'default data from the schema', ->
+  it 'grabs default data from an object schema', ->
     noDataTreema = TreemaNode.make(null, {schema: schema})
     expect(noDataTreema.data.name).toBe('Untitled')
     
