@@ -1,7 +1,3 @@
-Describe TV4 interface
-  it can check validity
-  it returns errors
-  
 Describe initialization
   it sets up $el
   it populates with default data from the schema

@@ -4,5 +4,8 @@ describe 'TV4 Interface', ->
   
   it 'can check data validity', ->
     treema = TreemaNode.make(null, {data: 'NaN', schema: schema})
-    console.log(treema.isValid())
     expect(treema.isValid()).toBe false
+    
+  it 'returns errors', ->
+    treema = TreemaNode.make(null, {data: 'NaN', schema: schema})
+    expect(treema.getErrors().length).toBe 1

@@ -50,7 +50,6 @@ TreemaNode = (function() {
   TreemaNode.prototype.justAdded = false;
 
   TreemaNode.prototype.isValid = function() {
-    console.log('valid?', this.tv4, this.data, this.schema);
     if (!this.tv4) {
       return true;
     }
