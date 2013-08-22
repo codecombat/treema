@@ -1,10 +1,3 @@
-Describe mouse click behavior
-  it edits the value if you click the value
-  it opens the collection if you click the value
-  it selects the row if you don't click the value
-  it selects along all open rows if you shift click
-  it toggles the select state if you ctrl/meta click
-  
 Describe arrow key press behavior
   it moves the most recent selection down when down is pressed
   it moves the most recent selection up when up is pressed

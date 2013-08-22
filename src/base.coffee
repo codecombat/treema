@@ -443,7 +443,10 @@ class TreemaNode
 
   # Selecting/deselecting nodes -----------------------------------------------
   select: ->
-    @deselectAll(true)
+    numSelected = @getSelectedTreemas().length
+    # if we have multiple selected, we want this row to be selected at the end
+    excludeSelf = numSelected is 1 
+    @deselectAll(excludeSelf)
     @toggleSelect()
 
   deselectAll: (excludeSelf=false) ->

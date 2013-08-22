@@ -829,7 +829,10 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.select = function() {
-    this.deselectAll(true);
+    var excludeSelf, numSelected;
+    numSelected = this.getSelectedTreemas().length;
+    excludeSelf = numSelected === 1;
+    this.deselectAll(excludeSelf);
     return this.toggleSelect();
   };
 
