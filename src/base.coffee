@@ -108,7 +108,6 @@ class TreemaNode
     callbacks: {}
 
   constructor: (@$el, options, @parent) ->
-    @setUpValidator()
     @$el = @$el or $('<div></div>')
     @settings = $.extend {}, defaults, options
     @schema = options.schema
@@ -116,9 +115,10 @@ class TreemaNode
     @callbacks = options.callbacks
     @_defaults = defaults
     @_name = TreemaNode.pluginName
+    @setUpValidator()
+    @populateData()
 
   build: ->
-    @populateData()
     @$el.addClass('treema-node').addClass('treema-clearfix')
     @$el.empty().append($(@nodeTemplate))
     @$el.data('instance', @)

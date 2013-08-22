@@ -199,7 +199,6 @@ TreemaNode = (function() {
     this.parent = parent;
     this.orderDataFromUI = __bind(this.orderDataFromUI, this);
     this.onEditInputBlur = __bind(this.onEditInputBlur, this);
-    this.setUpValidator();
     this.$el = this.$el || $('<div></div>');
     this.settings = $.extend({}, defaults, options);
     this.schema = options.schema;
@@ -207,11 +206,12 @@ TreemaNode = (function() {
     this.callbacks = options.callbacks;
     this._defaults = defaults;
     this._name = TreemaNode.pluginName;
+    this.setUpValidator();
+    this.populateData();
   }
 
   TreemaNode.prototype.build = function() {
     var valEl;
-    this.populateData();
     this.$el.addClass('treema-node').addClass('treema-clearfix');
     this.$el.empty().append($(this.nodeTemplate));
     this.$el.data('instance', this);
@@ -1414,7 +1414,19 @@ var __init,
     ObjectNode.prototype.valueClass = 'treema-object';
 
     ObjectNode.prototype.getDefaultValue = function() {
-      return {};
+      var childKey, childSchema, d, _ref6;
+      d = {};
+      if (!this.schema.properties) {
+        return d;
+      }
+      _ref6 = this.schema.properties;
+      for (childKey in _ref6) {
+        childSchema = _ref6[childKey];
+        if (childSchema["default"]) {
+          d[childKey] = childSchema["default"];
+        }
+      }
+      return d;
     };
 
     ObjectNode.prototype.collection = true;

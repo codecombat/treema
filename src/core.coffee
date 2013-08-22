@@ -109,7 +109,13 @@ do __init = ->
 
   TreemaNode.setNodeSubclass 'object', class ObjectNode extends TreemaNode
     valueClass: 'treema-object'
-    getDefaultValue: -> {}
+    getDefaultValue: ->
+      d = {}
+      return d unless @schema.properties
+      for childKey, childSchema of @schema.properties
+        d[childKey] = childSchema.default if childSchema.default
+      d
+
     collection: true
     keyed: true
     newPropertyTemplate: '<input class="treema-new-prop" />'

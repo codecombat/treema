@@ -1,8 +1,3 @@
-Describe initialization
-  it sets up $el
-  it populates with default data from the schema
-  it opens up root collection nodes by default
-  
 Describe mouse click behavior
   it edits the value if you click the value
   it opens the collection if you click the value
