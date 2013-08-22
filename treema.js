@@ -414,12 +414,13 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.onEnterPressed = function(e) {
-    var selected, targetTreema, _ref;
+    var offset, selected, targetTreema, _ref;
+    offset = e.shiftKey ? -1 : 1;
     if (this.editingIsHappening()) {
       this.saveChanges(this.getValEl());
       this.flushChanges();
       this.endExistingEdits();
-      targetTreema = this.getNextEditableTreema(e.shiftKey ? -1 : 1);
+      targetTreema = this.getNextEditableTreema(offset);
       if (targetTreema) {
         targetTreema.edit();
       } else {
@@ -430,48 +431,35 @@ TreemaNode = (function() {
       return;
     }
     selected = this.getLastSelectedTreema();
-    if (!(selected != null ? selected.editable : void 0)) {
-      return;
-    }
     if (selected.collection) {
-      return selected.toggleOpen();
+      return selected.disinter(offset);
     }
-    selected.select();
-    return selected.edit();
-  };
-
-  TreemaNode.prototype.onNPressed = function(e) {
-    var selected, success, target;
-    if (this.editingIsHappening()) {
-      return;
+    if (selected.canEdit()) {
+      return selected.edit();
     }
-    selected = this.getLastSelectedTreema();
-    target = (selected != null ? selected.collection : void 0) ? selected : selected != null ? selected.parent : void 0;
-    if (!target) {
-      return;
-    }
-    success = target.addNewChild();
-    if (success) {
-      this.deselectAll();
-    }
-    return e.preventDefault();
   };
 
   TreemaNode.prototype.onTabPressed = function(e) {
-    var input, inputValues, offset, targetTreema, _ref;
+    var input, inputValues, offset, selected, targetTreema, _ref;
     offset = e.shiftKey ? -1 : 1;
     if (this.hasMoreInputs(offset)) {
       return;
     }
     e.preventDefault();
     if (!this.editingIsHappening()) {
-      targetTreema = this.getLastSelectedTreema();
-      if (!(targetTreema != null ? targetTreema.canEdit() : void 0)) {
+      selected = this.getLastSelectedTreema();
+      if (!selected) {
         return;
       }
-      return targetTreema.edit({
-        offset: offset
-      });
+      if (selected.collection) {
+        selected.disinter(offset);
+      }
+      if (selected.canEdit()) {
+        selected.edit({
+          offset: offset
+        });
+      }
+      return;
     }
     inputValues = (function() {
       var _i, _len, _ref, _results;
@@ -508,6 +496,17 @@ TreemaNode = (function() {
     }
   };
 
+  TreemaNode.prototype.disinter = function(offset) {
+    var targetTreema;
+    if (offset > 0 && this.isClosed()) {
+      return this.toggleOpen();
+    }
+    targetTreema = this.getNextEditableTreema(offset);
+    if (targetTreema) {
+      targetTreema.edit();
+    }
+  };
+
   TreemaNode.prototype.hasMoreInputs = function(offset) {
     var input, inputs, passedFocusedEl, _i, _len;
     inputs = this.getInputs().toArray();
@@ -527,6 +526,23 @@ TreemaNode = (function() {
       return true;
     }
     return false;
+  };
+
+  TreemaNode.prototype.onNPressed = function(e) {
+    var selected, success, target;
+    if (this.editingIsHappening()) {
+      return;
+    }
+    selected = this.getLastSelectedTreema();
+    target = (selected != null ? selected.collection : void 0) ? selected : selected != null ? selected.parent : void 0;
+    if (!target) {
+      return;
+    }
+    success = target.addNewChild();
+    if (success) {
+      this.deselectAll();
+    }
+    return e.preventDefault();
   };
 
   TreemaNode.prototype.getNextEditableTreemaFromElement = function(el, offset) {
@@ -1763,8 +1779,6 @@ var __init,
   })(TreemaNode));
   return TreemaNode.setNodeSubclass('any', AnyNode = (function(_super) {
     __extends(AnyNode, _super);
-
-    "Super flexible input, can handle inputs like:\ntrue      -> true\n'true     -> 'true'\n'true'    -> 'true'\n1.2       -> 1.2\n[         -> []\n{         -> {}\n[1,2,3]   -> [1,2,3]\nnull      -> null";
 
     AnyNode.prototype.helper = null;
 

@@ -206,38 +206,30 @@ class TreemaNode
     @getRootEl().focus()
 
   onEnterPressed: (e) ->
+    offset = if e.shiftKey then -1 else 1
     if @editingIsHappening()
       @saveChanges(@getValEl())
       @flushChanges()
       @endExistingEdits()
-      targetTreema = @getNextEditableTreema(if e.shiftKey then -1 else 1)
+      targetTreema = @getNextEditableTreema(offset)
       if targetTreema then targetTreema.edit() else @parent?.addNewChild()
       return
       
     selected = @getLastSelectedTreema()
-    return unless selected?.editable
-    return selected.toggleOpen() if selected.collection
-    selected.select()
-    selected.edit()
-
-  onNPressed: (e) ->
-    return if @editingIsHappening()
-    selected = @getLastSelectedTreema()
-    target = if selected?.collection then selected else selected?.parent
-    return unless target
-    success = target.addNewChild()
-    @deselectAll() if success
-    e.preventDefault()
+    return selected.disinter(offset) if selected.collection
+    selected.edit() if selected.canEdit()
     
   onTabPressed: (e) ->
     offset = if e.shiftKey then -1 else 1
     return if @hasMoreInputs(offset)
-    
     e.preventDefault()
+    
     if not @editingIsHappening()
-      targetTreema = @getLastSelectedTreema()
-      return unless targetTreema?.canEdit()
-      return targetTreema.edit(offset: offset)
+      selected = @getLastSelectedTreema()
+      return unless selected
+      selected.disinter(offset) if selected.collection
+      selected.edit(offset: offset) if selected.canEdit()
+      return
       
     inputValues = (Boolean($(input).val()) for input in @getValEl().find('input, textarea, select'))
     unless true in inputValues
@@ -252,6 +244,15 @@ class TreemaNode
     targetTreema = @getNextEditableTreema(offset)
     if targetTreema then targetTreema.edit(offset:offset) else @parent?.addNewChild()
     
+  disinter: (offset) ->
+    # This is what happens when you press tab or enter when selecting a collection
+    # If it's closed, you open it.
+    # If it's already open, you start editing whatever comes next.
+    return @toggleOpen() if offset > 0 and @isClosed()
+    targetTreema = @getNextEditableTreema(offset)
+    targetTreema.edit() if targetTreema
+    return
+
   hasMoreInputs: (offset) ->
     inputs = @getInputs().toArray()
     inputs = inputs.reverse() if offset < 0
@@ -263,7 +264,16 @@ class TreemaNode
       continue unless passedFocusedEl
       return true
     return false
-  
+
+  onNPressed: (e) ->
+    return if @editingIsHappening()
+    selected = @getLastSelectedTreema()
+    target = if selected?.collection then selected else selected?.parent
+    return unless target
+    success = target.addNewChild()
+    @deselectAll() if success
+    e.preventDefault()
+
   # Tree traversing -----------------------------------------------------------
 
   getNextEditableTreemaFromElement: (el, offset) ->

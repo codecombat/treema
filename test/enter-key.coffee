@@ -69,4 +69,10 @@ describe 'Enter key press', ->
     phoneTreema.childrenTreemas[1].$el.trigger(event)
 
     expect(phoneTreema.childrenTreemas[1].isDisplaying()).toBeTruthy()
-    expect(phoneTreema.childrenTreemas[0].isEditing()).toBeTruthy() 
+    expect(phoneTreema.childrenTreemas[0].isEditing()).toBeTruthy()
+  
+  it 'edits the first child in a collection if a collection is selected', ->
+    phoneTreema.open()
+    phoneTreema.select()
+    enterKeyPress(phoneTreema.$el)
+    expect(phoneTreema.childrenTreemas[0].isEditing()).toBeTruthy()

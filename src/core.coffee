@@ -275,17 +275,6 @@ do __init = ->
 
 
   TreemaNode.setNodeSubclass 'any', class AnyNode extends TreemaNode
-    """
-    Super flexible input, can handle inputs like:
-    true      -> true
-    'true     -> 'true'
-    'true'    -> 'true'
-    1.2       -> 1.2
-    [         -> []
-    {         -> {}
-    [1,2,3]   -> [1,2,3]
-    null      -> null
-    """
   
     helper: null
   
