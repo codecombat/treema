@@ -364,16 +364,18 @@ TreemaNode = (function() {
     }
   };
 
-  TreemaNode.prototype.onUpArrowPressed = function() {
+  TreemaNode.prototype.onUpArrowPressed = function(e) {
     if (!this.editingIsHappening()) {
-      return this.navigateSelection(-1);
+      this.navigateSelection(-1);
     }
+    return e.preventDefault();
   };
 
-  TreemaNode.prototype.onDownArrowPressed = function() {
+  TreemaNode.prototype.onDownArrowPressed = function(e) {
     if (!this.editingIsHappening()) {
-      return this.navigateSelection(1);
+      this.navigateSelection(1);
     }
+    return e.preventDefault();
   };
 
   TreemaNode.prototype.onSpacePressed = function() {};

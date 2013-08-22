@@ -182,8 +182,12 @@ class TreemaNode
     
   onLeftArrowPressed: -> @navigateOut() unless @editingIsHappening()
   onRightArrowPressed: -> @navigateIn() unless @editingIsHappening()
-  onUpArrowPressed: -> @navigateSelection(-1) unless @editingIsHappening()
-  onDownArrowPressed: -> @navigateSelection(1) unless @editingIsHappening()
+  onUpArrowPressed: (e) ->
+    @navigateSelection(-1) unless @editingIsHappening()
+    e.preventDefault()
+  onDownArrowPressed: (e) ->
+    @navigateSelection(1) unless @editingIsHappening()
+    e.preventDefault()
   onSpacePressed: ->
   onTPressed: ->
   onFPressed: ->
