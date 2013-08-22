@@ -1,10 +1,3 @@
-Describe arrow key press behavior
-  it moves the most recent selection down when down is pressed
-  it moves the most recent selection up when up is pressed
-  it navigates along the open nodes of the tree
-  it opens a collection when the right arrow is pressed
-  it closes a collection when the left arrow is pressed
- 
 Describe delete key press behavior
   it is ignored when there's a value in the focused input
   it removes the row when there's no value in the focused input
