@@ -135,7 +135,21 @@ do __init = ->
         return child_schema if key is key_or_title or child_schema.title is key_or_title
       {}
   
-    buildValueForDisplay: (valEl) -> @buildValueForDisplaySimply(valEl, JSON.stringify(@data))
+    buildValueForDisplay: (valEl) ->
+      text = []
+      return unless @data
+      skipped = []
+      for key, value of @data
+        if @schema.displayProperty? and key isnt @schema.displayProperty
+          skipped.push(key)
+          continue
+          
+        helperTreema = TreemaNode.make(null, {schema: @getChildSchema(key), data:value}, @)
+        val = $('<div></div>')
+        helperTreema.buildValueForDisplay(val)
+        text.push(val.text())
+      @buildValueForDisplaySimply(valEl, '{' + text.join(', ') + '}')
+      
     buildValueForEditing: (valEl) -> @buildValueForEditingSimply(valEl, JSON.stringify(@data))
   
     populateData: ->
@@ -222,7 +236,7 @@ do __init = ->
       return [] unless @schema.properties
       properties = []
       for property, childSchema of @schema.properties
-        continue if @childrenTreemas[property]?
+        continue if @data[property]?
         properties.push(childSchema.title or property)
       properties.sort()
   

@@ -1,0 +1,355 @@
+<html>
+<head>
+  <script type="text/javascript" src="jquery-1.8.1.js"></script>
+  <script type="text/javascript" src="jquery-ui-1.10.3.custom.js"></script>
+  <script type="text/javascript" src="tv4.js"></script>
+  <script type="text/javascript" src="ace.js"></script>
+  <script type="text/javascript" src="treema.js"></script>
+  <script type="text/javascript" src="bootstrap.min.js"></script>
+  
+  <link rel="stylesheet" href="treema.css">
+  <link rel="stylesheet" href="jquery-ui-1.10.3.custom.css">
+  <link rel="stylesheet" href="bootstrap.min.css" media="screen">
+  
+  <style type="text/css">
+    body {
+      background: #ddd;
+    }
+    
+    #content {
+      margin: 0 auto;
+      width: 800px;
+      background: white;
+      padding: 20px;
+    }
+    
+    h1 {
+      padding: 30px 10px;
+      background: #0b97c4;
+      color: white;
+      text-shadow: 1px 1px 1px black;
+      margin-bottom: 40px;
+    }
+    
+    h3 {
+      margin-top: 40px;
+    }
+    
+    h4 {
+      margin: 20px 0;
+      text-align: center;
+    }
+    
+    .tab-pane {
+      padding: 10px;
+      min-height: 200px;
+      max-height: 400px;
+      overflow: scroll;
+      margin-bottom: 20px;
+      border-left: 1px solid lightgray;
+    }
+    
+    .treema-wrapper {
+      margin-top: 20px;
+    }
+    
+    pre {
+      margin-bottom: 20px
+    }
+    
+  </style>
+</head>
+<body>
+
+<div id="content">
+  
+  <h1>Treema</h1>
+  
+  <p>
+    Treema is a 
+    <a href="http://jquery.com/">jQuery</a>
+    plugin that builds interfaces for editing complex, well-defined 
+    <a href="http://www.w3resource.com/JSON/JSON-Schema.php">JSON</a>
+    data.
+    It builds on
+    <a href="https://github.com/geraintluff/tv4">tv4</a>,
+    which implements
+    <a href="http://json-schema.org/">JSON-Schema</a>
+    validation.
+  </p>
+  
+  <h3>Who should use this?</h3>
+  
+  <p>
+    You're rocking Node.js, MongoDB, Redis, ShareJS, CreateJS, and fifty other sweet 
+    open-source projects in your stack
+    (they all look so good!) working with one common data format: <strong>JSON</strong>.
+  </p>
+  <p>
+    You're throwing around JSON objects which have nested arrays nesting yet more objects 
+    whose 'name' properties can't be more than 20 characters long or start with a number.
+    Not to mention all the references to yet more objects with a structure all their own.
+  </p>
+  <p>
+    You and your users need to be able to <strong>edit these monstrosities</strong>.
+  </p>
+  <p>
+    You <em>could</em> build tons of HTML forms views or separate pages for each nesting and intricate systems
+    to make sure the data is constructed just so,
+    but with documents this big and complex, this will get... <em>unwieldy</em>.
+  </p>
+  <p>
+    What to do?
+  </p>
+  
+  <hr />
+  
+  <h4>Define your data with JSON-Schema and use Treema as an interface</h4>
+
+  <hr />
+  
+  <h3>What's it look like?</h3>
+  
+  <div id="addresses"></div>
+  
+  <script>
+    var contacts = [
+      { 'street-address': '10 Downing Street', 'country-name': 'UK', 'locality': 'London', 'name': 'Prime Minister' },
+      { 'street-address': '1600 Amphitheatre Pkwy', 'phone-number': '(650) 253-0000', 'name': 'Google'},
+      { 'street-address': '45 Rockefeller Plaza', 'region': 'NY', 'locality': 'New York', 'name': 'Rockefeller Center'},
+    ]
+    
+    var contact_book_schema = {
+      type: 'array',
+      items: {
+        "additionalProperties": false,
+        "type": "object",
+        "displayProperty": 'name',
+        "properties": {
+          "name": { type: "string", maxLength: 20 },
+          "street-address": { title: "Address 1", description: "Don't forget the number.", type: "string" },
+          "locality":{ "type": "string", title: "Locality" },
+          "region": { 'title': 'Region', type: 'string' },
+          "country-name": { "type": "string", title: "Country" },
+          "friend": { "type": "boolean", title: "Friend" },
+          "phone-number": { type: "string", maxLength: 20, minLength:4, title: 'Phone Number' }
+        }
+      }
+    };
+    
+    var demosMade = 0;
+    
+    function buildTreemaExample (el, schema, data) {
+      el.addClass('treema-wrapper');
+      var nav = $('<ul class="nav nav-tabs"></ul>');
+      var treemaLink = $('<a>Treema</a>').attr('href', '#treema-'+demosMade);
+      var dataLink = $('<a>Data</a>').attr('href', '#data-'+demosMade).addClass('is-data');
+      var schemaLink = $('<a>Schema</a>').attr('href', '#schema-'+demosMade);
+      var errorsLink = $('<a>Errors</a>').attr('href', '#errors-'+demosMade).addClass('is-errors');
+      nav.append($('<li></li>').addClass('active').append(treemaLink));
+      nav.append($('<li></li>').append(dataLink));
+      nav.append($('<li></li>').append(schemaLink));
+      nav.append($('<li></li>').append(errorsLink));
+      
+      var content = $('<div></div>').addClass('tab-content');
+      var treemaTab = $('<div></div>').addClass('tab-pane').addClass('active').attr('id', 'treema-'+demosMade);
+      content.append(treemaTab);
+      var dataTab = $('<pre></pre>').addClass('tab-pane').attr('id', 'data-'+demosMade);
+      content.append(dataTab);
+      var schemaTab = $('<pre></pre>').addClass('tab-pane').attr('id', 'schema-'+demosMade);
+      schemaTab.text(JSON.stringify(schema, null, 2));
+      content.append(schemaTab);
+      var errorsTab = $('<pre></pre>').addClass('tab-pane').attr('id', 'errors-'+demosMade);
+      content.append(errorsTab);
+
+      var treema = treemaTab.treema({schema: schema, data: data});
+      treema.build();
+      el.append(nav).append(content);
+      
+      el.find('.nav a').click(function (e) {
+        e.preventDefault();
+        if ($(this).hasClass('is-data')) {
+          dataTab.text(JSON.stringify(treema.data, null, 2));
+        }
+        if ($(this).hasClass('is-errors')) {
+          errorsTab.text(JSON.stringify(treema.getErrors(), null, 2));
+        }
+        $(this).tab('show');
+      });
+      demosMade += 1;
+      return treema;
+    }
+
+    buildTreemaExample($('#addresses'), contact_book_schema, contacts);
+    
+  </script>
+  
+  <hr />
+  
+  <p>
+    The code looks something like this:
+  </p>
+  
+  <pre>
+    treema = $('#addresses').treema({schema: schema, data: data});
+    treema.build();</pre>
+  
+  <p>
+    So! To summarize, you describe your data with a schema, grab said data, and combine it together with Treema.
+    When you want to save the data, just fetch:
+  </p>
+  
+  <pre>
+    treema.data;</pre>
+  
+  <h3>JSON-Schemas are the gift that keep on giving</h3>
+  
+  <p>
+    <strong>Not only</strong> do you get a consistent way to modify complex data,
+    but schemas can be used elsewhere, too:
+  </p>
+  
+  <ul>
+    <li>Validate data server-side on Node.js, making sure no one is trying to submit gnarly data.</li>
+    <li>Create more traditional HTML forms with libraries like
+      <a href="http://www.alpacajs.org/">Alpaca</a>.
+    </li>
+    <li>Generate documentation and API documentation with tools like
+      <a href="https://github.com/mashery/iodocs">I/O Docs</a>.
+    </li>
+  </ul>
+  
+  <h3>Make custom nodes</h3>
+  
+  <p>
+    Say your data object has a 2d position in there.
+  </p>
+  
+  <div id="shapeA"></div>
+
+  <script>
+    var shape = {
+      origin: {x: 3, y: 4},
+      kind: 'circle',
+      color: 'red'
+    };
+
+    var shape_schema = {
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "origin": { 
+          type: "object",
+          properties: {
+            x: { 'type': 'number' },
+            y: { 'type': 'number' }
+          }
+        },
+        "kind": {
+          type: "string",
+          enum: ["square", "circle", "rectangle"]
+        },
+        color: {
+          type: "string",
+          enum: ['red', 'blue', 'green']
+        }
+      }
+    };
+
+    treema = buildTreemaExample($('#shapeA'), shape_schema, shape);
+    treema.childrenTreemas.origin.open()
+    
+    
+  </script>
+
+  <p>
+    Even with Treema's compact format, three lines for an object that will only ever have two properties
+    just seems like overkill.
+    So, define a Treema node that instead treats that object as a single entity, rather than a collection. 
+  </p>
+
+  <div id="shapeB"></div>
+
+  <script>
+    var shape_schema = {
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "origin": {
+          type: "object",
+          format: "point2d",
+          properties: {
+            x: { 'type': 'number' },
+            y: { 'type': 'number' }
+          }
+        },
+        "kind": {
+          type: "string",
+          enum: ["square", "circle", "rectangle"]
+        },
+        color: {
+          type: "string",
+          enum: ['red', 'blue', 'green']
+        }
+      }
+    };
+
+    treema = buildTreemaExample($('#shapeB'), shape_schema, shape);
+  </script>
+
+  <p>
+    Much better. Think of the possibilities! Nodes that:
+  </p>
+
+  <ul>
+    <li>Search your database dynamically to insert references and denormalized data.</li>
+    <li>Show exactly what you want to see for a given object until opened.</li>
+    <li>Only let you choose from some other list within the page (maybe from another treema?).</li>
+    <li>Incorporate your favorite plugins.</li>
+  </ul>
+
+  <div id="component"></div>
+
+  <script>
+    var component = {
+      name: "Morgan Freeman Plugin",
+      description: "Let me tell you something my friend. hope is a dangerous thing. hope can drive a man insane. the man likes to play chess; let's get him some rocks. mister wayne, if you don't want to tell me exactly what you're doing, when i'm asked, i don't have to lie.",
+      lang: "Javascript",
+      code: "function Apple (type) {\n  this.type = type;\n  this.color = 'red';\n}\n\nApple.prototype.getInfo = function() {\n  return this.color + ' ' + this.type + ' apple';\n};"
+    }
+    
+    var component_schema = {
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "name": {
+          type: "string",
+          maxLength: 40
+        },
+        "description": {
+          type: "string",
+          maxLength: 10000
+        },
+        "lang": {
+          type: "string",
+          title: "Language",
+          enum: ["Javascript"]
+        },
+        code: {
+          type: "string",
+          format: "ace",
+          title: "Code",
+          aceMode: "ace/mode/javascript"
+        }
+      }
+    };
+
+    treema = buildTreemaExample($('#component'), component_schema, component);
+    treema.childrenTreemas.code.edit();
+  </script>
+
+
+</div>
+
+</body>
+</html>

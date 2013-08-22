@@ -68,7 +68,7 @@ class TreemaNode
   # Subclass helper functions -------------------------------------------------
   buildValueForDisplaySimply: (valEl, text) ->
     text = text.slice(0,200) + '...' if text.length > 200
-    valEl.append($("<pre></pre>").addClass('treema-shortened').text(text))
+    valEl.append($("<div></div>").addClass('treema-shortened').text(text))
 
   buildValueForEditingSimply: (valEl, value, inputType=null) ->
     input = $('<input />')
@@ -585,18 +585,4 @@ class TreemaNode
   @make = (element, options, parent) ->
     NodeClass = @getNodeClassForSchema(options.schema)
     return new NodeClass(element, options, parent)
-
-#TreemaNodeMap =
-#  'array': ArrayNode
-#  'string': StringNode
-#  'object': ObjectNode
-#  'number': NumberNode
-#  'null': NullNode
-#  'boolean': BooleanNode
-#  'any': AnyNode
-#  'point2d': Point2DNode
-#  'point3d': Point3DNode
-#  'restaurant': RestaurantSearchNode
-#  'ace': AceNode
-#
 

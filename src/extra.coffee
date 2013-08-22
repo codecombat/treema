@@ -129,13 +129,16 @@ TreemaNode.setNodeSubclass 'ace', class AceNode extends TreemaNode
 
   buildValueForDisplay: (valEl) ->
     @editor?.destroy()
-    @buildValueForDisplaySimply(valEl, "#{@data}" or "-empty-")
+    pre = $('<pre></pre>')
+    @buildValueForDisplaySimply(pre, "#{@data}" or "-empty-")
+    valEl.append(pre)
 
   buildValueForEditing: (valEl) ->
     d = $('<div></div>').text(@data)
     valEl.append(d)
     @editor = ace.edit(d[0])
-    @editor.setDisplayOnly(false)
+    console.log('@editor', @editor)
+    @editor.setReadOnly(false)
     @editor.getSession().setMode(@schema.aceMode) if @schema.aceMode?
     @editor.setTheme(@schema.aceTheme) if @schema.aceTheme?
     valEl.find('textarea').focus()
