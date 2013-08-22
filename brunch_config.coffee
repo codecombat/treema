@@ -5,13 +5,14 @@ exports.config =
     path: 'dev/server.js'
   paths:
     'public': './'
-    watched: ['src']
+    watched: ['src', 'test']
   files:
     javascripts:
       defaultExtension: 'coffee'
       joinTo:
         'treema.js': /^src/
         'dev/js/treema.js': /^src/
+        'dev/js/treema.spec.js': /^test/
       order:
         before: [
           'src/node.coffee',

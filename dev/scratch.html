@@ -1,0 +1,80 @@
+<html>
+<head>
+  <script type="text/javascript" src="js/vendor/jquery-1.8.1.js"></script>
+  <script type="text/javascript" src="js/vendor/jquery-ui-1.10.3.custom.js"></script>
+  <script type="text/javascript" src="js/vendor/tv4.js"></script>
+  <script type="text/javascript" src="js/vendor/ace.js"></script>
+  <script type="text/javascript" src="js/vendor/bootstrap.min.js"></script>
+
+  <script type="text/javascript" src="js/treema.js"></script>
+
+  <link rel="stylesheet" href="css/vendor/jquery-ui-1.10.3.custom.css">
+  <link rel="stylesheet" href="css/vendor/bootstrap.min.css" media="screen">
+
+  <link rel="stylesheet" href="css/treema.css">
+  <link rel="stylesheet" href="css/demo.css">
+  
+</head>
+<body>
+
+<div id="content">
+
+  <h1>Try Things Out Here</h1>
+
+  <div id="scratch"></div>
+  
+</div>
+
+<script type="text/javascript">
+
+  var jade = {};
+  $(document).ready(function () {
+    data = {
+      'restaurants': [{"id":96,"name":"Nathan's Famous"},{"id":90,"name":"McDonald's"},{"id":37,"name":"Del Taco"},{"id":17,"name":"Braum's"},{"id":21,"name":"Cafe Rio"}],
+//      'locality': 'Berkeley',
+//      'region': 'California',
+//      'country-name': 'USA',
+//      'postal-code': 94703,
+//      'is-home-address': true,
+//      'phone-numbers': ['1-800-938-3000', '1-234-567-8900 x1337'],
+//      'post-office-box': null,
+//      'extended-address': {1:2},
+//      'street-address': '2338 1/2 Roosevelt Ave'
+      hackery: "var i = 0;"
+    };
+    schema = {
+      "additionalProperties": false,
+      "description": "An Address following the convention of http://microformats.org/wiki/hcard",
+      "type": "object",
+      "properties": {
+        "post-office-box": { title: "PO Box", type: ['null', 'string'] },
+        "street-address": { title: "Address 1", description: "Don't forget the number." },
+        "extended-address": { title: "Address 2" },
+        "locality":{ "type": "string", title: "Locality", 'default': 'Berkeley', minLength:2 },
+        "region": { 'title': 'Region', type: 'string', 'default': 'California' },
+        "postal-code": { "type": "number", title: "Zip Code", minimum:10000, maximum: 99999 },
+        "country-name": { "type": "string", title: "Country", 'default': 'USA', enum:['USA', 'Mars'] },
+        "is-home-address": { type: 'boolean', title: "Is Home" },
+        "phone-numbers": { "type": "array", items: { type: "string", maxLength: 20, minLength:4 }, title: "Phone #s" },
+        "restaurants": { "type": "array", items: {format: "restaurant"}, title: 'Favorite Fast Food', uniqueItems: true },
+        "hackery": { type: "string", format: "ace", aceMode: "ace/mode/javascript" }
+      },
+      "required": ['locality', 'region', 'country-name'],
+      "dependencies": {
+        "post-office-box": "street-address",
+        "extended-address": "street-address"
+      }
+    };
+
+    var el = $('#scratch');
+    var options = {schema:schema, data:data};
+//    var treema = TreemaNode.make(el, options);
+    var treema = el.treema(options);
+    treema.build();
+    window.treema = treema
+  });
+  
+</script>
+
+</body>
+</html>

@@ -50,6 +50,7 @@ TreemaNode = (function() {
   TreemaNode.prototype.justAdded = false;
 
   TreemaNode.prototype.isValid = function() {
+    console.log('valid?', this.tv4, this.data, this.schema);
     if (!this.tv4) {
       return true;
     }
@@ -199,6 +200,7 @@ TreemaNode = (function() {
     this.parent = parent;
     this.orderDataFromUI = __bind(this.orderDataFromUI, this);
     this.onEditInputBlur = __bind(this.onEditInputBlur, this);
+    this.setUpValidator();
     this.$el = this.$el || $('<div></div>');
     this.settings = $.extend({}, defaults, options);
     this.schema = options.schema;
@@ -211,7 +213,6 @@ TreemaNode = (function() {
   TreemaNode.prototype.build = function() {
     var valEl;
     this.populateData();
-    this.setUpValidator();
     this.$el.addClass('treema-node').addClass('treema-clearfix');
     this.$el.empty().append($(this.nodeTemplate));
     this.$el.data('instance', this);
