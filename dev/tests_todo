@@ -1,10 +1,3 @@
-Describe enter key press behavior
-  it starts editing the last selected row
-  it saves the current row and goes on to the next value in the collection if there is one
-  it saves the current row and creates a new row if there are no further values
-  it shows errors and moves on when saving the currently editing row
-  it goes backwards if shift is pressed
-
 Describe tab key press behavior
   it starts editing the last selected row
   it saves the current row if editing
