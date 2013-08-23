@@ -582,15 +582,17 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.navigateOut = function() {
     var selected;
-    console.log('navigate?', this);
     selected = this.getLastSelectedTreema();
-    if (treema.isOpen()) {
-      return treema.close();
-    }
-    if ((!selected.parent) || this.parent.isRoot()) {
+    if (!selected) {
       return;
     }
-    return this.parent.select();
+    if (selected.isOpen()) {
+      return selected.close();
+    }
+    if ((!selected.parent) || selected.parent.isRoot()) {
+      return;
+    }
+    return selected.parent.select();
   };
 
   TreemaNode.prototype.navigateIn = function() {

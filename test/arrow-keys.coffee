@@ -121,23 +121,35 @@ do ->
       expect(phoneTreema.isClosed()).toBeTruthy()
       expectOneSelected(phoneTreema)
     
-    it 'closes the non-root parent collection of a selected value', ->
+    it 'closes the selection if it can be closed, otherwise moves the selection up a level', ->
       phoneTreema.open()
       phoneTreema.childrenTreemas[0].select()
+      leftArrowPress(treema.$el)
+      expect(phoneTreema.isOpen()).toBeTruthy()
+      expectOneSelected(phoneTreema)
       leftArrowPress(treema.$el)
       expect(phoneTreema.isClosed()).toBeTruthy()
       expectOneSelected(phoneTreema)
       
-    it 'closes one collection at a time, deepest first', ->
+    it 'affects one collection at a time, deepest first', ->
       phoneTreema.open()
       phoneTreema.childrenTreemas[1].open()
       phoneTreema.childrenTreemas[1].childrenTreemas[0].select()
-      
+
+      leftArrowPress(treema.$el)
+      expect(phoneTreema.childrenTreemas[1].isOpen()).toBeTruthy()
+      expect(phoneTreema.isOpen()).toBeTruthy()
+      expectOneSelected(phoneTreema.childrenTreemas[1])
+
       leftArrowPress(treema.$el)
       expect(phoneTreema.childrenTreemas[1].isClosed()).toBeTruthy()
       expect(phoneTreema.isOpen()).toBeTruthy()
       expectOneSelected(phoneTreema.childrenTreemas[1])
-      
+
+      leftArrowPress(treema.$el)
+      expect(phoneTreema.isOpen()).toBeTruthy()
+      expectOneSelected(phoneTreema)
+
       leftArrowPress(treema.$el)
       expect(phoneTreema.isClosed()).toBeTruthy()
       expectOneSelected(phoneTreema)

@@ -324,12 +324,11 @@ class TreemaNode
     targetTreema?.select()
 
   navigateOut: ->
-    treema.close() if treema.isOpen() for treema in @getSelectedTreemas()
-    parentSelection = @getLastSelectedTreema()?.parent
-    return unless parentSelection
-    return if parentSelection.isRoot()
-    parentSelection.close()
-    parentSelection.select()
+    selected = @getLastSelectedTreema()
+    return if not selected
+    return selected.close() if selected.isOpen()
+    return if (not selected.parent) or selected.parent.isRoot()
+    selected.parent.select()
 
   navigateIn: ->
     for treema in @getSelectedTreemas()
