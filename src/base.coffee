@@ -11,13 +11,14 @@ class TreemaNode
   # templates
   nodeTemplate: '<div class="treema-row"><div class="treema-value"></div></div>'
   childrenTemplate: '<div class="treema-children"></div>'
-  addChildTemplate: '<div class="treema-add-child">+</div>'
+  addChildTemplate: '<div class="treema-add-child" tabindex="9009">+</div>'
   tempErrorTemplate: '<span class="treema-temp-error"></span>'
   toggleTemplate: '<span class="treema-toggle"></span>'
   keyTemplate: '<span class="treema-key"></span>'
   errorTemplate: '<div class="treema-error"></div>'
+  newPropertyTemplate: '<input class="treema-new-prop" />'
 
-  # behavior settings (overridden by subclasses)
+# behavior settings (overridden by subclasses)
   collection: false      # acts like an array or object
   ordered: false         # acts like an array
   keyed: false           # acts like an object
@@ -63,6 +64,7 @@ class TreemaNode
   getChildSchema: -> console.error('"getChildSchema" has not been overridden.')
   canAddChild: -> @collection and @editable
   canAddProperty: -> true
+  addingNewProperty: -> false
   addNewChild: -> false
 
   # Subclass helper functions -------------------------------------------------
@@ -80,9 +82,19 @@ class TreemaNode
     input
 
   onEditInputBlur: =>
+    shouldRemove = @shouldTryToRemoveFromParent()
     @saveChanges(@getValEl())
     input = @getValEl().find('input, textarea, select')
     if @isValid() then @display() if @isEditing() else input.focus().select()
+    @remove() if shouldRemove
+    
+  shouldTryToRemoveFromParent: ->
+    val = @getValEl()
+    inputs = val.find('input, textarea')
+    for input in inputs
+      input = $(input)
+      return false if input.attr('type') is 'checkbox' or input.val()
+    return true
 
   limitChoices: (options) ->
     @enum = options
@@ -184,14 +196,22 @@ class TreemaNode
 
   # Default keyboard behaviors ------------------------------------------------
     
-  onLeftArrowPressed: -> @navigateOut() unless @editingIsHappening()
-  onRightArrowPressed: -> @navigateIn() unless @editingIsHappening()
+  onLeftArrowPressed: (e) ->
+    @navigateOut() unless @editingIsHappening() or @addingNewProperty()
+    e.preventDefault()
+    
+  onRightArrowPressed: (e) ->
+    @navigateIn() unless @editingIsHappening() or @addingNewProperty()
+    e.preventDefault()
+    
   onUpArrowPressed: (e) ->
-    @navigateSelection(-1) unless @editingIsHappening()
+    @navigateSelection(-1) unless @editingIsHappening() or @addingNewProperty()
     e.preventDefault()
+    
   onDownArrowPressed: (e) ->
-    @navigateSelection(1) unless @editingIsHappening()
+    @navigateSelection(1) unless @editingIsHappening() or @addingNewProperty()
     e.preventDefault()
+    
   onSpacePressed: ->
   onTPressed: ->
   onFPressed: ->
@@ -215,51 +235,14 @@ class TreemaNode
 
   onEnterPressed: (e) ->
     offset = if e.shiftKey then -1 else 1
-    if @editingIsHappening()
-      @saveChanges(@getValEl())
-      @flushChanges()
-      @endExistingEdits()
-      targetTreema = @getNextEditableTreema(offset)
-      if targetTreema then targetTreema.edit() else @parent?.addNewChild()
-      return
-      
-    selected = @getLastSelectedTreema()
-    return selected.disinter(offset) if selected.collection
-    selected.edit() if selected.canEdit()
+    return @addNewChild() if offset is 1 and $(e.target).hasClass('treema-add-child')
+    @traverseWhileEditing(offset, true)
     
   onTabPressed: (e) ->
     offset = if e.shiftKey then -1 else 1
     return if @hasMoreInputs(offset)
     e.preventDefault()
-    
-    if not @editingIsHappening()
-      selected = @getLastSelectedTreema()
-      return unless selected
-      selected.disinter(offset) if selected.collection
-      selected.edit(offset: offset) if selected.canEdit()
-      return
-      
-    inputValues = (Boolean($(input).val()) for input in @getValEl().find('input, textarea, select'))
-    unless true in inputValues
-      targetTreema = @getNextEditableTreemaFromElement(@$el, offset)
-      @remove() unless @data
-      return targetTreema.edit(offset: offset)
-      
-    @saveChanges(@getValEl())
-    @flushChanges()
-    return unless @isValid()
-    @endExistingEdits()
-    targetTreema = @getNextEditableTreema(offset)
-    if targetTreema then targetTreema.edit(offset:offset) else @parent?.addNewChild()
-    
-  disinter: (offset) ->
-    # This is what happens when you press tab or enter when selecting a collection
-    # If it's closed, you open it.
-    # If it's already open, you start editing whatever comes next.
-    return @toggleOpen() if offset > 0 and @isClosed()
-    targetTreema = @getNextEditableTreema(offset)
-    targetTreema.edit() if targetTreema
-    return
+    @traverseWhileEditing(offset, false)
 
   hasMoreInputs: (offset) ->
     inputs = @getInputs().toArray()
@@ -282,53 +265,62 @@ class TreemaNode
     @deselectAll() if success
     e.preventDefault()
 
-  # Tree traversing -----------------------------------------------------------
-
-  getNextEditableTreemaFromElement: (el, offset) ->
-    dir = if offset > 0 then 'next' else 'prev'
-
-    # try siblings first
-    targetTreema = el[dir]('.treema-node').data('instance')
-    if targetTreema and not targetTreema?.canEdit()
-      targetTreema = targetTreema.getNextEditableTreema(offset) 
-      
-    # then from parent treemas
-    else if not targetTreema
-      parentTreema = el.closest('.treema-node').data('instance')
-      targetTreema = parentTreema?.getNextEditableTreema(offset)
-      
-    # otherwise, just start again from the beginning or end
-    if not targetTreema
-      dir = if offset > 0 then 'first' else 'last'
-      selector = '> .treema-children > .treema-node:'+dir
-      targetTreema = @getRootEl().find(selector).data('instance')
-      targetTreema = targetTreema.getNextEditableTreema(offset) if targetTreema and not targetTreema.canEdit()
-    return targetTreema
-
-  getNextEditableTreema: (offset) ->
-    targetTreema = @
-    while targetTreema
-      targetTreema = if offset > 0 then targetTreema.getNextTreema() else targetTreema.getPreviousTreema()
-      continue if targetTreema and not targetTreema.canEdit()
-      break
-    targetTreema
+  # Tree traversing/navigation ------------------------------------------------
+  # (traversing means editing and adding fields, pressing enter and tab)
+  # (navigation means selecting fields, pressing arrow keys)
   
-  navigateSelection: (offset) ->
-    treemas = @getVisibleTreemas()
-    return unless treemas.length
+  traverseWhileEditing: (offset, aggressive) ->
+    shouldRemove = false
     selected = @getLastSelectedTreema()
-    firstTreema = treemas[0]
-    lastTreema = treemas[treemas.length-1]
+    editing = @isEditing()
+    return selected.edit() if not editing and selected?.canEdit()
     
-    if not selected
-      targetTreema = if offset > 0 then firstTreema else lastTreema
-      return targetTreema.select()
+    if editing
+      shouldRemove = @shouldTryToRemoveFromParent()
+      @saveChanges(@getValEl())
+      @flushChanges()
+      return unless aggressive or @isValid()
+      if shouldRemove and $(@$el[0].nextSibling)?.hasClass('treema-add-child') and offset is 1
+        offset = 2
+      @endExistingEdits()
+      @select()
+    
+    ctx = @traversalContext(offset)
+    return @getRoot().addChild() unless ctx
+    if not ctx.origin
+      targetEl = if offset > 0 then ctx.first else ctx.last
+      @selectOrActivateElement(targetEl)
       
-    return if offset < 0 and selected is firstTreema
-    return if offset > 0 and selected is lastTreema
+    selected = $(ctx.origin).data('instance')
+    if offset > 0 and aggressive and selected.collection and selected.isClosed()
+      return selected.open()
 
-    targetTreema = treemas[treemas.indexOf(selected) + offset]
-    targetTreema.select()
+    targetEl = if offset > 0 then ctx.next else ctx.prev
+    if not targetEl
+      targetEl = if offset > 0 then ctx.first else ctx.last
+    @selectOrActivateElement(targetEl)
+    @remove() if shouldRemove
+
+  selectOrActivateElement: (el) ->
+    el = $(el)
+    treema = el.data('instance')
+    if treema
+      return if treema.canEdit() then treema.edit() else treema.select()
+      
+    # otherwise it must be an 'add' element
+    @deselectAll()
+    el.focus()
+    
+  navigateSelection: (offset) ->
+    ctx = @navigationContext()
+    return unless ctx
+    if not ctx.origin
+      targetTreema = if offset > 0 then ctx.first else ctx.last
+      return targetTreema.select()
+    targetTreema = if offset > 0 then ctx.next else ctx.prev
+    if not targetTreema
+      targetTreema = if offset > 0 then ctx.first else ctx.last
+    targetTreema?.select()
 
   navigateOut: ->
     treema.close() if treema.isOpen() for treema in @getSelectedTreemas()
@@ -342,20 +334,32 @@ class TreemaNode
     for treema in @getSelectedTreemas()
       continue unless treema.collection
       treema.open() if treema.isClosed()
-
-  getNextTreema: ->
-    nextChild = @$el.find('.treema-node:first').data('instance')
-    return nextChild if nextChild
-    nextSibling = @$el.next('.treema-node').data('instance')
-    return nextSibling if nextSibling
-    nextParent = @parent?.$el.next('.treema-node').data('instance')
-    return nextParent
-
-  getPreviousTreema: ->
-    prevSibling = @$el.prev('.treema-node').data('instance')
-    lastChild = prevSibling?.$el.find('.treema-node:last').data('instance')
-    return lastChild or prevSibling or @parent
+      
+  traversalContext: (offset) ->
+    list = @getNavigableElements(offset)
+    origin = @getLastSelectedTreema()?.$el[0]
+    origin = @getRootEl().find('.treema-add-child:focus')[0] if not origin
+    origin = @getRootEl().find('.treema-new-prop')[0] if not origin
+    @wrapContext(list, origin, offset)
+      
+  navigationContext: ->
+    list = @getVisibleTreemas()
+    origin = @getLastSelectedTreema()
+    @wrapContext(list, origin)
     
+  wrapContext: (list, origin, offset=1) ->
+    return unless list.length
+    c =
+      first: list[0]
+      last: list[list.length-1]
+      origin: origin
+    if origin
+      offset = Math.abs(offset)
+      originIndex = list.indexOf(origin)
+      c.next = list[originIndex+offset]
+      c.prev = list[originIndex-offset]
+    return c 
+
   canEdit: ->
     return false if not @editable
     return false if not @directlyEditable
@@ -397,6 +401,7 @@ class TreemaNode
     return @refreshErrors() unless @parent
     @parent.data[@keyForParent] = @data
     @parent.refreshErrors()
+    @parent.buildValueForDisplay(@parent.getValEl().empty())
     
   focusLastInput: ->
     inputs = @getInputs()
@@ -418,17 +423,19 @@ class TreemaNode
     required = @parent and @parent.schema.required? and @keyForParent in @parent.schema.required
     if required
       tempError = @createTemporaryError('required')
-      return @$el.prepend(tempError)
+      @$el.prepend(tempError)
+      return false
 
     root = @getRootEl()
     @$el.remove()
-    root.focus()
-    return unless @parent?
+    root.focus() if document.activeElement is $('body')[0]
+    return true unless @parent?
     delete @parent.childrenTreemas[@keyForParent]
     delete @parent.data[@keyForParent]
     @parent.orderDataFromUI() if @parent.ordered
     @parent.refreshErrors()
     @parent.updateMyAddButton()
+    return true
 
   # Opening/closing collections -----------------------------------------------
   toggleOpen: ->
@@ -478,6 +485,7 @@ class TreemaNode
     excludeSelf = numSelected is 1 
     @deselectAll(excludeSelf)
     @toggleSelect()
+    @keepFocus()
 
   deselectAll: (excludeSelf=false) ->
     for treema in @getSelectedTreemas()
@@ -589,11 +597,14 @@ class TreemaNode
 
   getValEl: -> @$el.find('> .treema-row .treema-value')
   getRootEl: -> @$el.closest('.treema-root')
+  getRoot: -> @$el.closest('.treema-root').data('instance')
   getInputs: -> @getValEl().find('input, textarea')
   getSelectedTreemas: -> ($(el).data('instance') for el in @getRootEl().find('.treema-selected'))
   getLastSelectedTreema: -> @getRootEl().find('.treema-last-selected').data('instance')
   getAddButtonEl: -> @$el.find('> .treema-children > .treema-add-child')
   getVisibleTreemas: -> ($(el).data('instance') for el in @getRootEl().find('.treema-node'))
+  getNavigableElements: ->
+    @getRootEl().find('.treema-node, .treema-add-child').toArray()
 
   isRoot: -> @$el.hasClass('treema-root')
   isEditing: -> @getValEl().hasClass('treema-edit')

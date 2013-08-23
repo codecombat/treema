@@ -19,7 +19,7 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.childrenTemplate = '<div class="treema-children"></div>';
 
-  TreemaNode.prototype.addChildTemplate = '<div class="treema-add-child">+</div>';
+  TreemaNode.prototype.addChildTemplate = '<div class="treema-add-child" tabindex="9009">+</div>';
 
   TreemaNode.prototype.tempErrorTemplate = '<span class="treema-temp-error"></span>';
 
@@ -28,6 +28,8 @@ TreemaNode = (function() {
   TreemaNode.prototype.keyTemplate = '<span class="treema-key"></span>';
 
   TreemaNode.prototype.errorTemplate = '<div class="treema-error"></div>';
+
+  TreemaNode.prototype.newPropertyTemplate = '<input class="treema-new-prop" />';
 
   TreemaNode.prototype.collection = false;
 
@@ -117,6 +119,10 @@ TreemaNode = (function() {
     return true;
   };
 
+  TreemaNode.prototype.addingNewProperty = function() {
+    return false;
+  };
+
   TreemaNode.prototype.addNewChild = function() {
     return false;
   };
@@ -147,16 +153,35 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.onEditInputBlur = function() {
-    var input;
+    var input, shouldRemove;
+    console.log('BLUR');
+    shouldRemove = this.shouldTryToRemoveFromParent();
     this.saveChanges(this.getValEl());
     input = this.getValEl().find('input, textarea, select');
     if (this.isValid()) {
       if (this.isEditing()) {
-        return this.display();
+        this.display();
       }
     } else {
-      return input.focus().select();
+      input.focus().select();
     }
+    if (shouldRemove) {
+      return this.remove();
+    }
+  };
+
+  TreemaNode.prototype.shouldTryToRemoveFromParent = function() {
+    var input, inputs, val, _i, _len;
+    val = this.getValEl();
+    inputs = val.find('input, textarea');
+    for (_i = 0, _len = inputs.length; _i < _len; _i++) {
+      input = inputs[_i];
+      input = $(input);
+      if (input.attr('type') === 'checkbox' || input.val()) {
+        return false;
+      }
+    }
+    return true;
   };
 
   TreemaNode.prototype.limitChoices = function(options) {
@@ -356,27 +381,29 @@ TreemaNode = (function() {
     }
   };
 
-  TreemaNode.prototype.onLeftArrowPressed = function() {
-    if (!this.editingIsHappening()) {
-      return this.navigateOut();
+  TreemaNode.prototype.onLeftArrowPressed = function(e) {
+    if (!(this.editingIsHappening() || this.addingNewProperty())) {
+      this.navigateOut();
     }
+    return e.preventDefault();
   };
 
-  TreemaNode.prototype.onRightArrowPressed = function() {
-    if (!this.editingIsHappening()) {
-      return this.navigateIn();
+  TreemaNode.prototype.onRightArrowPressed = function(e) {
+    if (!(this.editingIsHappening() || this.addingNewProperty())) {
+      this.navigateIn();
     }
+    return e.preventDefault();
   };
 
   TreemaNode.prototype.onUpArrowPressed = function(e) {
-    if (!this.editingIsHappening()) {
+    if (!(this.editingIsHappening() || this.addingNewProperty())) {
       this.navigateSelection(-1);
     }
     return e.preventDefault();
   };
 
   TreemaNode.prototype.onDownArrowPressed = function(e) {
-    if (!this.editingIsHappening()) {
+    if (!(this.editingIsHappening() || this.addingNewProperty())) {
       this.navigateSelection(1);
     }
     return e.preventDefault();
@@ -420,97 +447,22 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.onEnterPressed = function(e) {
-    var offset, selected, targetTreema, _ref;
+    var offset;
     offset = e.shiftKey ? -1 : 1;
-    if (this.editingIsHappening()) {
-      this.saveChanges(this.getValEl());
-      this.flushChanges();
-      this.endExistingEdits();
-      targetTreema = this.getNextEditableTreema(offset);
-      if (targetTreema) {
-        targetTreema.edit();
-      } else {
-        if ((_ref = this.parent) != null) {
-          _ref.addNewChild();
-        }
-      }
-      return;
+    if (offset === 1 && $(e.target).hasClass('treema-add-child')) {
+      return this.addNewChild();
     }
-    selected = this.getLastSelectedTreema();
-    if (selected.collection) {
-      return selected.disinter(offset);
-    }
-    if (selected.canEdit()) {
-      return selected.edit();
-    }
+    return this.traverseWhileEditing(offset, true);
   };
 
   TreemaNode.prototype.onTabPressed = function(e) {
-    var input, inputValues, offset, selected, targetTreema, _ref;
+    var offset;
     offset = e.shiftKey ? -1 : 1;
     if (this.hasMoreInputs(offset)) {
       return;
     }
     e.preventDefault();
-    if (!this.editingIsHappening()) {
-      selected = this.getLastSelectedTreema();
-      if (!selected) {
-        return;
-      }
-      if (selected.collection) {
-        selected.disinter(offset);
-      }
-      if (selected.canEdit()) {
-        selected.edit({
-          offset: offset
-        });
-      }
-      return;
-    }
-    inputValues = (function() {
-      var _i, _len, _ref, _results;
-      _ref = this.getValEl().find('input, textarea, select');
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        input = _ref[_i];
-        _results.push(Boolean($(input).val()));
-      }
-      return _results;
-    }).call(this);
-    if (__indexOf.call(inputValues, true) < 0) {
-      targetTreema = this.getNextEditableTreemaFromElement(this.$el, offset);
-      if (!this.data) {
-        this.remove();
-      }
-      return targetTreema.edit({
-        offset: offset
-      });
-    }
-    this.saveChanges(this.getValEl());
-    this.flushChanges();
-    if (!this.isValid()) {
-      return;
-    }
-    this.endExistingEdits();
-    targetTreema = this.getNextEditableTreema(offset);
-    if (targetTreema) {
-      return targetTreema.edit({
-        offset: offset
-      });
-    } else {
-      return (_ref = this.parent) != null ? _ref.addNewChild() : void 0;
-    }
-  };
-
-  TreemaNode.prototype.disinter = function(offset) {
-    var targetTreema;
-    if (offset > 0 && this.isClosed()) {
-      return this.toggleOpen();
-    }
-    targetTreema = this.getNextEditableTreema(offset);
-    if (targetTreema) {
-      targetTreema.edit();
-    }
+    return this.traverseWhileEditing(offset, false);
   };
 
   TreemaNode.prototype.hasMoreInputs = function(offset) {
@@ -551,61 +503,84 @@ TreemaNode = (function() {
     return e.preventDefault();
   };
 
-  TreemaNode.prototype.getNextEditableTreemaFromElement = function(el, offset) {
-    var dir, parentTreema, selector, targetTreema;
-    dir = offset > 0 ? 'next' : 'prev';
-    targetTreema = el[dir]('.treema-node').data('instance');
-    if (targetTreema && !(targetTreema != null ? targetTreema.canEdit() : void 0)) {
-      targetTreema = targetTreema.getNextEditableTreema(offset);
-    } else if (!targetTreema) {
-      parentTreema = el.closest('.treema-node').data('instance');
-      targetTreema = parentTreema != null ? parentTreema.getNextEditableTreema(offset) : void 0;
+  TreemaNode.prototype.traverseWhileEditing = function(offset, aggressive) {
+    var ctx, editing, selected, shouldRemove, targetEl, _ref;
+    shouldRemove = false;
+    selected = this.getLastSelectedTreema();
+    editing = this.isEditing();
+    if (!editing && (selected != null ? selected.canEdit() : void 0)) {
+      return selected.edit();
     }
-    if (!targetTreema) {
-      dir = offset > 0 ? 'first' : 'last';
-      selector = '> .treema-children > .treema-node:' + dir;
-      targetTreema = this.getRootEl().find(selector).data('instance');
-      if (targetTreema && !targetTreema.canEdit()) {
-        targetTreema = targetTreema.getNextEditableTreema(offset);
+    if (editing) {
+      shouldRemove = this.shouldTryToRemoveFromParent();
+      this.saveChanges(this.getValEl());
+      this.flushChanges();
+      if (!(aggressive || this.isValid())) {
+        return;
       }
+      if (shouldRemove && ((_ref = $(this.$el[0].nextSibling)) != null ? _ref.hasClass('treema-add-child') : void 0) && offset === 1) {
+        offset = 2;
+        console.log('offset is', offset);
+      }
+      this.endExistingEdits();
+      this.select();
     }
-    return targetTreema;
+    ctx = this.traversalContext(offset);
+    console.log('context is', ctx);
+    if (!ctx) {
+      return this.getRoot().addChild();
+    }
+    if (!ctx.origin) {
+      targetEl = offset > 0 ? ctx.first : ctx.last;
+      this.selectOrActivateElement(targetEl);
+    }
+    selected = $(ctx.origin).data('instance');
+    if (offset > 0 && aggressive && selected.collection && selected.isClosed()) {
+      console.log('try to open selected?');
+      return selected.open();
+    }
+    targetEl = offset > 0 ? ctx.next : ctx.prev;
+    if (!targetEl) {
+      targetEl = offset > 0 ? ctx.first : ctx.last;
+    }
+    console.log('target el is', targetEl);
+    this.selectOrActivateElement(targetEl);
+    if (shouldRemove) {
+      return this.remove();
+    }
   };
 
-  TreemaNode.prototype.getNextEditableTreema = function(offset) {
-    var targetTreema;
-    targetTreema = this;
-    while (targetTreema) {
-      targetTreema = offset > 0 ? targetTreema.getNextTreema() : targetTreema.getPreviousTreema();
-      if (targetTreema && !targetTreema.canEdit()) {
-        continue;
+  TreemaNode.prototype.selectOrActivateElement = function(el) {
+    var treema;
+    el = $(el);
+    treema = el.data('instance');
+    if (treema) {
+      if (treema.canEdit()) {
+        return treema.edit();
+      } else {
+        return treema.select();
       }
-      break;
     }
-    return targetTreema;
+    this.deselectAll();
+    el.focus();
+    return console.log('okay we focused...');
   };
 
   TreemaNode.prototype.navigateSelection = function(offset) {
-    var firstTreema, lastTreema, selected, targetTreema, treemas;
-    treemas = this.getVisibleTreemas();
-    if (!treemas.length) {
+    var ctx, targetTreema;
+    ctx = this.navigationContext();
+    if (!ctx) {
       return;
     }
-    selected = this.getLastSelectedTreema();
-    firstTreema = treemas[0];
-    lastTreema = treemas[treemas.length - 1];
-    if (!selected) {
-      targetTreema = offset > 0 ? firstTreema : lastTreema;
+    if (!ctx.origin) {
+      targetTreema = offset > 0 ? ctx.first : ctx.last;
       return targetTreema.select();
     }
-    if (offset < 0 && selected === firstTreema) {
-      return;
+    targetTreema = offset > 0 ? ctx.next : ctx.prev;
+    if (!targetTreema) {
+      targetTreema = offset > 0 ? ctx.first : ctx.last;
     }
-    if (offset > 0 && selected === lastTreema) {
-      return;
-    }
-    targetTreema = treemas[treemas.indexOf(selected) + offset];
-    return targetTreema.select();
+    return targetTreema != null ? targetTreema.select() : void 0;
   };
 
   TreemaNode.prototype.navigateOut = function() {
@@ -651,25 +626,46 @@ TreemaNode = (function() {
     return _results;
   };
 
-  TreemaNode.prototype.getNextTreema = function() {
-    var nextChild, nextParent, nextSibling, _ref;
-    nextChild = this.$el.find('.treema-node:first').data('instance');
-    if (nextChild) {
-      return nextChild;
+  TreemaNode.prototype.traversalContext = function(offset) {
+    var list, origin, _ref;
+    list = this.getNavigableElements(offset);
+    origin = (_ref = this.getLastSelectedTreema()) != null ? _ref.$el[0] : void 0;
+    if (!origin) {
+      origin = this.getRootEl().find('.treema-add-child:focus')[0];
     }
-    nextSibling = this.$el.next('.treema-node').data('instance');
-    if (nextSibling) {
-      return nextSibling;
+    if (!origin) {
+      origin = this.getRootEl().find('.treema-new-prop')[0];
     }
-    nextParent = (_ref = this.parent) != null ? _ref.$el.next('.treema-node').data('instance') : void 0;
-    return nextParent;
+    return this.wrapContext(list, origin, offset);
   };
 
-  TreemaNode.prototype.getPreviousTreema = function() {
-    var lastChild, prevSibling;
-    prevSibling = this.$el.prev('.treema-node').data('instance');
-    lastChild = prevSibling != null ? prevSibling.$el.find('.treema-node:last').data('instance') : void 0;
-    return lastChild || prevSibling || this.parent;
+  TreemaNode.prototype.navigationContext = function() {
+    var list, origin;
+    list = this.getVisibleTreemas();
+    origin = this.getLastSelectedTreema();
+    return this.wrapContext(list, origin);
+  };
+
+  TreemaNode.prototype.wrapContext = function(list, origin, offset) {
+    var c, originIndex;
+    if (offset == null) {
+      offset = 1;
+    }
+    if (!list.length) {
+      return;
+    }
+    c = {
+      first: list[0],
+      last: list[list.length - 1],
+      origin: origin
+    };
+    if (origin) {
+      offset = Math.abs(offset);
+      originIndex = list.indexOf(origin);
+      c.next = list[originIndex + offset];
+      c.prev = list[originIndex - offset];
+    }
+    return c;
   };
 
   TreemaNode.prototype.canEdit = function() {
@@ -745,7 +741,9 @@ TreemaNode = (function() {
       return this.refreshErrors();
     }
     this.parent.data[this.keyForParent] = this.data;
-    return this.parent.refreshErrors();
+    this.parent.refreshErrors();
+    console.log('WHAT?');
+    return this.parent.buildValueForDisplay(this.parent.getValEl().empty());
   };
 
   TreemaNode.prototype.focusLastInput = function() {
@@ -778,13 +776,16 @@ TreemaNode = (function() {
     required = this.parent && (this.parent.schema.required != null) && (_ref = this.keyForParent, __indexOf.call(this.parent.schema.required, _ref) >= 0);
     if (required) {
       tempError = this.createTemporaryError('required');
-      return this.$el.prepend(tempError);
+      this.$el.prepend(tempError);
+      return false;
     }
     root = this.getRootEl();
     this.$el.remove();
-    root.focus();
+    if (document.activeElement === $('body')[0]) {
+      root.focus();
+    }
     if (this.parent == null) {
-      return;
+      return true;
     }
     delete this.parent.childrenTreemas[this.keyForParent];
     delete this.parent.data[this.keyForParent];
@@ -792,7 +793,8 @@ TreemaNode = (function() {
       this.parent.orderDataFromUI();
     }
     this.parent.refreshErrors();
-    return this.parent.updateMyAddButton();
+    this.parent.updateMyAddButton();
+    return true;
   };
 
   TreemaNode.prototype.toggleOpen = function() {
@@ -869,7 +871,8 @@ TreemaNode = (function() {
     numSelected = this.getSelectedTreemas().length;
     excludeSelf = numSelected === 1;
     this.deselectAll(excludeSelf);
-    return this.toggleSelect();
+    this.toggleSelect();
+    return this.keepFocus();
   };
 
   TreemaNode.prototype.deselectAll = function(excludeSelf) {
@@ -1089,6 +1092,10 @@ TreemaNode = (function() {
     return this.$el.closest('.treema-root');
   };
 
+  TreemaNode.prototype.getRoot = function() {
+    return this.$el.closest('.treema-root').data('instance');
+  };
+
   TreemaNode.prototype.getInputs = function() {
     return this.getValEl().find('input, textarea');
   };
@@ -1121,6 +1128,10 @@ TreemaNode = (function() {
       _results.push($(el).data('instance'));
     }
     return _results;
+  };
+
+  TreemaNode.prototype.getNavigableElements = function() {
+    return this.getRootEl().find('.treema-node, .treema-add-child').toArray();
   };
 
   TreemaNode.prototype.isRoot = function() {
@@ -1451,7 +1462,11 @@ var __init,
       newTreema.tv4 = this.tv4;
       childNode = this.createChildNode(newTreema);
       this.getAddButtonEl().before(childNode);
-      newTreema.edit();
+      if (newTreema.canEdit()) {
+        newTreema.edit();
+      } else {
+        newTreema.select();
+      }
       return true;
     };
 
@@ -1462,7 +1477,7 @@ var __init,
     __extends(ObjectNode, _super);
 
     function ObjectNode() {
-      this.onNewPropertyBlur = __bind(this.onNewPropertyBlur, this);
+      this.cleanupAddNewChild = __bind(this.cleanupAddNewChild, this);
       _ref5 = ObjectNode.__super__.constructor.apply(this, arguments);
       return _ref5;
     }
@@ -1488,8 +1503,6 @@ var __init,
     ObjectNode.prototype.collection = true;
 
     ObjectNode.prototype.keyed = true;
-
-    ObjectNode.prototype.newPropertyTemplate = '<input class="treema-new-prop" />';
 
     ObjectNode.prototype.directlyEditable = false;
 
@@ -1581,6 +1594,33 @@ var __init,
       return _results;
     };
 
+    ObjectNode.prototype.addNewChild = function() {
+      var keyInput, properties,
+        _this = this;
+      if (!this.canAddChild()) {
+        return;
+      }
+      properties = this.childPropertiesAvailable();
+      keyInput = $(this.newPropertyTemplate);
+      keyInput.blur(this.cleanupAddNewChild);
+      keyInput.keydown(function(e) {
+        console.log('set it', $(e.target).val(), _this);
+        return _this.originalTargetValue = $(e.target).val();
+      });
+      if (typeof keyInput.autocomplete === "function") {
+        keyInput.autocomplete({
+          source: properties,
+          minLength: 0,
+          delay: 0,
+          autoFocus: true
+        });
+      }
+      this.getAddButtonEl().before(keyInput);
+      keyInput.focus();
+      keyInput.autocomplete('search');
+      return true;
+    };
+
     ObjectNode.prototype.canAddChild = function() {
       if ((this.schema.maxProperties != null) && Object.keys(this.data).length >= this.schema.maxProperties) {
         return false;
@@ -1595,6 +1635,91 @@ var __init,
         return true;
       }
       return false;
+    };
+
+    ObjectNode.prototype.childPropertiesAvailable = function() {
+      var childSchema, properties, property, _ref6;
+      if (!this.schema.properties) {
+        return [];
+      }
+      properties = [];
+      _ref6 = this.schema.properties;
+      for (property in _ref6) {
+        childSchema = _ref6[property];
+        if (this.data[property] != null) {
+          continue;
+        }
+        properties.push(childSchema.title || property);
+      }
+      return properties.sort();
+    };
+
+    ObjectNode.prototype.onDeletePressed = function(e) {
+      if (!this.addingNewProperty()) {
+        return ObjectNode.__super__.onDeletePressed.call(this, e);
+      }
+      if (!$(e.target).val()) {
+        this.cleanupAddNewChild();
+        e.preventDefault();
+        return this.$el.find('.treema-add-child').focus();
+      }
+    };
+
+    ObjectNode.prototype.onEscapePressed = function() {
+      return this.cleanupAddNewChild();
+    };
+
+    ObjectNode.prototype.onTabPressed = function(e) {
+      if (!this.addingNewProperty()) {
+        return ObjectNode.__super__.onTabPressed.call(this, e);
+      }
+      e.preventDefault();
+      return this.tryToAddNewChild(e);
+    };
+
+    ObjectNode.prototype.onEnterPressed = function(e) {
+      if (!this.addingNewProperty()) {
+        return ObjectNode.__super__.onEnterPressed.call(this, e);
+      }
+      return this.tryToAddNewChild(e);
+    };
+
+    ObjectNode.prototype.tryToAddNewChild = function(e) {
+      var key, keyInput, offset;
+      if (!this.originalTargetValue) {
+        offset = e.shiftKey ? -1 : 1;
+        this.cleanupAddNewChild();
+        this.$el.find('.treema-add-child').focus();
+        this.traverseWhileEditing(offset);
+        return;
+      }
+      keyInput = $(e.target);
+      key = this.getPropertyKey($(e.target));
+      if (key.length && !this.canAddProperty(key)) {
+        this.clearTemporaryErrors();
+        this.showBadPropertyError(keyInput);
+        return;
+      }
+      if (this.childrenTreemas[key] != null) {
+        this.cleanupAddNewChild();
+        return this.childrenTreemas[key].toggleEdit();
+      }
+      return this.addNewChildForKey(key);
+    };
+
+    ObjectNode.prototype.getPropertyKey = function(keyInput) {
+      var child_key, child_schema, key, _ref6;
+      key = keyInput.val();
+      if (this.schema.properties) {
+        _ref6 = this.schema.properties;
+        for (child_key in _ref6) {
+          child_schema = _ref6[child_key];
+          if (child_schema.title === key) {
+            key = child_key;
+          }
+        }
+      }
+      return key;
     };
 
     ObjectNode.prototype.canAddProperty = function(key) {
@@ -1618,65 +1743,6 @@ var __init,
         }
       }
       return false;
-    };
-
-    ObjectNode.prototype.addNewChild = function() {
-      var keyInput, properties;
-      if (!this.canAddChild()) {
-        return;
-      }
-      properties = this.childPropertiesAvailable();
-      keyInput = $(this.newPropertyTemplate);
-      if (typeof keyInput.autocomplete === "function") {
-        keyInput.autocomplete({
-          source: properties,
-          minLength: 0,
-          delay: 0,
-          autoFocus: true
-        });
-      }
-      this.getAddButtonEl().before(keyInput);
-      keyInput.focus();
-      keyInput.blur(this.onNewPropertyBlur);
-      keyInput.autocomplete('search');
-      return true;
-    };
-
-    ObjectNode.prototype.addingNewProperty = function() {
-      return document.activeElement === this.$el.find('.treema-new-prop')[0];
-    };
-
-    ObjectNode.prototype.onNewPropertyBlur = function(e) {
-      var key, keyInput;
-      keyInput = $(e.target);
-      this.clearTemporaryErrors();
-      key = this.getPropertyKey(keyInput);
-      if (key.length && !this.canAddProperty(key)) {
-        return this.showBadPropertyError(keyInput);
-      }
-      keyInput.remove();
-      if (!key.length) {
-        return;
-      }
-      if (this.childrenTreemas[key] != null) {
-        return this.childrenTreemas[key].toggleEdit();
-      }
-      return this.addNewChildForKey(key);
-    };
-
-    ObjectNode.prototype.getPropertyKey = function(keyInput) {
-      var child_key, child_schema, key, _ref6;
-      key = keyInput.val();
-      if (this.schema.properties) {
-        _ref6 = this.schema.properties;
-        for (child_key in _ref6) {
-          child_schema = _ref6[child_key];
-          if (child_schema.title === key) {
-            key = child_key;
-          }
-        }
-      }
-      return key;
     };
 
     ObjectNode.prototype.showBadPropertyError = function(keyInput) {
@@ -1719,66 +1785,13 @@ var __init,
       return this.getAddButtonEl();
     };
 
-    ObjectNode.prototype.childPropertiesAvailable = function() {
-      var childSchema, properties, property, _ref6;
-      if (!this.schema.properties) {
-        return [];
-      }
-      properties = [];
-      _ref6 = this.schema.properties;
-      for (property in _ref6) {
-        childSchema = _ref6[property];
-        if (this.data[property] != null) {
-          continue;
-        }
-        properties.push(childSchema.title || property);
-      }
-      return properties.sort();
+    ObjectNode.prototype.cleanupAddNewChild = function() {
+      this.$el.find('.treema-new-prop').remove();
+      return this.clearTemporaryErrors();
     };
 
-    ObjectNode.prototype.onDeletePressed = function(e) {
-      var keyInput;
-      ObjectNode.__super__.onDeletePressed.call(this, e);
-      if (!this.addingNewProperty()) {
-        return;
-      }
-      keyInput = $(e.target);
-      if (!keyInput.hasClass('treema-new-prop')) {
-        return;
-      }
-      if (!keyInput.val()) {
-        this.clearTemporaryErrors();
-        keyInput.remove();
-        return e.preventDefault();
-      }
-    };
-
-    ObjectNode.prototype.onEscapePressed = function(e) {
-      var keyInput;
-      keyInput = $(e.target);
-      if (!keyInput.hasClass('treema-new-prop')) {
-        return;
-      }
-      this.clearTemporaryErrors();
-      keyInput.remove();
-      return e.preventDefault();
-    };
-
-    ObjectNode.prototype.onTabPressed = function(e) {
-      var keyInput, targetTreema;
-      e.preventDefault();
-      keyInput = $(e.target);
-      if (!keyInput.hasClass('treema-new-prop')) {
-        return ObjectNode.__super__.onTabPressed.call(this, e);
-      }
-      if (keyInput.val()) {
-        return keyInput.blur();
-      }
-      targetTreema = this.getNextEditableTreemaFromElement(keyInput, e.shiftKey ? -1 : 1);
-      keyInput.remove();
-      if (targetTreema) {
-        return targetTreema.edit();
-      }
+    ObjectNode.prototype.addingNewProperty = function() {
+      return document.activeElement === this.$el.find('.treema-new-prop')[0];
     };
 
     return ObjectNode;

@@ -102,7 +102,7 @@ do __init = ->
       newTreema.tv4 = @tv4
       childNode = @createChildNode(newTreema)
       @getAddButtonEl().before(childNode)
-      newTreema.edit()
+      if newTreema.canEdit() then newTreema.edit() else newTreema.select()
       true
 
 
@@ -118,7 +118,6 @@ do __init = ->
 
     collection: true
     keyed: true
-    newPropertyTemplate: '<input class="treema-new-prop" />'
     directlyEditable: false
   
     getChildren: ->
@@ -166,57 +165,107 @@ do __init = ->
         helperTreema = TreemaNode.make(null, {schema: @getChildSchema(key), data:null}, @)
         helperTreema.populateData()
         @data[key] = helperTreema.data
-  
+        
+    # adding children ---------------------------------------------------------
+    
+    addNewChild: ->
+      return unless @canAddChild()
+      properties = @childPropertiesAvailable()
+      keyInput = $(@newPropertyTemplate)
+      keyInput.blur @cleanupAddNewChild
+      keyInput.keydown (e) =>
+        console.log('set it', $(e.target).val(), @)
+        @originalTargetValue = $(e.target).val()
+      keyInput.autocomplete?(source: properties, minLength: 0, delay: 0, autoFocus: true)
+      @getAddButtonEl().before(keyInput)
+      keyInput.focus()
+      keyInput.autocomplete('search')
+      true
+
     canAddChild: ->
       return false if @schema.maxProperties? and Object.keys(@data).length >= @schema.maxProperties
       return true if @schema.additionalProperties is false
       return true if @schema.patternProperties?
       return true if @childPropertiesAvailable().length
       return false
+
+    childPropertiesAvailable: ->
+      return [] unless @schema.properties
+      properties = []
+      for property, childSchema of @schema.properties
+        continue if @data[property]?
+        properties.push(childSchema.title or property)
+      properties.sort()
+      
+    # event handling when adding a new property -------------------------------
   
-    canAddProperty: (key) ->
-      return true unless @schema.additionalProperties is false
-      return true if @schema.properties[key]?
-      if @schema.patternProperties?
-        return true if RegExp(pattern).test(key) for pattern of @schema.patternProperties
-      return false
+    onDeletePressed: (e) ->
+      return super(e) unless @addingNewProperty()
+      if not $(e.target).val()
+        @cleanupAddNewChild()
+        e.preventDefault()
+        @$el.find('.treema-add-child').focus()
   
-    addNewChild: ->
-      return unless @canAddChild()
-      properties = @childPropertiesAvailable()
-      keyInput = $(@newPropertyTemplate)
-      keyInput.autocomplete?(source: properties, minLength: 0, delay: 0, autoFocus: true)
-      @getAddButtonEl().before(keyInput)
-      keyInput.focus()
-      keyInput.blur @onNewPropertyBlur
-      keyInput.autocomplete('search')
-      true
+    onEscapePressed: ->
+      @cleanupAddNewChild()
   
-    addingNewProperty: -> document.activeElement is @$el.find('.treema-new-prop')[0]
-  
-    onNewPropertyBlur: (e) =>
+    onTabPressed: (e) ->
+      return super(e) unless @addingNewProperty()
+      e.preventDefault()
+      @tryToAddNewChild(e)
+
+    onEnterPressed: (e) ->
+      return super(e) unless @addingNewProperty()
+      @tryToAddNewChild(e)
+      
+    # new property behavior ---------------------------------------------------
+
+    tryToAddNewChild: (e) ->
+      # empty input keep on moving on
+      if not @originalTargetValue
+        offset = if e.shiftKey then -1 else 1
+        @cleanupAddNewChild()
+        @$el.find('.treema-add-child').focus()
+        @traverseWhileEditing(offset)
+        return
+
       keyInput = $(e.target)
-      @clearTemporaryErrors()
-      key = @getPropertyKey(keyInput)
-      return @showBadPropertyError(keyInput) if key.length and not @canAddProperty(key)
-      keyInput.remove()
-      return unless key.length
-      return @childrenTreemas[key].toggleEdit() if @childrenTreemas[key]?
+      key = @getPropertyKey($(e.target))
+
+      # invalid input, stay put and show an error
+      if key.length and not @canAddProperty(key)
+        @clearTemporaryErrors()
+        @showBadPropertyError(keyInput)
+        return
+
+      # if this is a prop we already have, just edit that instead
+      if @childrenTreemas[key]?
+        @cleanupAddNewChild()
+        return @childrenTreemas[key].toggleEdit()
+        
+      # otherwise add the new child
       @addNewChildForKey(key)
-  
+
     getPropertyKey: (keyInput) ->
       key = keyInput.val()
       if @schema.properties
         for child_key, child_schema of @schema.properties
           key = child_key if child_schema.title is key
       key
-  
+
+    canAddProperty: (key) ->
+      return true unless @schema.additionalProperties is false
+      return true if @schema.properties[key]?
+      if @schema.patternProperties?
+        return true if RegExp(pattern).test(key) for pattern of @schema.patternProperties
+      return false
+
     showBadPropertyError: (keyInput) ->
       keyInput.focus()
       tempError = @createTemporaryError('Invalid property name.')
       tempError.insertAfter(keyInput)
       return
-  
+
     addNewChildForKey: (key) ->
       schema = @getChildSchema(key)
       newTreema = @addChildTreema(key, null, schema)
@@ -226,7 +275,7 @@ do __init = ->
       @findObjectInsertionPoint(key).before(childNode)
       if newTreema.collection then newTreema.addNewChild() else newTreema.edit()
       @updateMyAddButton()
-  
+
     findObjectInsertionPoint: (key) ->
       # Object children should be in the order of the schema.properties objects as much as possible
       return @getAddButtonEl() unless @schema.properties?[key]
@@ -237,40 +286,14 @@ do __init = ->
         if $(child).data('instance').keyForParent in afterKeys
           return $(child)
       return @getAddButtonEl()
-  
-    childPropertiesAvailable: ->
-      return [] unless @schema.properties
-      properties = []
-      for property, childSchema of @schema.properties
-        continue if @data[property]?
-        properties.push(childSchema.title or property)
-      properties.sort()
-  
-    onDeletePressed: (e) ->
-      super(e)
-      return unless @addingNewProperty()
-      keyInput = $(e.target)
-      return unless keyInput.hasClass('treema-new-prop')
-      if not keyInput.val()
-        @clearTemporaryErrors()
-        keyInput.remove()
-        e.preventDefault()
-  
-    onEscapePressed: (e) ->
-      keyInput = $(e.target)
-      return unless keyInput.hasClass('treema-new-prop')
+
+    # adding utilities --------------------------------------------------------
+
+    cleanupAddNewChild: =>
+      @$el.find('.treema-new-prop').remove()
       @clearTemporaryErrors()
-      keyInput.remove()
-      e.preventDefault()
-  
-    onTabPressed: (e) ->
-      e.preventDefault()
-      keyInput = $(e.target)
-      return super(e) unless keyInput.hasClass('treema-new-prop')
-      return keyInput.blur() if keyInput.val() # pass to onNewPropertyBlur
-      targetTreema = @getNextEditableTreemaFromElement(keyInput, if e.shiftKey then -1 else 1)
-      keyInput.remove()
-      targetTreema.edit() if targetTreema
+
+    addingNewProperty: -> document.activeElement is @$el.find('.treema-new-prop')[0]
 
 
 
