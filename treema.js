@@ -581,28 +581,16 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.navigateOut = function() {
-    var parentSelection, treema, _ref;
-    if ((function() {
-      var _i, _len, _ref, _results;
-      _ref = this.getSelectedTreemas();
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        treema = _ref[_i];
-        _results.push(treema.isOpen());
-      }
-      return _results;
-    }).call(this)) {
-      treema.close();
+    var selected;
+    console.log('navigate?', this);
+    selected = this.getLastSelectedTreema();
+    if (treema.isOpen()) {
+      return treema.close();
     }
-    parentSelection = (_ref = this.getLastSelectedTreema()) != null ? _ref.parent : void 0;
-    if (!parentSelection) {
+    if ((!selected.parent) || this.parent.isRoot()) {
       return;
     }
-    if (parentSelection.isRoot()) {
-      return;
-    }
-    parentSelection.close();
-    return parentSelection.select();
+    return this.parent.select();
   };
 
   TreemaNode.prototype.navigateIn = function() {
@@ -1603,7 +1591,6 @@ var __init,
       keyInput = $(this.newPropertyTemplate);
       keyInput.blur(this.cleanupAddNewChild);
       keyInput.keydown(function(e) {
-        console.log('set it', $(e.target).val(), _this);
         return _this.originalTargetValue = $(e.target).val();
       });
       if (typeof keyInput.autocomplete === "function") {
@@ -1614,35 +1601,25 @@ var __init,
           autoFocus: true
         });
       }
-      console.log('get add button el?', this.getAddButtonEl());
       this.getAddButtonEl().before(keyInput);
       keyInput.focus();
       keyInput.autocomplete('search');
-      console.log('added a new child?', this.addingNewProperty(), this.data, properties, keyInput);
       return true;
     };
 
     ObjectNode.prototype.canAddChild = function() {
-      console.log('--------------------------------------------------------------------');
-      console.log('checking can add child...', this.data, this.schema.additionalProperties);
-      console.log('schema:', this.schema);
-      console.log('props left', this.childPropertiesAvailable());
       if ((this.schema.maxProperties != null) && Object.keys(this.data).length >= this.schema.maxProperties) {
         return false;
       }
-      console.log('got past 1', this.schema.additionalProperties !== false);
       if (this.schema.additionalProperties !== false) {
         return true;
       }
-      console.log('got past 2', this.schema.patternProperties != null);
       if (this.schema.patternProperties != null) {
         return true;
       }
-      console.log('got past 3', this.childPropertiesAvailable().length);
       if (this.childPropertiesAvailable().length) {
         return true;
       }
-      console.log('we good');
       return false;
     };
 

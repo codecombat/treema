@@ -175,29 +175,18 @@ do __init = ->
       keyInput = $(@newPropertyTemplate)
       keyInput.blur @cleanupAddNewChild
       keyInput.keydown (e) =>
-        console.log('set it', $(e.target).val(), @)
         @originalTargetValue = $(e.target).val()
       keyInput.autocomplete?(source: properties, minLength: 0, delay: 0, autoFocus: true)
-      console.log('get add button el?', @getAddButtonEl())
       @getAddButtonEl().before(keyInput)
       keyInput.focus()
       keyInput.autocomplete('search')
-      console.log('added a new child?', @addingNewProperty(), @data, properties, keyInput)
       true
 
     canAddChild: ->
-      console.log('--------------------------------------------------------------------')
-      console.log('checking can add child...', @data, @schema.additionalProperties)
-      console.log('schema:', @schema)
-      console.log('props left', @childPropertiesAvailable())
       return false if @schema.maxProperties? and Object.keys(@data).length >= @schema.maxProperties
-      console.log('got past 1', @schema.additionalProperties isnt false)
       return true if @schema.additionalProperties isnt false
-      console.log('got past 2', @schema.patternProperties?)
       return true if @schema.patternProperties?
-      console.log('got past 3', @childPropertiesAvailable().length)
       return true if @childPropertiesAvailable().length
-      console.log('we good')
       return false
 
     childPropertiesAvailable: ->
