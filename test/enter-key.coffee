@@ -14,7 +14,6 @@ describe 'Enter key press', ->
   treema.build()
   nameTreema = treema.childrenTreemas.name
   phoneTreema = treema.childrenTreemas.numbers
-  addressTreema = treema.childrenTreemas.address
   
   afterEach ->
     treema.endExistingEdits()

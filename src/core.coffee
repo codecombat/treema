@@ -170,6 +170,7 @@ do __init = ->
     
     addNewChild: ->
       return unless @canAddChild()
+      @open() unless @isRoot()
       properties = @childPropertiesAvailable()
       keyInput = $(@newPropertyTemplate)
       keyInput.blur @cleanupAddNewChild
@@ -177,16 +178,26 @@ do __init = ->
         console.log('set it', $(e.target).val(), @)
         @originalTargetValue = $(e.target).val()
       keyInput.autocomplete?(source: properties, minLength: 0, delay: 0, autoFocus: true)
+      console.log('get add button el?', @getAddButtonEl())
       @getAddButtonEl().before(keyInput)
       keyInput.focus()
       keyInput.autocomplete('search')
+      console.log('added a new child?', @addingNewProperty(), @data, properties, keyInput)
       true
 
     canAddChild: ->
+      console.log('--------------------------------------------------------------------')
+      console.log('checking can add child...', @data, @schema.additionalProperties)
+      console.log('schema:', @schema)
+      console.log('props left', @childPropertiesAvailable())
       return false if @schema.maxProperties? and Object.keys(@data).length >= @schema.maxProperties
-      return true if @schema.additionalProperties is false
+      console.log('got past 1', @schema.additionalProperties isnt false)
+      return true if @schema.additionalProperties isnt false
+      console.log('got past 2', @schema.patternProperties?)
       return true if @schema.patternProperties?
+      console.log('got past 3', @childPropertiesAvailable().length)
       return true if @childPropertiesAvailable().length
+      console.log('we good')
       return false
 
     childPropertiesAvailable: ->
@@ -212,17 +223,17 @@ do __init = ->
     onTabPressed: (e) ->
       return super(e) unless @addingNewProperty()
       e.preventDefault()
-      @tryToAddNewChild(e)
+      @tryToAddNewChild(e, false)
 
     onEnterPressed: (e) ->
       return super(e) unless @addingNewProperty()
-      @tryToAddNewChild(e)
+      @tryToAddNewChild(e, true)
       
     # new property behavior ---------------------------------------------------
 
-    tryToAddNewChild: (e) ->
+    tryToAddNewChild: (e, aggressive) ->
       # empty input keep on moving on
-      if not @originalTargetValue
+      if (not @originalTargetValue) and (not aggressive)
         offset = if e.shiftKey then -1 else 1
         @cleanupAddNewChild()
         @$el.find('.treema-add-child').focus()
@@ -241,9 +252,11 @@ do __init = ->
       # if this is a prop we already have, just edit that instead
       if @childrenTreemas[key]?
         @cleanupAddNewChild()
-        return @childrenTreemas[key].toggleEdit()
+        treema = @childrenTreemas[key]
+        return if treema.canEdit() then treema.toggleEdit() else treema.select()
         
       # otherwise add the new child
+      @cleanupAddNewChild()
       @addNewChildForKey(key)
 
     getPropertyKey: (keyInput) ->
@@ -273,7 +286,11 @@ do __init = ->
       newTreema.tv4 = @tv4
       childNode = @createChildNode(newTreema)
       @findObjectInsertionPoint(key).before(childNode)
-      if newTreema.collection then newTreema.addNewChild() else newTreema.edit()
+      if newTreema.canEdit()
+        newTreema.edit()
+      else
+        newTreema.addNewChild()
+        
       @updateMyAddButton()
 
     findObjectInsertionPoint: (key) ->
@@ -330,7 +347,7 @@ do __init = ->
       @helper = new NodeClass(@schema, @data, @parent)
       @helper.tv4 = @tv4
       for prop in ['collection', 'ordered', 'keyed', 'getChildSchema', 'getChildren', 'getChildSchema',
-                   'buildValueForDisplay']
+                   'buildValueForDisplay', 'addNewChild']
         @[prop] = @helper[prop]
   
     rebuild: ->

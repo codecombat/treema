@@ -90,6 +90,7 @@ class TreemaNode
     
   shouldTryToRemoveFromParent: ->
     val = @getValEl()
+    return if val.find('select').length
     inputs = val.find('input, textarea')
     for input in inputs
       input = $(input)
@@ -604,7 +605,7 @@ class TreemaNode
   getAddButtonEl: -> @$el.find('> .treema-children > .treema-add-child')
   getVisibleTreemas: -> ($(el).data('instance') for el in @getRootEl().find('.treema-node'))
   getNavigableElements: ->
-    @getRootEl().find('.treema-node, .treema-add-child').toArray()
+    @getRootEl().find('.treema-node, .treema-add-child:visible').toArray()
 
   isRoot: -> @$el.hasClass('treema-root')
   isEditing: -> @getValEl().hasClass('treema-edit')
