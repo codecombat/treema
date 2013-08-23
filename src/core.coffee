@@ -284,7 +284,7 @@ do __init = ->
   
     buildValueForEditing: (valEl) -> @buildValueForEditingSimply(valEl, JSON.stringify(@data))
     saveChanges: (valEl) ->
-      @data =$('input', valEl).val()
+      @data = $('input', valEl).val()
       if @data[0] is "'" and @data[@data.length-1] isnt "'"
         @data = @data[1..]
       else if @data[0] is '"' and @data[@data.length-1] isnt '"'
@@ -316,8 +316,7 @@ do __init = ->
         newNode = @parent.createChildNode(@)
       else
         newNode = @build()
-  
-      oldEl.replaceWith(newNode)
+      @$el = newNode
   
     onClick: (e) ->
       return if e.target.nodeName in ['INPUT', 'TEXTAREA']
