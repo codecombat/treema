@@ -5,33 +5,32 @@
   -moz-user-select: none;
   position: relative;
   font-family: Helvetica;
-  padding: 3px 0;
   clear: both;
   border-bottom: 1px solid #cccccc;
   font-size: 13px;
   cursor: pointer; }
-@media -sass-debug-info{filename{}line{font-family:\0000316}}
-  .treema-node.treema-open > .treema-value {
+@media -sass-debug-info{filename{}line{font-family:\0000315}}
+  .treema-node.treema-root > .treema-row .treema-value {
     display: none; }
-@media -sass-debug-info{filename{}line{font-family:\0000319}}
+@media -sass-debug-info{filename{}line{font-family:\0000318}}
   .treema-node.treema-open > .treema-children {
     padding-top: 1px; }
-@media -sass-debug-info{filename{}line{font-family:\0000322}}
+@media -sass-debug-info{filename{}line{font-family:\0000321}}
   .treema-node.treema-root {
     outline: none; }
-@media -sass-debug-info{filename{}line{font-family:\0000326}}
+@media -sass-debug-info{filename{}line{font-family:\0000325}}
   .treema-node input, .treema-node select {
     font-size: 13px;
     width: 200px;
     font-family: Helvetica;
     margin: -3px 0; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000332}}
+@media -sass-debug-info{filename{}line{font-family:\0000331}}
 .treema-children {
   margin-left: 15px;
   clear: both; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000336}}
+@media -sass-debug-info{filename{}line{font-family:\0000335}}
 .treema-add-child {
   background-color: #eeeeff;
   border: 1px solid #aaaaff;
@@ -40,36 +39,34 @@
   margin: 3px 0;
   padding: 0px 5px;
   font-weight: bold; }
-@media -sass-debug-info{filename{}line{font-family:\0000345}}
+@media -sass-debug-info{filename{}line{font-family:\0000344}}
   .treema-add-child:hover {
     background-color: #ccccff; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000348}}
+@media -sass-debug-info{filename{}line{font-family:\0000347}}
 .treema-full > .treema-children > .treema-add-child {
   display: none; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000351}}
+@media -sass-debug-info{filename{}line{font-family:\0000350}}
+.treema-row {
+  padding: 2px 3px 2px 3px; }
+
+@media -sass-debug-info{filename{}line{font-family:\0000353}}
 .treema-value {
   cursor: text;
-  padding: 2px 3px 2px 2px;
   display: inline-block; }
-@media -sass-debug-info{filename{}line{font-family:\0000356}}
-  .treema-value pre {
-    margin: 0;
-    font-family: Helvetica; }
-@media -sass-debug-info{filename{}line{font-family:\0000360}}
+@media -sass-debug-info{filename{}line{font-family:\0000357}}
   .treema-value:hover {
     border: 1px solid rgba(64, 128, 255, 0.25);
     margin: -1px; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000364}}
+@media -sass-debug-info{filename{}line{font-family:\0000361}}
 .treema-key {
   color: #5353ac;
   float: left;
-  padding: 2px;
   cursor: pointer; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000370}}
+@media -sass-debug-info{filename{}line{font-family:\0000366}}
 .treema-backdrop {
   position: absolute;
   top: 0;
@@ -80,22 +77,22 @@
   width: 100%;
   cursor: pointer; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000380}}
-.treema-selected > .treema-backdrop {
+@media -sass-debug-info{filename{}line{font-family:\0000376}}
+.treema-selected > .treema-row {
   background-color: rgba(64, 128, 255, 0.25); }
 
-@media -sass-debug-info{filename{}line{font-family:\0000385}}
+@media -sass-debug-info{filename{}line{font-family:\0000381}}
 .treema-error {
   float: right;
   color: darkred;
   margin: 2px 10px; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000390}}
+@media -sass-debug-info{filename{}line{font-family:\0000386}}
 .treema-has-error {
   background-color: lightpink;
   border: 1px solid darkred; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000394}}
+@media -sass-debug-info{filename{}line{font-family:\0000390}}
 .treema-temp-error {
   background-color: lightpink;
   padding: 2px 3px;
@@ -103,7 +100,7 @@
   margin: 0 5px;
   border: 1px solid darkred; }
 
-@media -sass-debug-info{filename{}line{font-family:\00003104}}
+@media -sass-debug-info{filename{}line{font-family:\00003100}}
 .treema-toggle {
   cursor: pointer;
   width: 0;
@@ -111,7 +108,7 @@
   float: left;
   position: absolute; }
 
-@media -sass-debug-info{filename{}line{font-family:\00003111}}
+@media -sass-debug-info{filename{}line{font-family:\00003107}}
 .treema-closed > .treema-toggle {
   border-top: 6px solid transparent;
   border-bottom: 6px solid transparent;
@@ -119,7 +116,7 @@
   top: 7px;
   left: -10px; }
 
-@media -sass-debug-info{filename{}line{font-family:\00003118}}
+@media -sass-debug-info{filename{}line{font-family:\00003114}}
 .treema-open > .treema-toggle {
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
@@ -127,13 +124,19 @@
   top: 9px;
   left: -12px; }
 
-@media -sass-debug-info{filename{}line{font-family:\00003126}}
+@media -sass-debug-info{filename{}line{font-family:\00003122}}
 .treema-clearfix:after {
   content: ".";
   display: block;
   height: 0;
   clear: both;
   visibility: hidden; }
+
+@media -sass-debug-info{filename{}line{font-family:\00003129}}
+.treema-shortened {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis; }
 
 @media -sass-debug-info{filename{}line{font-family:\000033}}
 .treema-string {
@@ -188,20 +191,14 @@
   background-color: rgba(64, 128, 255, 0.25) !important; }
 
 @media -sass-debug-info{filename{}line{font-family:\0000318}}
-.treema-shortened {
-  max-width: 300px;
-  overflow: hidden;
-  text-overflow: ellipsis; }
-
-@media -sass-debug-info{filename{}line{font-family:\0000323}}
 .treema-ace.treema-display .treema-shortened {
   font-family: monospace; }
 
-@media -sass-debug-info{filename{}line{font-family:\0000326}}
+@media -sass-debug-info{filename{}line{font-family:\0000321}}
 .treema-ace.treema-edit {
   border: 1px solid gray;
   margin: 2px 5px; }
-@media -sass-debug-info{filename{}line{font-family:\0000330}}
+@media -sass-debug-info{filename{}line{font-family:\0000325}}
   .treema-ace.treema-edit, .treema-ace.treema-edit > div {
     width: 500px;
     height: 300px; }

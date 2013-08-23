@@ -6,14 +6,13 @@
   -moz-user-select: none
   position: relative
   font-family: Helvetica
-  padding: $rowVerticalPadding 0
   clear: both
   border-bottom: 1px solid #ccc
   font-size: $fontSize
   cursor: pointer
   
   // hide collection short strings when open
-  &.treema-open > .treema-value
+  &.treema-root > .treema-row .treema-value
     display: none
     
   &.treema-open > .treema-children
@@ -47,15 +46,13 @@
 
 .treema-full > .treema-children > .treema-add-child
   display: none
- 
+
+.treema-row
+  padding: $rowInternalVerticalPadding 3px $rowInternalVerticalPadding 3px
+  
 .treema-value
   cursor: text
-  padding: $rowInternalVerticalPadding 3px $rowInternalVerticalPadding 2px
   display: inline-block
-  
-  pre
-    margin: 0
-    font-family: Helvetica
   
   &:hover
     border: 1px solid rgba(64, 128, 255, 0.25)
@@ -64,7 +61,6 @@
 .treema-key
   color: #5353ac
   float: left
-  padding: $rowInternalVerticalPadding
   cursor: pointer
   
 .treema-backdrop
@@ -77,7 +73,7 @@
   width: 100%
   cursor: pointer
   
-.treema-selected > .treema-backdrop
+.treema-selected > .treema-row
   background-color: $selectedColor
   
 // Errors
@@ -129,4 +125,11 @@
   height: 0
   clear: both
   visibility: hidden
+
+.treema-shortened
+  max-width: 300px
+  overflow: hidden
+  text-overflow: ellipsis
+
+
  

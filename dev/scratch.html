@@ -29,45 +29,37 @@
 
   var jade = {};
   $(document).ready(function () {
-    data = {
-      'restaurants': [{"id":96,"name":"Nathan's Famous"},{"id":90,"name":"McDonald's"},{"id":37,"name":"Del Taco"},{"id":17,"name":"Braum's"},{"id":21,"name":"Cafe Rio"}],
-//      'locality': 'Berkeley',
-//      'region': 'California',
-//      'country-name': 'USA',
-//      'postal-code': 94703,
-//      'is-home-address': true,
-//      'phone-numbers': ['1-800-938-3000', '1-234-567-8900 x1337'],
-//      'post-office-box': null,
-//      'extended-address': {1:2},
-//      'street-address': '2338 1/2 Roosevelt Ave'
-      hackery: "var i = 0;"
-    };
-    schema = {
-      "additionalProperties": false,
-      "description": "An Address following the convention of http://microformats.org/wiki/hcard",
-      "type": "object",
-      "properties": {
-        "post-office-box": { title: "PO Box", type: ['null', 'string'] },
-        "street-address": { title: "Address 1", description: "Don't forget the number." },
-        "extended-address": { title: "Address 2" },
-        "locality":{ "type": "string", title: "Locality", 'default': 'Berkeley', minLength:2 },
-        "region": { 'title': 'Region', type: 'string', 'default': 'California' },
-        "postal-code": { "type": "number", title: "Zip Code", minimum:10000, maximum: 99999 },
-        "country-name": { "type": "string", title: "Country", 'default': 'USA', enum:['USA', 'Mars'] },
-        "is-home-address": { type: 'boolean', title: "Is Home" },
-        "phone-numbers": { "type": "array", items: { type: "string", maxLength: 20, minLength:4 }, title: "Phone #s" },
-        "restaurants": { "type": "array", items: {format: "restaurant"}, title: 'Favorite Fast Food', uniqueItems: true },
-        "hackery": { type: "string", format: "ace", aceMode: "ace/mode/javascript" }
-      },
-      "required": ['locality', 'region', 'country-name'],
-      "dependencies": {
-        "post-office-box": "street-address",
-        "extended-address": "street-address"
+    var contacts = [
+      { 'street-address': '10 Downing Street', 'country-name': 'UK', 'locality': 'London', 'name': 'Prime Minister' },
+      { 'street-address': '1600 Amphitheatre Pkwy', 'phone-numbers': ['(650) 253-0000'], 'name': 'Google'},
+      { 'street-address': '45 Rockefeller Plaza', 'region': 'NY', 'locality': 'New York', 'name': 'Rockefeller Center'},
+    ]
+
+    var contact_book_schema = {
+      type: 'array',
+      items: {
+        "additionalProperties": false,
+        "type": "object",
+        "displayProperty": 'name',
+        "properties": {
+          "name": { type: "string", maxLength: 20 },
+          "street-address": { title: "Address 1", description: "Don't forget the number.", type: "string" },
+          "locality":{ "type": "string", title: "Locality" },
+          "region": { 'title': 'Region', type: 'string' },
+          "country-name": { "type": "string", title: "Country" },
+          "friend": { "type": "boolean", title: "Friend" },
+          "phone-numbers": {
+            title: 'Phone Number',
+            items: { type: "string", maxLength: 20, minLength:4 },
+            type: 'array'
+          } 
+          
+        }
       }
     };
 
     var el = $('#scratch');
-    var options = {schema:schema, data:data};
+    var options = {schema:contact_book_schema, data:contacts};
 //    var treema = TreemaNode.make(el, options);
     var treema = el.treema(options);
     treema.build();

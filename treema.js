@@ -15,7 +15,7 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.parent = null;
 
-  TreemaNode.prototype.nodeTemplate = '<div class="treema-value"></div><div class="treema-backdrop"></div>';
+  TreemaNode.prototype.nodeTemplate = '<div class="treema-row"><div class="treema-value"></div></div>';
 
   TreemaNode.prototype.childrenTemplate = '<div class="treema-children"></div>';
 
@@ -280,7 +280,11 @@ TreemaNode = (function() {
     if (this.isDisplaying() && clickedValue && this.canEdit() && !usedModKey) {
       return this.toggleEdit();
     }
-    if (clickedToggle || (clickedValue && this.collection)) {
+    if (!usedModKey && (clickedToggle || (clickedValue && this.collection))) {
+      if (!clickedToggle) {
+        this.deselectAll();
+        this.select();
+      }
       return this.toggleOpen();
     }
     if ($(e.target).closest('.treema-add-child').length && this.collection) {
@@ -793,10 +797,11 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.toggleOpen = function() {
     if (this.isClosed()) {
-      return this.open();
+      this.open();
     } else {
-      return this.close();
+      this.close();
     }
+    return this;
   };
 
   TreemaNode.prototype.open = function() {
@@ -838,7 +843,6 @@ TreemaNode = (function() {
         continue;
       }
       treema.keyForParent = index;
-      treema.$el.find('.treema-key').text(index);
       this.childrenTreemas[index] = treema;
       this.data[index] = treema.data;
       index += 1;
@@ -944,20 +948,21 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.createChildNode = function(treema) {
-    var childNode, keyEl, name, required, _ref;
+    var childNode, keyEl, name, required, row, _ref;
     childNode = treema.build();
-    if (this.collection) {
+    row = childNode.find('.treema-row');
+    if (this.collection && this.keyed) {
       name = treema.schema.title || treema.keyForParent;
       keyEl = $(this.keyTemplate).text(name);
       if (treema.schema.description) {
         keyEl.attr('title', treema.schema.description);
       }
-      childNode.prepend(' : ');
+      row.prepend(' : ');
       required = this.schema.required || [];
       if (_ref = treema.keyForParent, __indexOf.call(required, _ref) >= 0) {
         keyEl.text(keyEl.text() + '*');
       }
-      childNode.prepend(keyEl);
+      row.prepend(keyEl);
     }
     if (treema.collection) {
       childNode.prepend($(this.toggleTemplate));
@@ -1077,7 +1082,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.getValEl = function() {
-    return this.$el.find('> .treema-value');
+    return this.$el.find('> .treema-row .treema-value');
   };
 
   TreemaNode.prototype.getRootEl = function() {
@@ -1842,7 +1847,7 @@ var __init,
       } else {
         newNode = this.build();
       }
-      return oldEl.replaceWith(newNode);
+      return this.$el = newNode;
     };
 
     AnyNode.prototype.onClick = function(e) {

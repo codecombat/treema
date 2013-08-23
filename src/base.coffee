@@ -9,7 +9,7 @@ class TreemaNode
   parent: null
   
   # templates
-  nodeTemplate: '<div class="treema-value"></div><div class="treema-backdrop"></div>'
+  nodeTemplate: '<div class="treema-row"><div class="treema-value"></div></div>'
   childrenTemplate: '<div class="treema-children"></div>'
   addChildTemplate: '<div class="treema-add-child">+</div>'
   tempErrorTemplate: '<span class="treema-temp-error"></span>'
@@ -150,7 +150,11 @@ class TreemaNode
     usedModKey = e.shiftKey or e.ctrlKey or e.metaKey
     @keepFocus() unless clickedValue and not @collection
     return @toggleEdit() if @isDisplaying() and clickedValue and @canEdit() and not usedModKey
-    return @toggleOpen() if clickedToggle or (clickedValue and @collection)
+    if not usedModKey and (clickedToggle or (clickedValue and @collection))
+      if not clickedToggle
+        @deselectAll()
+        @select() 
+      return @toggleOpen()
     return @addNewChild() if $(e.target).closest('.treema-add-child').length and @collection
     return if @isRoot() or @isEditing()
     return @shiftSelect() if e.shiftKey
@@ -429,6 +433,7 @@ class TreemaNode
   # Opening/closing collections -----------------------------------------------
   toggleOpen: ->
     if @isClosed() then @open() else @close()
+    @
 
   open: ->
     childrenContainer = @$el.find('.treema-children').detach()
@@ -453,7 +458,6 @@ class TreemaNode
       treema = $(child).data('instance')
       continue unless treema
       treema.keyForParent = index
-      treema.$el.find('.treema-key').text(index)
       @childrenTreemas[index] = treema
       @data[index] = treema.data
       index += 1
@@ -519,14 +523,15 @@ class TreemaNode
     
   createChildNode: (treema) ->
     childNode = treema.build()
-    if @collection
+    row = childNode.find('.treema-row')
+    if @collection and @keyed
       name = treema.schema.title or treema.keyForParent
       keyEl = $(@keyTemplate).text(name)
       keyEl.attr('title', treema.schema.description) if treema.schema.description
-      childNode.prepend(' : ')
+      row.prepend(' : ')
       required = @schema.required or []
       keyEl.text(keyEl.text()+'*') if treema.keyForParent in required 
-      childNode.prepend(keyEl)
+      row.prepend(keyEl)
     childNode.prepend($(@toggleTemplate)) if treema.collection
     childNode
 
@@ -582,7 +587,7 @@ class TreemaNode
     
   # Utilities -----------------------------------------------------------------
 
-  getValEl: -> @$el.find('> .treema-value')
+  getValEl: -> @$el.find('> .treema-row .treema-value')
   getRootEl: -> @$el.closest('.treema-root')
   getInputs: -> @getValEl().find('input, textarea')
   getSelectedTreemas: -> ($(el).data('instance') for el in @getRootEl().find('.treema-selected'))
