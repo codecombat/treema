@@ -62,7 +62,7 @@ do ->
       addressTreema.select()
       expectOneSelected(addressTreema)
       downArrowPress(treema.$el)
-      expectOneSelected(addressTreema)
+      expectOneSelected(nameTreema)
 
   describe 'Up arrow key press', ->
     it 'selects the bottom row if nothing is selected', ->
@@ -93,11 +93,11 @@ do ->
       upArrowPress(treema.$el)
       expectOneSelected(nameTreema)
 
-    it 'does nothing if the first treema is selected', ->
+    it 'wraps around if the first treema is selected', ->
       nameTreema.select()
       expectOneSelected(nameTreema)
       upArrowPress(treema.$el)
-      expectOneSelected(nameTreema)
+      expectOneSelected(addressTreema)
 
   describe 'Right arrow key press', ->
     it 'does nothing if the selected row isn\'t a collection', ->

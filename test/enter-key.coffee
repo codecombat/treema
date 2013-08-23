@@ -38,16 +38,16 @@ describe 'Enter key press', ->
     phoneTreema.open()
     nameTreema.edit()
     enterKeyPress(nameTreema.$el)
+    expect(phoneTreema.isSelected()).toBeTruthy()
+    enterKeyPress(treema.$el)
     expect(phoneTreema.childrenTreemas[0].isEditing()).toBeTruthy()
     enterKeyPress(phoneTreema.childrenTreemas[0].$el)
     expect(phoneTreema.childrenTreemas[1].isEditing()).toBeTruthy()
-    enterKeyPress(phoneTreema.childrenTreemas[1].$el)
-    expect(addressTreema.isEditing()).toBeTruthy()
     
-  it 'skips over closed collections', ->
-    nameTreema.edit()
-    enterKeyPress(nameTreema.$el)
-    expect(addressTreema.isEditing()).toBeTruthy()
+  it 'opens closed collections', ->
+    phoneTreema.select()
+    enterKeyPress(treema.$el)
+    expect(phoneTreema.isOpen()).toBeTruthy()
     
   it 'shows errors and moves on when saving an invalid row', ->
     phoneTreema.open()

@@ -154,7 +154,6 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.onEditInputBlur = function() {
     var input, shouldRemove;
-    console.log('BLUR');
     shouldRemove = this.shouldTryToRemoveFromParent();
     this.saveChanges(this.getValEl());
     input = this.getValEl().find('input, textarea, select');
@@ -520,13 +519,11 @@ TreemaNode = (function() {
       }
       if (shouldRemove && ((_ref = $(this.$el[0].nextSibling)) != null ? _ref.hasClass('treema-add-child') : void 0) && offset === 1) {
         offset = 2;
-        console.log('offset is', offset);
       }
       this.endExistingEdits();
       this.select();
     }
     ctx = this.traversalContext(offset);
-    console.log('context is', ctx);
     if (!ctx) {
       return this.getRoot().addChild();
     }
@@ -536,14 +533,12 @@ TreemaNode = (function() {
     }
     selected = $(ctx.origin).data('instance');
     if (offset > 0 && aggressive && selected.collection && selected.isClosed()) {
-      console.log('try to open selected?');
       return selected.open();
     }
     targetEl = offset > 0 ? ctx.next : ctx.prev;
     if (!targetEl) {
       targetEl = offset > 0 ? ctx.first : ctx.last;
     }
-    console.log('target el is', targetEl);
     this.selectOrActivateElement(targetEl);
     if (shouldRemove) {
       return this.remove();
@@ -562,8 +557,7 @@ TreemaNode = (function() {
       }
     }
     this.deselectAll();
-    el.focus();
-    return console.log('okay we focused...');
+    return el.focus();
   };
 
   TreemaNode.prototype.navigateSelection = function(offset) {
@@ -742,7 +736,6 @@ TreemaNode = (function() {
     }
     this.parent.data[this.keyForParent] = this.data;
     this.parent.refreshErrors();
-    console.log('WHAT?');
     return this.parent.buildValueForDisplay(this.parent.getValEl().empty());
   };
 

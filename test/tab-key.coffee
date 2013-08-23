@@ -40,15 +40,17 @@ describe 'Tab key press', ->
     phoneTreema.open()
     nameTreema.edit()
     tabKeyPress(nameTreema.$el)
+    expect(phoneTreema.isSelected()).toBeTruthy()
+    tabKeyPress(treema.$el)
     expect(phoneTreema.childrenTreemas[0].isEditing()).toBeTruthy()
     tabKeyPress(phoneTreema.childrenTreemas[0].$el)
     expect(phoneTreema.childrenTreemas[1].isEditing()).toBeTruthy()
-    tabKeyPress(phoneTreema.childrenTreemas[1].$el)
-    expect(addressTreema.isEditing()).toBeTruthy()
 
   it 'skips over closed collections', ->
     nameTreema.edit()
     tabKeyPress(nameTreema.$el)
+    expect(phoneTreema.isSelected()).toBeTruthy()
+    tabKeyPress(treema.$el)
     expect(addressTreema.isEditing()).toBeTruthy()
 
   it 'shows errors and stays put when saving an invalid row', ->
