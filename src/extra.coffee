@@ -137,7 +137,6 @@ TreemaNode.setNodeSubclass 'ace', class AceNode extends TreemaNode
     d = $('<div></div>').text(@data)
     valEl.append(d)
     @editor = ace.edit(d[0])
-    console.log('@editor', @editor)
     @editor.setReadOnly(false)
     @editor.getSession().setMode(@schema.aceMode) if @schema.aceMode?
     @editor.setTheme(@schema.aceTheme) if @schema.aceTheme?

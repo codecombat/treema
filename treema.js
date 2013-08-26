@@ -1197,6 +1197,19 @@ TreemaNode = (function() {
     return new NodeClass(element, options, parent);
   };
 
+  TreemaNode.extend = function(child) {
+    var ctor;
+    ctor = function() {};
+    ctor.prototype = parent.prototype;
+    child.prototype = new ctor();
+    child.prototype.constructor = child;
+    child.__super__ = parent.prototype;
+    child.prototype["super"] = function(method) {
+      return this.constructor.__super__[method];
+    };
+    return child;
+  };
+
   return TreemaNode;
 
 })();
@@ -2147,7 +2160,6 @@ TreemaNode.setNodeSubclass('ace', AceNode = (function(_super) {
     d = $('<div></div>').text(this.data);
     valEl.append(d);
     this.editor = ace.edit(d[0]);
-    console.log('@editor', this.editor);
     this.editor.setReadOnly(false);
     if (this.schema.aceMode != null) {
       this.editor.getSession().setMode(this.schema.aceMode);
