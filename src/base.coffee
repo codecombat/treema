@@ -621,11 +621,11 @@ class TreemaNode
     @$el.removeClass('treema-full')
     @$el.addClass('treema-full') unless @canAddChild()
 
-  @nodeMap = {}
+  @nodeMap: {}
   
-  @setNodeSubclass = (key, NodeClass) -> @nodeMap[key] = NodeClass
+  @setNodeSubclass: (key, NodeClass) -> @nodeMap[key] = NodeClass
     
-  @getNodeClassForSchema = (schema) ->
+  @getNodeClassForSchema: (schema) ->
     NodeClass = null
     NodeClass = @nodeMap[schema.format] if schema.format
     return NodeClass if NodeClass
@@ -633,7 +633,19 @@ class TreemaNode
     return NodeClass if NodeClass
     @nodeMap['any']
     
-  @make = (element, options, parent) ->
+  @make: (element, options, parent) ->
     NodeClass = @getNodeClassForSchema(options.schema)
     return new NodeClass(element, options, parent)
+    
+  @extend: (child) ->
+    # https://github.com/jashkenas/coffee-script/issues/2385
+    ctor = ->
+    ctor:: = @::
+    child:: = new ctor()
+    child::constructor = child
+    child.__super__ = @::
+  
+    # provides easy access to the given method on super (must use call or apply)
+    child::super = (method) -> @constructor.__super__[method]
+    child
 

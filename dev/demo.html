@@ -262,6 +262,10 @@
     <li>Only let you choose from some other list within the page (maybe from another treema?).</li>
     <li>Incorporate your favorite plugins.</li>
   </ul>
+  
+  <p>
+    Here's one with ACE, in case one of your properties is a string of code.
+  </p>
 
   <div id="component"></div>
 
@@ -301,6 +305,64 @@
 
     treema = buildTreemaExample($('#component'), component_schema, component);
     treema.childrenTreemas.code.edit();
+  </script>
+
+  <p>
+    Now imagine you have users who have lists of their favorite fast food restaurants.
+    This would be a good thing to have separate collections (tables) for, one for users
+    and one for restaurants.
+    But the user documents (records) ought to store enough information about the restaurants so that,
+    if you're looking at the user, you don't have to do a lookup for each listed restaurant.
+    The database search Treema node encapsulates all this logic, leaving it to you to
+    implement the GET search endpoint, and describe in a subclass how to format that data.
+  </p>
+
+  <div id="lookup"></div>
+
+  <script>
+    var lookup = {
+      name: "Joe Shmo",
+      restaurants: [{"id": 36, "name": "Dairy Queen"}, {"id": 90, "name": "McDonald's"}]
+    }
+
+    var lookup_schema = {
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "name": {
+          title: "Name",
+          type: "string",
+          maxLength: 40
+        },
+        "restaurants": {
+          title: "Fast Food Favorites",
+          items: { type: "object", format: "restaurant" },
+          type: 'array'
+        }
+      }
+    };
+
+    FastFoodSearchTreemaNode = function () {
+      this['super']('constructor').apply(this, arguments);
+    };
+    DatabaseSearchTreemaNode.extend(FastFoodSearchTreemaNode);
+    FastFoodSearchTreemaNode.prototype.url = '/fastfood.json';
+    FastFoodSearchTreemaNode.prototype.formatDocument = function (doc) { return doc.name; }; 
+    FastFoodSearchTreemaNode.prototype.searchCallback = function (results) {
+      // demo hack, since it's only using static resources
+      var newResults = [];
+      var term = this.lastTerm.toLowerCase();
+      for (var result in results) {
+        result = results[result];
+        if (result.name.toLowerCase().indexOf(term) == -1) continue;
+        newResults.push(result);
+      }
+      this['super']('searchCallback').apply(this, [newResults]);
+    };
+    TreemaNode.setNodeSubclass('restaurant', FastFoodSearchTreemaNode);
+
+    treema = buildTreemaExample($('#lookup'), lookup_schema, lookup);
+    treema.childrenTreemas.restaurants.open()
   </script>
 
 

@@ -52,6 +52,11 @@
             title: 'Phone Number',
             items: { type: "string", maxLength: 20, minLength:4 },
             type: 'array'
+          },
+          "fastfoodfavs": {
+            title: "Fast Food",
+            items: { type: "object", format: "fastfood" },
+            type: 'array'
           } 
           
         }

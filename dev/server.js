@@ -16,16 +16,13 @@ module.exports.startServer = startServer = function() {
     // for testing the database search feature
     var func = function() {
       var results = [];
-      if (!req.query.term) {
-        results = restaurants;
-      }
-      else {
-        var term = req.query.term.toLowerCase();
-        for (var i in restaurants) {
-          var place = restaurants[i];
-          if (place.toLowerCase().indexOf(term) > -1)
-            results.push({id:parseInt(i), name:place});
-        }
+      var term = req.query.term;
+      if (req.query.term)
+        term = term.toLowerCase();
+      for (var i in restaurants) {
+        var place = restaurants[i];
+        if (!term || place.toLowerCase().indexOf(term) > -1)
+          results.push({id:parseInt(i), name:place});
       }
       res.setHeader('Content-Type', 'text/json');
       res.send(results);

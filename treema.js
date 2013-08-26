@@ -1200,10 +1200,10 @@ TreemaNode = (function() {
   TreemaNode.extend = function(child) {
     var ctor;
     ctor = function() {};
-    ctor.prototype = parent.prototype;
+    ctor.prototype = this.prototype;
     child.prototype = new ctor();
     child.prototype.constructor = child;
-    child.__super__ = parent.prototype;
+    child.__super__ = this.prototype;
     child.prototype["super"] = function(method) {
       return this.constructor.__super__[method];
     };
@@ -1887,300 +1887,308 @@ var __init,
 
   })(TreemaNode));
 })();
-var AceNode, DatabaseSearchTreemaNode, Point2DNode, Point3DNode, debounce, _ref, _ref1, _ref2, _ref3,
-  __hasProp = {}.hasOwnProperty,
+var __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __slice = [].slice;
 
-TreemaNode.setNodeSubclass('point2d', Point2DNode = (function(_super) {
-  __extends(Point2DNode, _super);
+(function() {
+  var AceNode, DatabaseSearchTreemaNode, Point2DNode, Point3DNode, debounce, _ref, _ref1, _ref2, _ref3;
+  TreemaNode.setNodeSubclass('point2d', Point2DNode = (function(_super) {
+    __extends(Point2DNode, _super);
 
-  function Point2DNode() {
-    _ref = Point2DNode.__super__.constructor.apply(this, arguments);
-    return _ref;
-  }
+    function Point2DNode() {
+      _ref = Point2DNode.__super__.constructor.apply(this, arguments);
+      return _ref;
+    }
 
-  Point2DNode.prototype.valueClass = 'treema-point2d';
+    Point2DNode.prototype.valueClass = 'treema-point2d';
 
-  Point2DNode.prototype.getDefaultValue = function() {
-    return {
-      x: 0,
-      y: 0
+    Point2DNode.prototype.getDefaultValue = function() {
+      return {
+        x: 0,
+        y: 0
+      };
     };
-  };
 
-  Point2DNode.prototype.buildValueForDisplay = function(valEl) {
-    return this.buildValueForDisplaySimply(valEl, "(" + this.data.x + ", " + this.data.y + ")");
-  };
-
-  Point2DNode.prototype.buildValueForEditing = function(valEl) {
-    var xInput, yInput;
-    xInput = $('<input />').val(this.data.x);
-    yInput = $('<input />').val(this.data.y);
-    valEl.append('(').append(xInput).append(', ').append(yInput).append(')');
-    return valEl.find('input:first').focus().select();
-  };
-
-  Point2DNode.prototype.saveChanges = function(valEl) {
-    this.data.x = parseFloat(valEl.find('input:first').val());
-    return this.data.y = parseFloat(valEl.find('input:last').val());
-  };
-
-  return Point2DNode;
-
-})(TreemaNode));
-
-TreemaNode.setNodeSubclass('point3d', Point3DNode = (function(_super) {
-  __extends(Point3DNode, _super);
-
-  function Point3DNode() {
-    _ref1 = Point3DNode.__super__.constructor.apply(this, arguments);
-    return _ref1;
-  }
-
-  Point3DNode.prototype.valueClass = 'treema-point3d';
-
-  Point3DNode.prototype.getDefaultValue = function() {
-    return {
-      x: 0,
-      y: 0,
-      z: 0
+    Point2DNode.prototype.buildValueForDisplay = function(valEl) {
+      return this.buildValueForDisplaySimply(valEl, "(" + this.data.x + ", " + this.data.y + ")");
     };
-  };
 
-  Point3DNode.prototype.buildValueForDisplay = function(valEl) {
-    return this.buildValueForDisplaySimply(valEl, "(" + this.data.x + ", " + this.data.y + ", " + this.data.z + ")");
-  };
+    Point2DNode.prototype.buildValueForEditing = function(valEl) {
+      var xInput, yInput;
+      xInput = $('<input />').val(this.data.x);
+      yInput = $('<input />').val(this.data.y);
+      valEl.append('(').append(xInput).append(', ').append(yInput).append(')');
+      return valEl.find('input:first').focus().select();
+    };
 
-  Point3DNode.prototype.buildValueForEditing = function(valEl) {
-    var xInput, yInput, zInput;
-    xInput = $('<input />').val(this.data.x);
-    yInput = $('<input />').val(this.data.y);
-    zInput = $('<input />').val(this.data.z);
-    valEl.append('(').append(xInput).append(', ').append(yInput).append(', ').append(zInput).append(')');
-    return valEl.find('input:first').focus().select();
-  };
+    Point2DNode.prototype.saveChanges = function(valEl) {
+      this.data.x = parseFloat(valEl.find('input:first').val());
+      return this.data.y = parseFloat(valEl.find('input:last').val());
+    };
 
-  Point3DNode.prototype.saveChanges = function() {
-    var inputs;
-    inputs = this.getInputs();
-    this.data.x = parseFloat($(inputs[0]).val());
-    this.data.y = parseFloat($(inputs[1]).val());
-    return this.data.z = parseFloat($(inputs[2]).val());
-  };
+    return Point2DNode;
 
-  return Point3DNode;
+  })(TreemaNode));
+  TreemaNode.setNodeSubclass('point3d', Point3DNode = (function(_super) {
+    __extends(Point3DNode, _super);
 
-})(TreemaNode));
-
-DatabaseSearchTreemaNode = (function(_super) {
-  __extends(DatabaseSearchTreemaNode, _super);
-
-  function DatabaseSearchTreemaNode() {
-    this.searchCallback = __bind(this.searchCallback, this);
-    this.search = __bind(this.search, this);
-    _ref2 = DatabaseSearchTreemaNode.__super__.constructor.apply(this, arguments);
-    return _ref2;
-  }
-
-  DatabaseSearchTreemaNode.prototype.valueClass = 'treema-search';
-
-  DatabaseSearchTreemaNode.prototype.searchValueTemplate = '<input placeholder="Search" /><div class="treema-search-results"></div>';
-
-  DatabaseSearchTreemaNode.prototype.url = null;
-
-  DatabaseSearchTreemaNode.prototype.lastTerm = null;
-
-  DatabaseSearchTreemaNode.prototype.buildValueForDisplay = function(valEl) {
-    return this.buildValueForDisplaySimply(valEl, this.data ? this.formatDocument(this.data) : 'None');
-  };
-
-  DatabaseSearchTreemaNode.prototype.formatDocument = function(doc) {
-    if ($.isString(doc)) {
-      return doc;
+    function Point3DNode() {
+      _ref1 = Point3DNode.__super__.constructor.apply(this, arguments);
+      return _ref1;
     }
-    return JSON.stringify(doc);
-  };
 
-  DatabaseSearchTreemaNode.prototype.buildValueForEditing = function(valEl) {
-    var input;
-    valEl.html(this.searchValueTemplate);
-    input = valEl.find('input');
-    input.focus().keyup(this.search);
-    if (this.data) {
-      return input.attr('placeholder', this.formatDocument(this.data));
-    }
-  };
+    Point3DNode.prototype.valueClass = 'treema-point3d';
 
-  DatabaseSearchTreemaNode.prototype.search = function() {
-    var term;
-    term = this.getValEl().find('input').val();
-    if (term === this.lastTerm) {
-      return;
-    }
-    if (this.lastTerm && !term) {
-      this.getSearchResultsEl().empty();
-    }
-    if (!term) {
-      return;
-    }
-    this.lastTerm = term;
-    this.getSearchResultsEl().empty().append('Searching');
-    return $.ajax(this.url + '?term=' + term, {
-      dataType: 'json',
-      success: this.searchCallback
-    });
-  };
+    Point3DNode.prototype.getDefaultValue = function() {
+      return {
+        x: 0,
+        y: 0,
+        z: 0
+      };
+    };
 
-  DatabaseSearchTreemaNode.prototype.searchCallback = function(results) {
-    var container, i, result, row, _i, _len;
-    container = this.getSearchResultsEl().detach().empty();
-    for (i = _i = 0, _len = results.length; _i < _len; i = ++_i) {
-      result = results[i];
-      row = $('<div></div>').addClass('treema-search-result-row');
-      if (i === 0) {
-        row.addClass('treema-search-selected');
+    Point3DNode.prototype.buildValueForDisplay = function(valEl) {
+      return this.buildValueForDisplaySimply(valEl, "(" + this.data.x + ", " + this.data.y + ", " + this.data.z + ")");
+    };
+
+    Point3DNode.prototype.buildValueForEditing = function(valEl) {
+      var xInput, yInput, zInput;
+      xInput = $('<input />').val(this.data.x);
+      yInput = $('<input />').val(this.data.y);
+      zInput = $('<input />').val(this.data.z);
+      valEl.append('(').append(xInput).append(', ').append(yInput).append(', ').append(zInput).append(')');
+      return valEl.find('input:first').focus().select();
+    };
+
+    Point3DNode.prototype.saveChanges = function() {
+      var inputs;
+      inputs = this.getInputs();
+      this.data.x = parseFloat($(inputs[0]).val());
+      this.data.y = parseFloat($(inputs[1]).val());
+      return this.data.z = parseFloat($(inputs[2]).val());
+    };
+
+    return Point3DNode;
+
+  })(TreemaNode));
+  DatabaseSearchTreemaNode = (function(_super) {
+    __extends(DatabaseSearchTreemaNode, _super);
+
+    function DatabaseSearchTreemaNode() {
+      this.searchCallback = __bind(this.searchCallback, this);
+      this.search = __bind(this.search, this);
+      _ref2 = DatabaseSearchTreemaNode.__super__.constructor.apply(this, arguments);
+      return _ref2;
+    }
+
+    DatabaseSearchTreemaNode.prototype.valueClass = 'treema-search';
+
+    DatabaseSearchTreemaNode.prototype.searchValueTemplate = '<input placeholder="Search" /><div class="treema-search-results"></div>';
+
+    DatabaseSearchTreemaNode.prototype.url = null;
+
+    DatabaseSearchTreemaNode.prototype.lastTerm = null;
+
+    DatabaseSearchTreemaNode.prototype.buildValueForDisplay = function(valEl) {
+      return this.buildValueForDisplaySimply(valEl, this.data ? this.formatDocument(this.data) : 'None');
+    };
+
+    DatabaseSearchTreemaNode.prototype.formatDocument = function(doc) {
+      if ($.isString(doc)) {
+        return doc;
       }
-      row.text(this.formatDocument(result));
-      row.data('value', result);
-      container.append(row);
-    }
-    if (!results.length) {
-      container.append($('<div>No results</div>'));
-    }
-    return this.getValEl().append(container);
-  };
+      return JSON.stringify(doc);
+    };
 
-  DatabaseSearchTreemaNode.prototype.getSearchResultsEl = function() {
-    return this.getValEl().find('.treema-search-results');
-  };
+    DatabaseSearchTreemaNode.prototype.buildValueForEditing = function(valEl) {
+      var input;
+      valEl.html(this.searchValueTemplate);
+      input = valEl.find('input');
+      input.focus().keyup(this.search);
+      if (this.data) {
+        return input.attr('placeholder', this.formatDocument(this.data));
+      }
+    };
 
-  DatabaseSearchTreemaNode.prototype.getSelectedResultEl = function() {
-    return this.getValEl().find('.treema-search-selected');
-  };
+    DatabaseSearchTreemaNode.prototype.search = function() {
+      var term;
+      term = this.getValEl().find('input').val();
+      if (term === this.lastTerm) {
+        return;
+      }
+      if (this.lastTerm && !term) {
+        this.getSearchResultsEl().empty();
+      }
+      if (!term) {
+        return;
+      }
+      this.lastTerm = term;
+      this.getSearchResultsEl().empty().append('Searching');
+      return $.ajax(this.url + '?term=' + term, {
+        dataType: 'json',
+        success: this.searchCallback
+      });
+    };
 
-  DatabaseSearchTreemaNode.prototype.saveChanges = function() {
-    var selected;
-    selected = this.getSelectedResultEl();
-    if (!selected.length) {
-      return;
-    }
-    return this.data = selected.data('value');
-  };
+    DatabaseSearchTreemaNode.prototype.searchCallback = function(results) {
+      var container, first, i, result, row, text, _i, _len;
+      container = this.getSearchResultsEl().detach().empty();
+      first = true;
+      for (i = _i = 0, _len = results.length; _i < _len; i = ++_i) {
+        result = results[i];
+        row = $('<div></div>').addClass('treema-search-result-row');
+        text = this.formatDocument(result);
+        if (text == null) {
+          continue;
+        }
+        if (first) {
+          row.addClass('treema-search-selected');
+        }
+        first = false;
+        row.text(text);
+        row.data('value', result);
+        container.append(row);
+      }
+      if (!results.length) {
+        container.append($('<div>No results</div>'));
+      }
+      return this.getValEl().append(container);
+    };
 
-  DatabaseSearchTreemaNode.prototype.onDownArrowPressed = function() {
-    return this.navigateSearch(1);
-  };
+    DatabaseSearchTreemaNode.prototype.getSearchResultsEl = function() {
+      return this.getValEl().find('.treema-search-results');
+    };
 
-  DatabaseSearchTreemaNode.prototype.onUpArrowPressed = function() {
-    return this.navigateSearch(-1);
-  };
+    DatabaseSearchTreemaNode.prototype.getSelectedResultEl = function() {
+      return this.getValEl().find('.treema-search-selected');
+    };
 
-  DatabaseSearchTreemaNode.prototype.navigateSearch = function(offset) {
-    var func, next, selected;
-    selected = this.getSelectedResultEl();
-    func = offset > 0 ? 'next' : 'prev';
-    next = selected[func]('.treema-search-result-row');
-    if (!next.length) {
-      return;
-    }
-    selected.removeClass('treema-search-selected');
-    return next.addClass('treema-search-selected');
-  };
+    DatabaseSearchTreemaNode.prototype.saveChanges = function() {
+      var selected;
+      selected = this.getSelectedResultEl();
+      if (!selected.length) {
+        return;
+      }
+      return this.data = selected.data('value');
+    };
 
-  DatabaseSearchTreemaNode.prototype.onClick = function(e) {
-    var newSelection;
-    newSelection = $(e.target).closest('.treema-search-result-row');
-    if (!newSelection.length) {
-      return DatabaseSearchTreemaNode.__super__.onClick.call(this, e);
-    }
-    this.getSelectedResultEl().removeClass('treema-search-selected');
-    newSelection.addClass('treema-search-selected');
-    this.saveChanges();
-    return this.display();
-  };
+    DatabaseSearchTreemaNode.prototype.onDownArrowPressed = function(e) {
+      this.navigateSearch(1);
+      return e.preventDefault();
+    };
 
-  return DatabaseSearchTreemaNode;
+    DatabaseSearchTreemaNode.prototype.onUpArrowPressed = function(e) {
+      e.preventDefault();
+      return this.navigateSearch(-1);
+    };
 
-})(TreemaNode);
+    DatabaseSearchTreemaNode.prototype.navigateSearch = function(offset) {
+      var func, next, selected;
+      selected = this.getSelectedResultEl();
+      func = offset > 0 ? 'next' : 'prev';
+      next = selected[func]('.treema-search-result-row');
+      if (!next.length) {
+        return;
+      }
+      selected.removeClass('treema-search-selected');
+      return next.addClass('treema-search-selected');
+    };
 
-debounce = function(func, threshold, execAsap) {
-  var timeout;
-  timeout = null;
-  return function() {
-    var args, delayed, obj;
-    args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-    obj = this;
-    delayed = function() {
-      if (!execAsap) {
+    DatabaseSearchTreemaNode.prototype.onClick = function(e) {
+      var newSelection;
+      newSelection = $(e.target).closest('.treema-search-result-row');
+      if (!newSelection.length) {
+        return DatabaseSearchTreemaNode.__super__.onClick.call(this, e);
+      }
+      this.getSelectedResultEl().removeClass('treema-search-selected');
+      newSelection.addClass('treema-search-selected');
+      this.saveChanges();
+      return this.display();
+    };
+
+    DatabaseSearchTreemaNode.prototype.shouldTryToRemoveFromParent = function() {
+      return false;
+    };
+
+    return DatabaseSearchTreemaNode;
+
+  })(TreemaNode);
+  debounce = function(func, threshold, execAsap) {
+    var timeout;
+    timeout = null;
+    return function() {
+      var args, delayed, obj;
+      args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+      obj = this;
+      delayed = function() {
+        if (!execAsap) {
+          func.apply(obj, args);
+        }
+        return timeout = null;
+      };
+      if (timeout) {
+        clearTimeout(timeout);
+      } else if (execAsap) {
         func.apply(obj, args);
       }
-      return timeout = null;
+      return timeout = setTimeout(delayed, threshold || 100);
     };
-    if (timeout) {
-      clearTimeout(timeout);
-    } else if (execAsap) {
-      func.apply(obj, args);
+  };
+  DatabaseSearchTreemaNode.prototype.search = debounce(DatabaseSearchTreemaNode.prototype.search, 200);
+  window.DatabaseSearchTreemaNode = DatabaseSearchTreemaNode;
+  return TreemaNode.setNodeSubclass('ace', AceNode = (function(_super) {
+    __extends(AceNode, _super);
+
+    function AceNode() {
+      _ref3 = AceNode.__super__.constructor.apply(this, arguments);
+      return _ref3;
     }
-    return timeout = setTimeout(delayed, threshold || 100);
-  };
-};
 
-DatabaseSearchTreemaNode.prototype.search = debounce(DatabaseSearchTreemaNode.prototype.search, 200);
+    AceNode.prototype.valueClass = 'treema-ace';
 
-window.DatabaseSearchTreemaNode = DatabaseSearchTreemaNode;
+    AceNode.prototype.getDefaultValue = function() {
+      return '';
+    };
 
-TreemaNode.setNodeSubclass('ace', AceNode = (function(_super) {
-  __extends(AceNode, _super);
+    AceNode.prototype.buildValueForDisplay = function(valEl) {
+      var pre, _ref4;
+      if ((_ref4 = this.editor) != null) {
+        _ref4.destroy();
+      }
+      pre = $('<pre></pre>');
+      this.buildValueForDisplaySimply(pre, ("" + this.data) || "-empty-");
+      return valEl.append(pre);
+    };
 
-  function AceNode() {
-    _ref3 = AceNode.__super__.constructor.apply(this, arguments);
-    return _ref3;
-  }
+    AceNode.prototype.buildValueForEditing = function(valEl) {
+      var d;
+      d = $('<div></div>').text(this.data);
+      valEl.append(d);
+      this.editor = ace.edit(d[0]);
+      this.editor.setReadOnly(false);
+      if (this.schema.aceMode != null) {
+        this.editor.getSession().setMode(this.schema.aceMode);
+      }
+      if (this.schema.aceTheme != null) {
+        this.editor.setTheme(this.schema.aceTheme);
+      }
+      return valEl.find('textarea').focus();
+    };
 
-  AceNode.prototype.valueClass = 'treema-ace';
+    AceNode.prototype.saveChanges = function() {
+      return this.data = this.editor.getValue();
+    };
 
-  AceNode.prototype.getDefaultValue = function() {
-    return '';
-  };
+    AceNode.prototype.onTabPressed = function() {};
 
-  AceNode.prototype.buildValueForDisplay = function(valEl) {
-    var pre, _ref4;
-    if ((_ref4 = this.editor) != null) {
-      _ref4.destroy();
-    }
-    pre = $('<pre></pre>');
-    this.buildValueForDisplaySimply(pre, ("" + this.data) || "-empty-");
-    return valEl.append(pre);
-  };
+    AceNode.prototype.onEnterPressed = function() {};
 
-  AceNode.prototype.buildValueForEditing = function(valEl) {
-    var d;
-    d = $('<div></div>').text(this.data);
-    valEl.append(d);
-    this.editor = ace.edit(d[0]);
-    this.editor.setReadOnly(false);
-    if (this.schema.aceMode != null) {
-      this.editor.getSession().setMode(this.schema.aceMode);
-    }
-    if (this.schema.aceTheme != null) {
-      this.editor.setTheme(this.schema.aceTheme);
-    }
-    return valEl.find('textarea').focus();
-  };
+    return AceNode;
 
-  AceNode.prototype.saveChanges = function() {
-    return this.data = this.editor.getValue();
-  };
-
-  AceNode.prototype.onTabPressed = function() {};
-
-  AceNode.prototype.onEnterPressed = function() {};
-
-  return AceNode;
-
-})(TreemaNode));
+  })(TreemaNode));
+})();
 (function($) {
   return $.fn[TreemaNode.pluginName] = function(options) {
     var element;
