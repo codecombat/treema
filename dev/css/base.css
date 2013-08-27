@@ -5,7 +5,7 @@ body {
 #content {
   box-shadow: 0 0 6px;
   margin: 0 auto;
-  width: 800px;
+  width: 700px;
   background: white;
   padding: 20px;
 }
@@ -30,25 +30,9 @@ li {
   margin: 4px 0;
 }
 
-footer {
-  margin-top: 50px;
-  text-align: center;
-}
-
-footer div {
-  background-color: #666;
-}
-
-footer .bar {
-  margin-top: 10px;
-  width: 100%;
-}
-
-footer div:last-child {
-  height: 20px;
-}
-
-footer div:first-child {
-  height: 5px;
-}
-
+/* Musical double bar footer */
+footer { margin-top: 50px; text-align: center; }
+footer div { background-color: #666; }
+footer .bar { margin-top: 10px; width: 100%; }
+footer div:first-child { height: 5px; }
+footer div:last-child { height: 20px; margin-top: 10px; }

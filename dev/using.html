@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+  <link rel="stylesheet" href="css/vendor/bootstrap.min.css" media="screen">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/index.css">
+  <title>Treema by sderickson</title>
+</head>
+
+<body>
+
+
+<div id="content">
+
+  <h1>Using Treema</h1>
+
+  <div class="nav">
+    <a href="/index.html">Go back</a>
+  </div>
+  
+  <h3>Install</h3>
+  
+  <p>
+    Download and embed the following files:
+  </p>
+  
+  <ol>
+    <li>
+      <strong>Treema</strong>
+      <a href="https://raw.github.com/sderickson/treema/master/treema.js">JS</a>,
+      <a href="https://github.com/sderickson/treema/blob/master/treema.css">CSS</a>
+    </li>
+    <li>
+      <strong>3rd Party</strong>
+      <br />Note that these are the versions used in development of Treema.
+      Go to their sites/github pages for other versions or packages.
+      <ul>
+        <li>
+          <a href="https://raw.github.com/sderickson/treema/master/dev/js/vendor/jquery-1.8.1.js">JQuery</a>
+        </li>
+        <li>
+          <a href="https://raw.github.com/sderickson/treema/master/dev/js/vendor/tv4.js">TV4</a>
+          For validating the data. This is pretty required.
+        </li>
+        <li>
+          <a href="https://raw.github.com/sderickson/treema/master/dev/js/vendor/jquery-ui-1.10.3.custom.js">JQuery UI</a>
+          This is used for dragging and dropping elements in an Array (sortable)
+          and when typing in new properties of objects (autocomplete).
+          Make sure if you roll your own that you include those two components.
+          Treema will not break without these, but these features will not work.
+        </li>
+      </ul>
+    </li>
+  </ol>
+  
+  <h3>Setup</h3>
+  
+  <p>
+    Once you have the above files all set up, you should have TreemaNode in the global namespace.
+    This is the superclass which all specialized nodes subclass from (StringTreemaNode, NumberTreemaNode, etc)
+    and contains class methods for general use.
+  </p>
+  
+  <p>
+    To make a Treema, you've got two options, either call the jQuery function 'treema':
+  </p>
+  
+  <pre>
+    var options = { schema:your_schema, data:your_data };
+    var el = $("&lt;div&gt;&lt;/div&gt;"); // or fetch an existing block element
+    var treema = el.treema(options); // hold onto this treema object for later
+    treema.build();
+    // el now has the treema interface, append it where you will</pre>
+  
+  <p>
+    Or call the function directly through TreemaNode:
+  </p>
+  
+  <pre>
+    var el = $("&lt;div&gt;&lt;/div&gt;");
+    var treema = TreemaNode.make(el, options);
+    treema.build();</pre>
+  
+  <p>
+    If the first argument of make() is null, then TreemaNode makes its own empty div element. 
+  </p>
+  
+  <h3>Getting the Data</h3>
+  
+  <p>
+    That object that make() and treema() return?
+    Its 'data' property has the latest version of the data.
+    Note that it's not necessarily <em>valid</em> data.
+    Use the same object's isValid() to check for validity.
+  </p>
+  
+  <h3>Making Custom Nodes</h3>
+  
+  <h4>Subclassing</h4>
+  
+  <p>
+    To make a subclass:
+  </p>
+  
+  <pre>
+    MyTreemaNode = function () {
+      this['super']('constructor').apply(this, arguments);
+    };
+    TreemaNode.extend(MyTreemaNode);</pre>
+  
+  <p>
+    There are several properties and functions you should overwrite at the very least.
+    To start, define a css class so you can hook unique styling to the node.
+  </p>
+  
+  <pre>
+    MyTreemaNode.prototype.valueClass = 'treema-my';</pre>
+  
+  <p>
+    Add a "getDefaultValue" function which will be used when the property is first added.
+  </p>
+    
+  <pre>
+    MyTreemaNode.prototype.getDefaultValue = function () { return 'No name'; }</pre>
+  
+  <p>
+    Add "buildValueForDisplay" and "buildValueForEditing" functions which define what the
+    row is when displaying and editing.
+    Both receive an empty jQuery element that you can set up as you wish.
+    Use this.data to access the current value of the node.
+  </p>
+  
+  <pre>
+    MyTreemaNode.prototype.buildValueForDisplay = function (valEl) {
+      valEl.text('"'+this.data+'"');
+    }
+    
+    MyTreemaNode.prototype.buildValueForEditing = function (valEl) {
+      valEl.append($('&lt;input&gt;&lt;/input&gt;').val(this.data));
+    }</pre>
+  
+  <p>
+    And finally, add a "saveChanges" function which takes the same jQuery-wrapped value element
+    that you built in "buildValueForEditing", and saves the new values to this.data.
+  </p>
+  
+  <pre>
+    MyTreemaNode.prototype.saveChanges = function (valEl) {
+      this.data = valEl.find('input').val();
+    }</pre>
+  
+  <h4>Registering Subclasses</h4>
+  
+  <p>
+    Now that you have a proper subclass, register it for a type or format.
+    For this you need to decide which type, or format string you want your custom node to get used for.
+    When deciding what Node class to use, Treema checks the following equalities in this order:
+  </p>
+  
+  <ul>
+    <li>schema.format</li>
+    <li>schema.type</li>
+  </ul>
+  
+  <p>
+    If the schema includes neither, or neither is a match,
+    it uses a special 'any' node which can handle any form of JSON data.
+  </p>
+  
+  <p>
+    If, for example, you wanted to add a node for 'simple' strings,
+    you would do:
+  </p>
+  
+  <pre>
+    TreemaNode.setNodeSubclass('simple', MyTreemaNode);</pre>
+  
+  <p>
+    Now whenever an entity has the schema format set to 'simple',
+    your Treema will use this custom node.
+  </p>
+  
+  <p>
+    For more examples about how to build TreemaNode subclasses, take a look at the
+    <a href="https://github.com/sderickson/treema/blob/master/src/core.coffee">core.coffee</a> and
+    <a href="https://github.com/sderickson/treema/blob/master/src/extra.coffee">extra.coffee</a> files.
+  </p>
+  
+  <h4>Database Search Nodes</h4>
+  
+  <p>
+    Treema comes bundled with one node which implements most of the logic for searching and choosing references
+    to other entities in your database: DatabaseSearchTreemaNode.
+    This is in the global namespace, so just subclass it like so:
+  </p>
+  
+  <pre>
+    MyTreemaNode = function () {
+      this['super']('constructor').apply(this, arguments);
+    };
+    DatabaseSearchTreemaNode.extend(MyTreemaNode);</pre>
+  
+  <p>
+    And override the "url" property:
+  </p>
+  
+  <pre>
+    MyTreemaNode.prototype.url = '/db/things/search'</pre>
+  
+  <p>
+    And the "formatDocument" function,
+    which takes a single entity and returns a string representation of that entity.
+  </p>
+
+  <pre>
+    MyTreemaNode.prototype.formatDocument = function (doc) {
+      return doc.name;
+    }</pre>
+  
+  <p>
+    Then all you have to do is implement the handler for that url.
+    It searches the system using the GET parameter 'term',
+    which is what the user types into the search field.
+    That handler returns a JSON array of results.
+  </p>
+  
+  <p>
+    Check out the
+    <a href="demo.html#dbsearch">demo</a>
+    to see how it works in action.
+  </p>
+  
+  <h4>Tips and Tricks</h4>
+  
+  <ul>
+    <li>
+      At this point all functions and properties in TreemaNode are fair game for changing,
+      but the above five are the least likely to change.
+      If you're experimenting with making custom nodes,
+      be aware that new versions of Treema may deprecate things without warning.
+    </li>
+    <li>
+      If you're using Coffeescript, you can use "extends TreemaNode" for making subclasses more easily.
+    </li>
+    <li>
+      Schemas are good places to put special values which your custom nodes may use,
+      even properties which are not included in the
+      <a href="http://json-schema.org/documentation.html">JSON-Schema specs</a>.
+      You're allowed to add whatever properties you wish to schemas,
+      so feel free to use that flexibility to add your own properties.
+      For example, the AceNode looks for the 'aceTheme' and 'aceMode' properties in a schema
+      object for determining Ace settings.
+    </li>
+  </ul>
+  
+  <footer><div></div><div></div></footer>
+</div>
+
+</div>
+</body>
+</html>
