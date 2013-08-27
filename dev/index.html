@@ -3,7 +3,10 @@
   <head>
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    
+
+    <script src="js/vendor/jquery-1.8.1.js"></script>
+    <script src="js/vendor/bootstrap.min.js"></script>
+
     <link rel="stylesheet" href="css/vendor/bootstrap.min.css" media="screen">
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/index.css">
@@ -91,17 +94,41 @@
     <div id="tree-interfaces" class="row">
       <div class="col-md-4">
         <h5>Starcraft II Galaxy Editor</h5>
-        <a href="images/galaxy.png"><img src="images/galaxy.png" id="galaxy" /></a>
+        <img src="images/galaxy.png" id="galaxy" />
       </div>
       <div class="col-md-4">
         <h5>Max OS X Finder</h5>
-        <a href="images/finder.png"><img src="images/finder.png" id="finder" /></a>
+        <img src="images/finder.png" id="finder" />
       </div>
       <div class="col-md-4">
         <h5>Chrome Dev Tools (Elements)</h5>
-        <a href="images/chrome.png"><img src="images/chrome.png" class="img-thumbnail" id="chrome" /></a>
+        <img src="images/chrome.png" class="img-thumbnail" id="chrome" />
       </div>
     </div>
+
+    <div class="modal fade" id="image-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-body">
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <script>
+      var showImage = function (name) {
+        var modal = $('#image-modal');
+        var fullImage = $('<img></img>').attr('src', '/images/'+name+'.png');
+        modal.find('.modal-body').empty().append(fullImage);
+        modal.modal();
+      };
+      
+      $('#tree-interfaces').find('img').click(function(e) {
+        var name = $(e.target).attr('id');
+        console.log('click', name);
+        showImage(name);
+      });
+    </script>
     
     <p>
       That's the stuff right there.
