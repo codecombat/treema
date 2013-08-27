@@ -11,12 +11,17 @@ body {
 }
 
 h1 {
-  padding: 30px 10px;
+  border-radius: 3px;
+  padding: 15px 10px;
   background: #0b97c4;
+  
   color: white;
   text-shadow: 1px 1px 1px black;
-  margin-bottom: 40px;
+  margin-bottom: 0px;
 }
+
+.nav { padding: 0 5px; margin-top: 5px; }
+#github-link { float: right; }
 
 h3 {
   margin-top: 40px;

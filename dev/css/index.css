@@ -1,9 +1,9 @@
-#downloads, #links { text-align: center; }
-#downloads a, #links a { margin: 0 10px; }
+#downloads a { margin-right: 10px; }
 #downloads { margin-bottom: 20px; }
+.lead a { font-weight: bold; }
 
 #tree-interfaces { margin: 30px 0; }
-#tree-interfaces img { width: 100%; }
+#tree-interfaces img { width: 100%; cursor: pointer; }
 #tree-interfaces h5 { text-align: center; }
 
 #galaxy { position: relative; top: 10px; }
