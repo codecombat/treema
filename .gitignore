@@ -1,7 +1,4 @@
-.idea
-/node_modules
-treema.css
+.idea/
+node_modules/
 treema.css.map
-treema.js
 treema.js.map
-/src
