@@ -1,10 +1,4 @@
 .idea/
 node_modules/
-dev/css/treema.css
-dev/css/treema.css.map
-dev/js/treema.js
-dev/js/treema.js.map
-dev/js/treema.spec.js
-dev/js/treema.spec.js.map
 treema.css.map
 treema.js.map
