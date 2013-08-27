@@ -51,6 +51,8 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.justAdded = false;
 
+  TreemaNode.prototype.removed = false;
+
   TreemaNode.prototype.isValid = function() {
     if (!this.tv4) {
       return true;
@@ -155,6 +157,7 @@ TreemaNode = (function() {
   TreemaNode.prototype.onEditInputBlur = function() {
     var input, shouldRemove;
     shouldRemove = this.shouldTryToRemoveFromParent();
+    this.markAsChanged();
     this.saveChanges(this.getValEl());
     input = this.getValEl().find('input, textarea, select');
     if (this.isValid()) {
@@ -165,8 +168,11 @@ TreemaNode = (function() {
       input.focus().select();
     }
     if (shouldRemove) {
-      return this.remove();
+      this.remove();
+    } else {
+      this.flushChanges();
     }
+    return this.broadcastChanges();
   };
 
   TreemaNode.prototype.shouldTryToRemoveFromParent = function() {
@@ -209,7 +215,9 @@ TreemaNode = (function() {
     return this.saveChanges = function(valEl) {
       var index;
       index = valEl.find('select').prop('selectedIndex');
-      return _this.data = _this["enum"][index];
+      _this.data = _this["enum"][index];
+      TreemaNode.changedTreemas.push(_this);
+      return _this.broadcastChanges();
     };
   };
 
@@ -224,16 +232,20 @@ TreemaNode = (function() {
     this.$el = $el;
     this.parent = parent;
     this.orderDataFromUI = __bind(this.orderDataFromUI, this);
+    this.onMouseLeave = __bind(this.onMouseLeave, this);
+    this.onMouseEnter = __bind(this.onMouseEnter, this);
     this.onEditInputBlur = __bind(this.onEditInputBlur, this);
     this.$el = this.$el || $('<div></div>');
     this.settings = $.extend({}, defaults, options);
     this.schema = this.settings.schema;
     this.data = options.data;
+    this.patches = [];
     this.callbacks = this.settings.callbacks;
     this._defaults = defaults;
     this._name = TreemaNode.pluginName;
     this.setUpValidator();
     this.populateData();
+    this.previousState = this.copyData();
   }
 
   TreemaNode.prototype.build = function() {
@@ -262,7 +274,10 @@ TreemaNode = (function() {
       this.open();
     }
     if (!this.parent) {
-      this.setUpEvents();
+      this.setUpGlobalEvents();
+    }
+    if (this.parent) {
+      this.setUpLocalEvents();
     }
     if (this.collection) {
       this.updateMyAddButton();
@@ -277,7 +292,7 @@ TreemaNode = (function() {
     return this.data = this.data || this.schema["default"] || this.getDefaultValue();
   };
 
-  TreemaNode.prototype.setUpEvents = function() {
+  TreemaNode.prototype.setUpGlobalEvents = function() {
     var _this = this;
     this.$el.dblclick(function(e) {
       var _ref;
@@ -285,12 +300,67 @@ TreemaNode = (function() {
     });
     this.$el.click(function(e) {
       var _ref;
-      return (_ref = $(e.target).closest('.treema-node').data('instance')) != null ? _ref.onClick(e) : void 0;
+      if ((_ref = $(e.target).closest('.treema-node').data('instance')) != null) {
+        _ref.onClick(e);
+      }
+      return _this.broadcastChanges(e);
     });
     return this.$el.keydown(function(e) {
       var _ref;
-      return (_ref = $(e.target).closest('.treema-node').data('instance')) != null ? _ref.onKeyDown(e) : void 0;
+      if ((_ref = $(e.target).closest('.treema-node').data('instance')) != null) {
+        _ref.onKeyDown(e);
+      }
+      return _this.broadcastChanges(e);
     });
+  };
+
+  TreemaNode.prototype.broadcastChanges = function(e) {
+    var changes, t, _base;
+    if (this.callbacks.select && TreemaNode.didSelect) {
+      TreemaNode.didSelect = false;
+      this.callbacks.select(e, this.getSelectedTreemas());
+    }
+    if (TreemaNode.changedTreemas.length) {
+      changes = (function() {
+        var _i, _len, _ref, _results;
+        _ref = TreemaNode.changedTreemas;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          t = _ref[_i];
+          if (!t.removed) {
+            _results.push(t);
+          }
+        }
+        return _results;
+      })();
+      if (typeof (_base = this.callbacks).change === "function") {
+        _base.change(e, jQuery.unique(changes));
+      }
+      return TreemaNode.changedTreemas = [];
+    }
+  };
+
+  TreemaNode.prototype.markAsChanged = function() {
+    return TreemaNode.changedTreemas.push(this);
+  };
+
+  TreemaNode.prototype.setUpLocalEvents = function() {
+    var row;
+    row = this.$el.find('> .treema-row');
+    if (this.callbacks.mouseenter != null) {
+      row.mouseenter(this.onMouseEnter);
+    }
+    if (this.callbacks.mouseleave != null) {
+      return row.mouseleave(this.onMouseLeave);
+    }
+  };
+
+  TreemaNode.prototype.onMouseEnter = function(e) {
+    return this.callbacks.mouseenter(e, this);
+  };
+
+  TreemaNode.prototype.onMouseLeave = function(e) {
+    return this.callbacks.mouseleave(e, this);
   };
 
   TreemaNode.prototype.onClick = function(e) {
@@ -518,6 +588,7 @@ TreemaNode = (function() {
       this.saveChanges(this.getValEl());
       this.flushChanges();
       if (!(aggressive || this.isValid())) {
+        this.parent.refreshErrors();
         return;
       }
       if (shouldRemove && ((_ref = $(this.$el[0].nextSibling)) != null ? _ref.hasClass('treema-add-child') : void 0) && offset === 1) {
@@ -545,6 +616,8 @@ TreemaNode = (function() {
     this.selectOrActivateElement(targetEl);
     if (shouldRemove) {
       return this.remove();
+    } else {
+      return this.refreshErrors();
     }
   };
 
@@ -717,13 +790,15 @@ TreemaNode = (function() {
       elem = editing[_i];
       treema = $(elem).data('instance');
       treema.saveChanges(treema.getValEl());
-      _results.push(treema.display());
+      treema.display();
+      _results.push(this.markAsChanged());
     }
     return _results;
   };
 
   TreemaNode.prototype.flushChanges = function() {
     this.justAdded = false;
+    this.markAsChanged();
     if (!this.parent) {
       return this.refreshErrors();
     }
@@ -767,6 +842,7 @@ TreemaNode = (function() {
     }
     root = this.getRootEl();
     this.$el.remove();
+    this.removed = true;
     if (document.activeElement === $('body')[0]) {
       root.focus();
     }
@@ -780,6 +856,9 @@ TreemaNode = (function() {
     }
     this.parent.refreshErrors();
     this.parent.updateMyAddButton();
+    this.parent.markAsChanged();
+    this.parent.buildValueForDisplay(this.parent.getValEl().empty());
+    this.broadcastChanges();
     return true;
   };
 
@@ -858,7 +937,8 @@ TreemaNode = (function() {
     excludeSelf = numSelected === 1;
     this.deselectAll(excludeSelf);
     this.toggleSelect();
-    return this.keepFocus();
+    this.keepFocus();
+    return TreemaNode.didSelect = true;
   };
 
   TreemaNode.prototype.deselectAll = function(excludeSelf) {
@@ -874,7 +954,8 @@ TreemaNode = (function() {
       }
       treema.$el.removeClass('treema-selected');
     }
-    return this.clearLastSelected();
+    this.clearLastSelected();
+    return TreemaNode.didSelect = true;
   };
 
   TreemaNode.prototype.toggleSelect = function() {
@@ -883,8 +964,9 @@ TreemaNode = (function() {
       this.$el.toggleClass('treema-selected');
     }
     if (this.isSelected()) {
-      return this.$el.addClass('treema-last-selected');
+      this.$el.addClass('treema-last-selected');
     }
+    return TreemaNode.didSelect = true;
   };
 
   TreemaNode.prototype.clearLastSelected = function() {
@@ -920,7 +1002,8 @@ TreemaNode = (function() {
     this.$el.addClass('treema-selected');
     lastSelected.addClass('treema-selected');
     lastSelected.removeClass('treema-last-selected');
-    return this.$el.addClass('treema-last-selected');
+    this.$el.addClass('treema-last-selected');
+    return TreemaNode.didSelect = true;
   };
 
   TreemaNode.prototype.addChildTreema = function(key, value, schema) {
@@ -1120,6 +1203,18 @@ TreemaNode = (function() {
     return this.getRootEl().find('.treema-node, .treema-add-child:visible').toArray();
   };
 
+  TreemaNode.prototype.getPath = function() {
+    var pathPieces, pointer;
+    pathPieces = [];
+    pointer = this;
+    while (pointer && (pointer.keyForParent != null)) {
+      pathPieces.push(pointer.keyForParent + '');
+      pointer = pointer.parent;
+    }
+    pathPieces.reverse();
+    return '/' + pathPieces.join('/');
+  };
+
   TreemaNode.prototype.isRoot = function() {
     return this.$el.hasClass('treema-root');
   };
@@ -1158,6 +1253,12 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.keepFocus = function() {
     return this.getRootEl().focus();
+  };
+
+  TreemaNode.prototype.copyData = function() {
+    return $.extend(null, {}, {
+      'd': this.data
+    })['d'];
   };
 
   TreemaNode.prototype.updateMyAddButton = function() {
@@ -1209,6 +1310,10 @@ TreemaNode = (function() {
     };
     return child;
   };
+
+  TreemaNode.didSelect = false;
+
+  TreemaNode.changedTreemas = [];
 
   return TreemaNode;
 

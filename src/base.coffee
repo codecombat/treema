@@ -31,6 +31,7 @@ class TreemaNode
   keyForParent: null
   childrenTreemas: null
   justAdded: false
+  removed: false
 
   # Thin interface for tv4 ----------------------------------------------------
   isValid: ->
@@ -83,10 +84,12 @@ class TreemaNode
 
   onEditInputBlur: =>
     shouldRemove = @shouldTryToRemoveFromParent()
+    @markAsChanged()
     @saveChanges(@getValEl())
     input = @getValEl().find('input, textarea, select')
     if @isValid() then @display() if @isEditing() else input.focus().select()
-    @remove() if shouldRemove
+    if shouldRemove then @remove() else @flushChanges()
+    @broadcastChanges()
     
   shouldTryToRemoveFromParent: ->
     val = @getValEl()
@@ -112,6 +115,8 @@ class TreemaNode
     @saveChanges = (valEl) =>
       index = valEl.find('select').prop('selectedIndex')
       @data = @enum[index]
+      TreemaNode.changedTreemas.push(@)
+      @broadcastChanges()
 
   # Initialization ------------------------------------------------------------
   @pluginName = "treema"
@@ -124,11 +129,13 @@ class TreemaNode
     @settings = $.extend {}, defaults, options
     @schema = @settings.schema
     @data = options.data
+    @patches = []
     @callbacks = @settings.callbacks
     @_defaults = defaults
     @_name = TreemaNode.pluginName
     @setUpValidator()
     @populateData()
+    @previousState = @copyData()
 
   build: ->
     @$el.addClass('treema-node').addClass('treema-clearfix')
@@ -142,7 +149,8 @@ class TreemaNode
     valEl.addClass('treema-display') if @directlyEditable
     @buildValueForDisplay(valEl)
     @open() if @collection and not @parent
-    @setUpEvents() unless @parent
+    @setUpGlobalEvents() unless @parent
+    @setUpLocalEvents() if @parent
     @updateMyAddButton() if @collection
     @limitChoices(@schema.enum) if @schema.enum
     @$el
@@ -151,11 +159,37 @@ class TreemaNode
     @data = @data or @schema.default or @getDefaultValue()
 
   # Event handling ------------------------------------------------------------
-  setUpEvents: ->
+  setUpGlobalEvents: ->
     @$el.dblclick (e) => $(e.target).closest('.treema-node').data('instance')?.onDoubleClick(e)
-    @$el.click (e) => $(e.target).closest('.treema-node').data('instance')?.onClick(e)
-    @$el.keydown (e) => $(e.target).closest('.treema-node').data('instance')?.onKeyDown(e)
+    
+    @$el.click (e) =>
+      $(e.target).closest('.treema-node').data('instance')?.onClick(e)
+      @broadcastChanges(e)
+      
+    @$el.keydown (e) =>
+      $(e.target).closest('.treema-node').data('instance')?.onKeyDown(e)
+      @broadcastChanges(e)
 
+  broadcastChanges: (e) ->
+    if @callbacks.select and TreemaNode.didSelect
+      TreemaNode.didSelect = false
+      @callbacks.select(e, @getSelectedTreemas())
+    if TreemaNode.changedTreemas.length
+      changes = (t for t in TreemaNode.changedTreemas when not t.removed)
+      @callbacks.change?(e, jQuery.unique(changes))
+      TreemaNode.changedTreemas = []
+      
+  markAsChanged: ->
+    TreemaNode.changedTreemas.push(@)
+
+  setUpLocalEvents: ->
+    row = @$el.find('> .treema-row')
+    row.mouseenter @onMouseEnter if @callbacks.mouseenter?
+    row.mouseleave @onMouseLeave if @callbacks.mouseleave?
+
+  onMouseEnter: (e) => @callbacks.mouseenter(e, @)
+  onMouseLeave: (e) => @callbacks.mouseleave(e, @)
+    
   onClick: (e) ->
     return if e.target.nodeName in ['INPUT', 'TEXTAREA']
     clickedValue = $(e.target).closest('.treema-value').length  # Clicks are in children of .treema-value nodes
@@ -280,7 +314,9 @@ class TreemaNode
       shouldRemove = @shouldTryToRemoveFromParent()
       @saveChanges(@getValEl())
       @flushChanges()
-      return unless aggressive or @isValid()
+      unless aggressive or @isValid()
+        @parent.refreshErrors()
+        return
       if shouldRemove and $(@$el[0].nextSibling)?.hasClass('treema-add-child') and offset is 1
         offset = 2
       @endExistingEdits()
@@ -300,7 +336,7 @@ class TreemaNode
     if not targetEl
       targetEl = if offset > 0 then ctx.first else ctx.last
     @selectOrActivateElement(targetEl)
-    @remove() if shouldRemove
+    if shouldRemove then @remove() else @refreshErrors()
 
   selectOrActivateElement: (el) ->
     el = $(el)
@@ -358,15 +394,35 @@ class TreemaNode
       originIndex = list.indexOf(origin)
       c.next = list[originIndex+offset]
       c.prev = list[originIndex-offset]
-    return c 
+    return c
+    
+  # Undo/redo -----------------------------------------------------------------
 
+  # TODO: implement undo/redo, including saving and restoring which nodes are open
+  
+#  patches: []
+#  patchIndex: 0
+#  previousState: null
+#
+#  saveState: ->
+#    @patches = @patches.slice(@patchIndex)
+#    @patchIndex = 0
+#    @patches.splice(0, 0, jsondiffpatch.diff(@previousState, @data))
+#    @previousState = @copyData()
+#    @patches = @patches[..10]
+#  
+#  undo: ->
+#    return unless @patches[@patchIndex]
+#    jsondiffpatch.unpatch(@previousState, @patches[@patchIndex])
+    
+
+  # Editing values ------------------------------------------------------------
   canEdit: ->
     return false if not @editable
     return false if not @directlyEditable
     return false if @collection and @isOpen()
     return true
 
-  # Editing values ------------------------------------------------------------
   display: ->
     @toggleEdit('treema-display')
 
@@ -395,9 +451,11 @@ class TreemaNode
       treema = $(elem).data('instance')
       treema.saveChanges(treema.getValEl())
       treema.display()
+      @markAsChanged()
       
   flushChanges: ->
     @justAdded = false
+    @markAsChanged()
     return @refreshErrors() unless @parent
     @parent.data[@keyForParent] = @data
     @parent.refreshErrors()
@@ -428,6 +486,7 @@ class TreemaNode
 
     root = @getRootEl()
     @$el.remove()
+    @removed = true
     root.focus() if document.activeElement is $('body')[0]
     return true unless @parent?
     delete @parent.childrenTreemas[@keyForParent]
@@ -435,6 +494,9 @@ class TreemaNode
     @parent.orderDataFromUI() if @parent.ordered
     @parent.refreshErrors()
     @parent.updateMyAddButton()
+    @parent.markAsChanged()
+    @parent.buildValueForDisplay(@parent.getValEl().empty())
+    @broadcastChanges()
     return true
 
   # Opening/closing collections -----------------------------------------------
@@ -486,17 +548,20 @@ class TreemaNode
     @deselectAll(excludeSelf)
     @toggleSelect()
     @keepFocus()
-
+    TreemaNode.didSelect = true
+    
   deselectAll: (excludeSelf=false) ->
     for treema in @getSelectedTreemas()
       continue if excludeSelf and treema is @
       treema.$el.removeClass('treema-selected')
     @clearLastSelected()
+    TreemaNode.didSelect = true
 
   toggleSelect: ->
     @clearLastSelected()
     @$el.toggleClass('treema-selected') unless @isRoot()
     @$el.addClass('treema-last-selected') if @isSelected()
+    TreemaNode.didSelect = true
     
   clearLastSelected: ->
     @getRootEl().find('.treema-last-selected').removeClass('treema-last-selected')
@@ -519,6 +584,7 @@ class TreemaNode
     lastSelected.addClass('treema-selected')
     lastSelected.removeClass('treema-last-selected')
     @$el.addClass('treema-last-selected')
+    TreemaNode.didSelect = true
 
   # Child node utilities ------------------------------------------------------
   addChildTreema: (key, value, schema) ->
@@ -605,7 +671,15 @@ class TreemaNode
   getVisibleTreemas: -> ($(el).data('instance') for el in @getRootEl().find('.treema-node'))
   getNavigableElements: ->
     @getRootEl().find('.treema-node, .treema-add-child:visible').toArray()
-
+  getPath: ->
+    pathPieces = []
+    pointer = @
+    while pointer and pointer.keyForParent?
+      pathPieces.push(pointer.keyForParent+'')
+      pointer = pointer.parent
+    pathPieces.reverse()
+    return '/' + pathPieces.join('/')
+    
   isRoot: -> @$el.hasClass('treema-root')
   isEditing: -> @getValEl().hasClass('treema-edit')
   isDisplaying: -> @getValEl().hasClass('treema-display')
@@ -617,6 +691,7 @@ class TreemaNode
   rootSelected: -> $(document.activeElement).hasClass('treema-root')
 
   keepFocus: -> @getRootEl().focus()
+  copyData: -> $.extend(null, {}, {'d': @data})['d']
   updateMyAddButton: ->
     @$el.removeClass('treema-full')
     @$el.addClass('treema-full') unless @canAddChild()
@@ -649,3 +724,5 @@ class TreemaNode
     child::super = (method) -> @constructor.__super__[method]
     child
 
+  @didSelect = false
+  @changedTreemas = []

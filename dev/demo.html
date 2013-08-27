@@ -364,8 +364,89 @@
     treema = buildTreemaExample($('#lookup'), lookup_schema, lookup);
     treema.childrenTreemas.restaurants.open()
   </script>
+  
+  <h3>Keyboard Shortcuts Galor</h3>
+  
+  <p>
+    If you are a fan of navigating around your screen with your keyboard rather than
+    clicking with your mouse, then Treema has you covered.
+    It's set up to handle these, mainly:
+  </p>
+  
+  <ul>
+    <li>
+      <strong>Arrow keys</strong>: For navigating selection, opening and closing collections.
+    </li><li>
+      <strong>Enter and tab</strong>: For adding and editing values and navigating between inputs.
+      Use shift to go upward.
+      They have slightly different behaviors.
+      Generally speaking, enter is more 'aggressive' with what it does.
+    </li><li>
+      <strong>Escape</strong>: To undo changes.
+    </li><li>
+      <strong>Delete</strong>: To remove a field when it's empty.
+    </li>
+    <li><strong>Shift and Ctrl-Click</strong>: For selecting multiple rows.</li>
+  </ul>
+  
+  <h3>Schema-Defined, Interface Enforced Constraints</h3>
+  
+  <p>
+    Whenever possible, the interface reflects the limits the schema imposes on the data, including:
+  </p>
+  
+  <ul>
+    <li>
+      Preventing adding more elements to arrays and objects when the maximum number
+      has been reached, or there are no more properties available to add.
+    </li>
+    <li>
+      Using HTML input types and attributes to enforce rules such as 
+      length and value minimums and maximums.
+    </li>
+    <li>
+      When there are errors, showing exactly what row or closed collection has issues.
+    </li>
+  </ul>
 
+  <div id="contactsB"></div>
 
+  <script>
+    var contactsB = [
+      { 'street-address': '10 Downing Street', 'country-name': 'UK', 'locality': 'London', 'name': 'Prime Minister' },
+      { 'phone-number': '(650) 253-0000', 'name': 'Google'},
+      { 'street-address': '45 Rockefeller Plaza', 'region': 'NY', 'locality': 'New York', 'name': 'Rockefeller Center'},
+    ]
+
+    var contact_book_schemaB = {
+      type: 'array',
+      items: {
+        "additionalProperties": false,
+        "type": "object",
+        "displayProperty": 'name',
+        "properties": {
+          "name": { type: "string", maxLength: 20, title: "Name" },
+          "street-address": { title: "Address 1", description: "Don't forget the number.", type: "string", minLength: 4 },
+          "locality":{ "type": "string", title: "Locality" },
+          "region": { 'title': 'Region', type: 'string' },
+          "country-name": { "type": "string", title: "Country" },
+          "friend": { "type": "boolean", title: "Friend" },
+          "phone-number": { type: "string", maxLength: 20, minLength:4, title: 'Phone Number' }
+        },
+        required: ['street-address', 'name']
+      }
+    };
+    treema = buildTreemaExample($('#contactsB'), contact_book_schemaB, contactsB);
+  </script>
+
+  <h3>Conclusions</h3>
+  
+  <p>
+    That's about it, really.
+    This is simply a super-flexible system for viewing and editing complicated but well defined data.
+    Hope you'll try it out, and join in the project to make it even better!
+  </p>
+  
 </div>
 
 </body>
