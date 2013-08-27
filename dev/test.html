@@ -1,0 +1,53 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<title>Jasmine Spec Runner</title>
+	<link rel="stylesheet" type="text/css" href="css/vendor/jasmine.css">
+
+	<script src="js/vendor/jasmine.js"></script>
+	<script src="js/vendor/jasmine-html.js"></script>
+  <script src="js/vendor/jquery-1.8.1.js"></script>
+  <script src="js/vendor/jquery-ui-1.10.3.custom.js"></script>
+  <script src="js/vendor/tv4.js"></script>
+  <script src="js/vendor/ace.js"></script>
+  <script src="js/vendor/bootstrap.min.js"></script>
+
+  <script src="js/treema.js"></script>
+	<script src="js/treema.spec.js"></script>
+
+</head>
+
+<body>
+  <div id="testing-lab"></div>
+
+	<script type="text/javascript">
+    (function() {
+      var jasmineEnv = jasmine.getEnv();
+      jasmineEnv.updateInterval = 1000;
+
+      var trivialReporter = new jasmine.TrivialReporter();
+
+      jasmineEnv.addReporter(trivialReporter);
+
+      jasmineEnv.specFilter = function(spec) {
+        return trivialReporter.specFilter(spec);
+      };
+
+      var currentWindowOnload = window.onload;
+
+      window.onload = function() {
+        if (currentWindowOnload) {
+          currentWindowOnload();
+        }
+        execJasmine();
+      };
+
+      function execJasmine() {
+        jasmineEnv.execute();
+      }
+
+    })();
+  </script>
+</body>
+</html>

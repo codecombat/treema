@@ -1,0 +1,622 @@
+[
+  {
+    "id": 0,
+    "name": "A&W Restaurants"
+  },
+  {
+    "id": 1,
+    "name": "Amigos/Kings Classic"
+  },
+  {
+    "id": 2,
+    "name": "Andy's Frozen Custard"
+  },
+  {
+    "id": 3,
+    "name": "Arby's"
+  },
+  {
+    "id": 4,
+    "name": "Arctic Circle Restaurants"
+  },
+  {
+    "id": 5,
+    "name": "Arthur Treacher's"
+  },
+  {
+    "id": 6,
+    "name": "Baker's Drive-Thru"
+  },
+  {
+    "id": 7,
+    "name": "Baskin-Robbins"
+  },
+  {
+    "id": 8,
+    "name": "Bess Eaton"
+  },
+  {
+    "id": 9,
+    "name": "Big Apple Bagels"
+  },
+  {
+    "id": 10,
+    "name": "Big Boy Restaurants"
+  },
+  {
+    "id": 11,
+    "name": "Biscuitville"
+  },
+  {
+    "id": 12,
+    "name": "Blake's Lotaburger"
+  },
+  {
+    "id": 13,
+    "name": "Blimpie"
+  },
+  {
+    "id": 14,
+    "name": "Bojangles' Famous Chicken 'n Biscuits"
+  },
+  {
+    "id": 15,
+    "name": "Brooklyn Ice Cream Factory"
+  },
+  {
+    "id": 16,
+    "name": "Burger King"
+  },
+  {
+    "id": 17,
+    "name": "Braum's"
+  },
+  {
+    "id": 18,
+    "name": "Brown's Chicken & Pasta"
+  },
+  {
+    "id": 19,
+    "name": "Burger Street"
+  },
+  {
+    "id": 20,
+    "name": "Burgerville"
+  },
+  {
+    "id": 21,
+    "name": "Cafe Rio"
+  },
+  {
+    "id": 22,
+    "name": "California Tortilla"
+  },
+  {
+    "id": 23,
+    "name": "Captain D's"
+  },
+  {
+    "id": 24,
+    "name": "Carl's Jr. / Green Burrito"
+  },
+  {
+    "id": 25,
+    "name": "Checkers / Rally's"
+  },
+  {
+    "id": 26,
+    "name": "Cheeburger Cheeburger"
+  },
+  {
+    "id": 27,
+    "name": "Chick-fil-A"
+  },
+  {
+    "id": 28,
+    "name": "Chicken Express"
+  },
+  {
+    "id": 29,
+    "name": "Chico's Tacos"
+  },
+  {
+    "id": 30,
+    "name": "Chinese Gourmet Express"
+  },
+  {
+    "id": 31,
+    "name": "Church's Chicken / Texas Chicken"
+  },
+  {
+    "id": 32,
+    "name": "Cluck-U Chicken"
+  },
+  {
+    "id": 33,
+    "name": "Cook Out"
+  },
+  {
+    "id": 34,
+    "name": "Cousins Subs"
+  },
+  {
+    "id": 35,
+    "name": "Crown Burgers"
+  },
+  {
+    "id": 36,
+    "name": "Dairy Queen"
+  },
+  {
+    "id": 37,
+    "name": "Del Taco"
+  },
+  {
+    "id": 38,
+    "name": "Denny's"
+  },
+  {
+    "id": 39,
+    "name": "Dick's Drive-In"
+  },
+  {
+    "id": 40,
+    "name": "Dickey's Barbecue Pit"
+  },
+  {
+    "id": 41,
+    "name": "Dog n Suds"
+  },
+  {
+    "id": 42,
+    "name": "Duchess"
+  },
+  {
+    "id": 43,
+    "name": "Dunkin' Donuts"
+  },
+  {
+    "id": 44,
+    "name": "Einstein Bros. Bagels"
+  },
+  {
+    "id": 45,
+    "name": "El Pollo Loco"
+  },
+  {
+    "id": 46,
+    "name": "El Taco Tote"
+  },
+  {
+    "id": 47,
+    "name": "Erbert & Gerbert's"
+  },
+  {
+    "id": 48,
+    "name": "Fatburger"
+  },
+  {
+    "id": 49,
+    "name": "Firehouse Subs"
+  },
+  {
+    "id": 50,
+    "name": "Five Guys"
+  },
+  {
+    "id": 51,
+    "name": "Fosters Freeze"
+  },
+  {
+    "id": 52,
+    "name": "Freddy's Frozen Custard"
+  },
+  {
+    "id": 53,
+    "name": "Gold Star Chili"
+  },
+  {
+    "id": 54,
+    "name": "Golden Chick"
+  },
+  {
+    "id": 55,
+    "name": "Golden Spoon"
+  },
+  {
+    "id": 56,
+    "name": "Good Times Burgers & Frozen Custard"
+  },
+  {
+    "id": 57,
+    "name": "Grandy's"
+  },
+  {
+    "id": 58,
+    "name": "Gray's Papaya"
+  },
+  {
+    "id": 59,
+    "name": "Great Steak"
+  },
+  {
+    "id": 60,
+    "name": "Griff's Hamburgers"
+  },
+  {
+    "id": 61,
+    "name": "Halo Burger"
+  },
+  {
+    "id": 62,
+    "name": "Happi House"
+  },
+  {
+    "id": 63,
+    "name": "Happy Joe's"
+  },
+  {
+    "id": 64,
+    "name": "Hardee's / Red Burrito"
+  },
+  {
+    "id": 65,
+    "name": "Harold's Chicken Shack"
+  },
+  {
+    "id": 66,
+    "name": "Hogi Yogi"
+  },
+  {
+    "id": 67,
+    "name": "Honey Dew Donuts"
+  },
+  {
+    "id": 68,
+    "name": "Hot Dog on a Stick"
+  },
+  {
+    "id": 69,
+    "name": "Hot 'n Now"
+  },
+  {
+    "id": 70,
+    "name": "Huddle House"
+  },
+  {
+    "id": 71,
+    "name": "In-N-Out Burger"
+  },
+  {
+    "id": 72,
+    "name": "Ivar's"
+  },
+  {
+    "id": 73,
+    "name": "Jack in the Box"
+  },
+  {
+    "id": 74,
+    "name": "Jack's"
+  },
+  {
+    "id": 75,
+    "name": "Jersey Mike's Subs"
+  },
+  {
+    "id": 76,
+    "name": "Jimboy's Tacos"
+  },
+  {
+    "id": 77,
+    "name": "Johnny Rockets"
+  },
+  {
+    "id": 78,
+    "name": "Juan Pollo"
+  },
+  {
+    "id": 79,
+    "name": "KFC"
+  },
+  {
+    "id": 80,
+    "name": "Kopp's Frozen Custard"
+  },
+  {
+    "id": 81,
+    "name": "Krispy Kreme"
+  },
+  {
+    "id": 82,
+    "name": "Krystal"
+  },
+  {
+    "id": 83,
+    "name": "LaMar's Donuts"
+  },
+  {
+    "id": 84,
+    "name": "Larry's Giant Subs"
+  },
+  {
+    "id": 85,
+    "name": "Lenny's Sub Shop"
+  },
+  {
+    "id": 86,
+    "name": "Long John Silver's"
+  },
+  {
+    "id": 87,
+    "name": "Lyon's"
+  },
+  {
+    "id": 88,
+    "name": "Maid-Rite"
+  },
+  {
+    "id": 89,
+    "name": "Manchu Wok"
+  },
+  {
+    "id": 90,
+    "name": "McDonald's"
+  },
+  {
+    "id": 91,
+    "name": "Mighty Taco"
+  },
+  {
+    "id": 92,
+    "name": "Milio's Sandwiches"
+  },
+  {
+    "id": 93,
+    "name": "Milo's Hamburgers"
+  },
+  {
+    "id": 94,
+    "name": "Mr. Hero"
+  },
+  {
+    "id": 95,
+    "name": "Mrs. Winner's Chicken & Biscuits"
+  },
+  {
+    "id": 96,
+    "name": "Nathan's Famous"
+  },
+  {
+    "id": 97,
+    "name": "Nedick's"
+  },
+  {
+    "id": 98,
+    "name": "Nu-Way Weiners"
+  },
+  {
+    "id": 99,
+    "name": "Nu Way Cafe"
+  },
+  {
+    "id": 100,
+    "name": "Orange Julius"
+  },
+  {
+    "id": 101,
+    "name": "The Original Hamburger Stand"
+  },
+  {
+    "id": 102,
+    "name": "Original Tommy's"
+  },
+  {
+    "id": 103,
+    "name": "Pal's"
+  },
+  {
+    "id": 104,
+    "name": "Pioneer Chicken"
+  },
+  {
+    "id": 105,
+    "name": "Pizza Hut"
+  },
+  {
+    "id": 106,
+    "name": "Popeyes Chicken & Biscuits"
+  },
+  {
+    "id": 107,
+    "name": "Portillo's Restaurants"
+  },
+  {
+    "id": 108,
+    "name": "Port of Subs"
+  },
+  {
+    "id": 109,
+    "name": "Quiznos"
+  },
+  {
+    "id": 110,
+    "name": "Raising Cane's Chicken Fingers"
+  },
+  {
+    "id": 111,
+    "name": "Ranch1"
+  },
+  {
+    "id": 112,
+    "name": "Roy Rogers Restaurants"
+  },
+  {
+    "id": 113,
+    "name": "Runza"
+  },
+  {
+    "id": 114,
+    "name": "Saladworks"
+  },
+  {
+    "id": 115,
+    "name": "Schlotzsky's"
+  },
+  {
+    "id": 116,
+    "name": "Sheetz"
+  },
+  {
+    "id": 117,
+    "name": "Showmars"
+  },
+  {
+    "id": 118,
+    "name": "Skippers Seafood & Chowder House"
+  },
+  {
+    "id": 119,
+    "name": "Smoothie King"
+  },
+  {
+    "id": 120,
+    "name": "Sneaky Pete's"
+  },
+  {
+    "id": 121,
+    "name": "Sonic Drive-In"
+  },
+  {
+    "id": 122,
+    "name": "Spangles"
+  },
+  {
+    "id": 123,
+    "name": "Steak Escape"
+  },
+  {
+    "id": 124,
+    "name": "Submarina"
+  },
+  {
+    "id": 125,
+    "name": "Subway"
+  },
+  {
+    "id": 126,
+    "name": "Taco Bell"
+  },
+  {
+    "id": 127,
+    "name": "Taco Bueno"
+  },
+  {
+    "id": 128,
+    "name": "Taco Cabana"
+  },
+  {
+    "id": 129,
+    "name": "Taco del Mar"
+  },
+  {
+    "id": 130,
+    "name": "Taco John's"
+  },
+  {
+    "id": 131,
+    "name": "Taco Mayo"
+  },
+  {
+    "id": 132,
+    "name": "Taco Tico"
+  },
+  {
+    "id": 133,
+    "name": "Taco Time"
+  },
+  {
+    "id": 134,
+    "name": "Ted's Hot Dogs"
+  },
+  {
+    "id": 135,
+    "name": "Texadelphia"
+  },
+  {
+    "id": 136,
+    "name": "TGIF (Thank God It's Friday)"
+  },
+  {
+    "id": 137,
+    "name": "The Hat"
+  },
+  {
+    "id": 138,
+    "name": "The Whole Donut"
+  },
+  {
+    "id": 139,
+    "name": "Togo's"
+  },
+  {
+    "id": 140,
+    "name": "Tudor's Biscuit World"
+  },
+  {
+    "id": 141,
+    "name": "The Varsity"
+  },
+  {
+    "id": 142,
+    "name": "Wendy's"
+  },
+  {
+    "id": 143,
+    "name": "Wetzel's Pretzels"
+  },
+  {
+    "id": 144,
+    "name": "Whataburger"
+  },
+  {
+    "id": 145,
+    "name": "White Castle"
+  },
+  {
+    "id": 146,
+    "name": "Wienerschnitzel"
+  },
+  {
+    "id": 147,
+    "name": "Winchell's Donuts"
+  },
+  {
+    "id": 148,
+    "name": "Wingstop"
+  },
+  {
+    "id": 149,
+    "name": "WingStreet"
+  },
+  {
+    "id": 150,
+    "name": "Winstead's"
+  },
+  {
+    "id": 151,
+    "name": "Wing Zone"
+  },
+  {
+    "id": 152,
+    "name": "Woody's Chicago Style"
+  },
+  {
+    "id": 153,
+    "name": "Yum-Yum Donuts"
+  },
+  {
+    "id": 154,
+    "name": "Zaxby's"
+  }
+]

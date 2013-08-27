@@ -1,0 +1,15 @@
+Describe "N" key press behavior
+  it creates a new row for the currently selected collection
+  it does nothing if the current collection cannot add more
+  
+Describe Escape key press
+  it ends edits for the currently editing value, not saving changes
+  
+Describe Any node
+  it creates an array if the only non-whitespace character is "["
+  it creates an object if the only non-whitespace character is "{"
+  it creates a string if the first character is \' or ", not including that first character
+  it tries to parse the string as JSON and uses that value if it succeeds
+  it can be edited by clicking the closed value, even if it\'s an array or object
+  it can be edited like an array node
+  
