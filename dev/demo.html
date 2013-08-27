@@ -10,59 +10,66 @@
   <link rel="stylesheet" href="css/vendor/jquery-ui-1.10.3.custom.css">
   <link rel="stylesheet" href="css/vendor/bootstrap.min.css" media="screen">
   <link rel="stylesheet" href="css/treema.css">
+  <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/demo.css">
+  
+  <script>
+    var demosMade = 0;
+
+    function buildTreemaExample (el, schema, data) {
+      el.addClass('treema-wrapper');
+      var nav = $('<ul class="nav nav-tabs"></ul>');
+      var treemaLink = $('<a>Treema</a>').attr('href', '#treema-'+demosMade);
+      var dataLink = $('<a>Data</a>').attr('href', '#data-'+demosMade).addClass('is-data');
+      var schemaLink = $('<a>Schema</a>').attr('href', '#schema-'+demosMade);
+      var errorsLink = $('<a>Errors</a>').attr('href', '#errors-'+demosMade).addClass('is-errors');
+      nav.append($('<li></li>').addClass('active').append(treemaLink));
+      nav.append($('<li></li>').append(dataLink));
+      nav.append($('<li></li>').append(schemaLink));
+      nav.append($('<li></li>').append(errorsLink));
+
+      var content = $('<div></div>').addClass('tab-content');
+      var treemaTab = $('<div></div>').addClass('tab-pane').addClass('active').attr('id', 'treema-'+demosMade);
+      content.append(treemaTab);
+      var dataTab = $('<pre></pre>').addClass('tab-pane').attr('id', 'data-'+demosMade);
+      content.append(dataTab);
+      var schemaTab = $('<pre></pre>').addClass('tab-pane').attr('id', 'schema-'+demosMade);
+      schemaTab.text(JSON.stringify(schema, null, 2));
+      content.append(schemaTab);
+      var errorsTab = $('<pre></pre>').addClass('tab-pane').attr('id', 'errors-'+demosMade);
+      content.append(errorsTab);
+
+      var treema = treemaTab.treema({schema: schema, data: data});
+      treema.build();
+      el.append(nav).append(content);
+
+      el.find('.nav a').click(function (e) {
+        e.preventDefault();
+        if ($(this).hasClass('is-data')) {
+          dataTab.text(JSON.stringify(treema.data, null, 2));
+        }
+        if ($(this).hasClass('is-errors')) {
+          errorsTab.text(JSON.stringify(treema.getErrors(), null, 2));
+        }
+        $(this).tab('show');
+      });
+      demosMade += 1;
+      return treema;
+    }
+  </script>
 
 </head>
 <body>
 
 <div id="content">
   
-  <h1>Treema</h1>
+  <h1>Treema Demos</h1>
   
-  <p>
-    Treema is a 
-    <a href="http://jquery.com/">jQuery</a>
-    plugin that builds interfaces for editing complex, well-defined 
-    <a href="http://www.w3resource.com/JSON/JSON-Schema.php">JSON</a>
-    data.
-    It builds on
-    <a href="https://github.com/geraintluff/tv4">tv4</a>,
-    which implements
-    <a href="http://json-schema.org/">JSON-Schema</a>
-    validation.
-  </p>
+  <div class="nav">
+    <a href="/index.html">Go back</a>
+  </div>
   
-  <h3>Who should use this?</h3>
-  
-  <p>
-    You're rocking Node.js, MongoDB, Redis, ShareJS, CreateJS, and fifty other sweet 
-    open-source projects in your stack
-    (they all look so good!) working with one common data format: <strong>JSON</strong>.
-  </p>
-  <p>
-    You're throwing around JSON objects which have nested arrays nesting yet more objects 
-    whose 'name' properties can't be more than 20 characters long or start with a number.
-    Not to mention all the references to yet more objects with a structure all their own.
-  </p>
-  <p>
-    You and your users need to be able to <strong>edit these monstrosities</strong>.
-  </p>
-  <p>
-    You <em>could</em> build tons of HTML forms views or separate pages for each nesting and intricate systems
-    to make sure the data is constructed just so,
-    but with documents this big and complex, this will get... <em>unwieldy</em>.
-  </p>
-  <p>
-    What to do?
-  </p>
-  
-  <hr />
-  
-  <h4>Define your data structures with JSON-Schema and edit it with Treema</h4>
-
-  <hr />
-  
-  <h3>What's it look like?</h3>
+  <h3>Basics: A Contact Book</h3>
   
   <div id="addresses"></div>
   
@@ -71,7 +78,7 @@
       { 'street-address': '10 Downing Street', 'country-name': 'UK', 'locality': 'London', 'name': 'Prime Minister' },
       { 'street-address': '1600 Amphitheatre Pkwy', 'phone-number': '(650) 253-0000', 'name': 'Google'},
       { 'street-address': '45 Rockefeller Plaza', 'region': 'NY', 'locality': 'New York', 'name': 'Rockefeller Center'},
-    ]
+    ];
     
     var contact_book_schema = {
       type: 'array',
@@ -90,90 +97,27 @@
         }
       }
     };
-    
-    var demosMade = 0;
-    
-    function buildTreemaExample (el, schema, data) {
-      el.addClass('treema-wrapper');
-      var nav = $('<ul class="nav nav-tabs"></ul>');
-      var treemaLink = $('<a>Treema</a>').attr('href', '#treema-'+demosMade);
-      var dataLink = $('<a>Data</a>').attr('href', '#data-'+demosMade).addClass('is-data');
-      var schemaLink = $('<a>Schema</a>').attr('href', '#schema-'+demosMade);
-      var errorsLink = $('<a>Errors</a>').attr('href', '#errors-'+demosMade).addClass('is-errors');
-      nav.append($('<li></li>').addClass('active').append(treemaLink));
-      nav.append($('<li></li>').append(dataLink));
-      nav.append($('<li></li>').append(schemaLink));
-      nav.append($('<li></li>').append(errorsLink));
-      
-      var content = $('<div></div>').addClass('tab-content');
-      var treemaTab = $('<div></div>').addClass('tab-pane').addClass('active').attr('id', 'treema-'+demosMade);
-      content.append(treemaTab);
-      var dataTab = $('<pre></pre>').addClass('tab-pane').attr('id', 'data-'+demosMade);
-      content.append(dataTab);
-      var schemaTab = $('<pre></pre>').addClass('tab-pane').attr('id', 'schema-'+demosMade);
-      schemaTab.text(JSON.stringify(schema, null, 2));
-      content.append(schemaTab);
-      var errorsTab = $('<pre></pre>').addClass('tab-pane').attr('id', 'errors-'+demosMade);
-      content.append(errorsTab);
-
-      var treema = treemaTab.treema({schema: schema, data: data});
-      treema.build();
-      el.append(nav).append(content);
-      
-      el.find('.nav a').click(function (e) {
-        e.preventDefault();
-        if ($(this).hasClass('is-data')) {
-          dataTab.text(JSON.stringify(treema.data, null, 2));
-        }
-        if ($(this).hasClass('is-errors')) {
-          errorsTab.text(JSON.stringify(treema.getErrors(), null, 2));
-        }
-        $(this).tab('show');
-      });
-      demosMade += 1;
-      return treema;
-    }
 
     buildTreemaExample($('#addresses'), contact_book_schema, contacts);
     
   </script>
   
-  <hr />
-  
   <p>
-    The code looks something like this:
+    Try it! See how easy it is to add and remove contacts and properties
+    (<strong>Hint</strong>: use keyboard keys like arrows, enter, tab, and escape).
+    Check out the schema and data tabs to see what goes in to make this interface
+    (and what comes out, the data tab updates based on your changes).
   </p>
   
-  <pre>
-    treema = $('#addresses').treema({schema: schema, data: data});
-    treema.build();</pre>
-  
   <p>
-    So! To summarize, you describe your data with a schema, grab said data, and combine it together with Treema.
-    When you want to save the data, just fetch:
+    Data comes in all shapes and sizes, though, much more than just whether it's a string or a number.
+    Treema is built to allow all sorts of ways to set up the interface just the way you like it.
   </p>
+
   
-  <pre>
-    treema.data;</pre>
+  <h2>Custom Nodes</h2>
   
-  <h3>JSON-Schemas are the gift that keep on giving</h3>
-  
-  <p>
-    <strong>Not only</strong> do you get a consistent way to modify complex data,
-    but schemas can be used elsewhere, too:
-  </p>
-  
-  <ul>
-    <li>Validate data server-side on Node.js, making sure no one is trying to submit gnarly data.</li>
-    <li>Create more traditional HTML forms with libraries like
-      <a href="http://www.alpacajs.org/">Alpaca</a>.
-    </li>
-    <li>Generate documentation and API documentation with tools like
-      <a href="https://github.com/mashery/iodocs">I/O Docs</a>.
-    </li>
-  </ul>
-  
-  <h3>Make custom nodes</h3>
+  <h3>Objects As Single Nodes</h3>
   
   <p>
     Say your data object has a 2d position in there.
@@ -253,18 +197,17 @@
   </script>
 
   <p>
-    Much better. Think of the possibilities! Nodes that:
+    Much better.
+    Use this technique to compress several related properties into single rows,
+    like names, addresses and version numbers.
   </p>
-
-  <ul>
-    <li>Search your database dynamically to insert references and denormalized data.</li>
-    <li>Show exactly what you want to see for a given object until opened.</li>
-    <li>Only let you choose from some other list within the page (maybe from another treema?).</li>
-    <li>Incorporate your favorite plugins.</li>
-  </ul>
+  
+  <h3>Embedding Plugins</h3>
   
   <p>
-    Here's one with ACE, in case one of your properties is a string of code.
+    <a href="http://ace.c9.io/#nav=about">ACE</a>
+    is a great library for creating text editors for all sorts of formats on the web.
+    What if some of your nested data is better edited with ACE than a plain textarea or input field?
   </p>
 
   <div id="component"></div>
@@ -306,15 +249,28 @@
     treema = buildTreemaExample($('#component'), component_schema, component);
     treema.childrenTreemas.code.edit();
   </script>
+  
+  <p>
+    With custom nodes, you can weave in whatever elements or specialized plugins you like.
+    Have an image URL property use the
+    <a href="https://www.inkfilepicker.com/">Ink File Picker</a>.
+    Pick date properties with the
+    <a href="http://jqueryui.com/datepicker/">JQuery UI Datepicker</a>.
+  </p>
+  
+  <h3>References to Other Database Records/Documents</h3>
 
   <p>
-    Now imagine you have users who have lists of their favorite fast food restaurants.
-    This would be a good thing to have separate collections (tables) for, one for users
-    and one for restaurants.
-    But the user documents (records) ought to store enough information about the restaurants so that,
-    if you're looking at the user, you don't have to do a lookup for each listed restaurant.
+    You have users who can list their favorite fast food restaurants.
+    This would be a good thing to have separate tables (or collections) for, one for users and one for restaurants.
+    But you don't want to have a third table for this minor one-to-many relationship.
+    This should all fit just fine into the User entries, along with some basic, denormalized data
+    so that when you fetch the User object, you have enough info to show what their favorite restaurants are,
+    saving on database queries.
+  </p>
+  <p>
     The database search Treema node encapsulates all this logic, leaving it to you to
-    implement the GET search endpoint, and describe in a subclass how to format that data.
+    implement the GET search endpoint, and describe in a function how to format that data.
   </p>
 
   <div id="lookup"></div>
@@ -365,31 +321,55 @@
     treema.childrenTreemas.restaurants.open()
   </script>
   
-  <h3>Keyboard Shortcuts Galor</h3>
+  <p>
+    This is one of the coolest features in Treema.
+    Making a simple, consistent pattern for working with denormalized references.
+  </p>
+  
+  <hr />
+  
+  <h3>Implementation</h3>
   
   <p>
-    If you are a fan of navigating around your screen with your keyboard rather than
-    clicking with your mouse, then Treema has you covered.
-    It's set up to handle these, mainly:
+    To see how these and more advanced nodes are implemented, check out
+    <a href="https://github.com/sderickson/treema/blob/master/src/extra.coffee" target="_blank">/src/extra.coffee</a>.
+  </p>
+  
+  <h2>Other Features</h2>
+  
+  <h3>Keyboard Shortcuts</h3>
+  
+  <p>
+    Treema aims to make manipulating these complex data structures as natural and quick as possible.
+    To that end, Treema features plenty of keyboard shortcuts so you can stay as far away from your mouse as you like.
+    Here's a brief overview:
   </p>
   
   <ul>
     <li>
-      <strong>Arrow keys</strong>: For navigating selection, opening and closing collections.
+      <strong>Arrow keys</strong>: Navigates the selection, opening and closing collections.
     </li><li>
-      <strong>Enter and tab</strong>: For adding and editing values and navigating between inputs.
+      <strong>Enter and tab</strong>: Adds, edits and navigates between value inputs.
       Use shift to go upward.
-      They have slightly different behaviors.
-      Generally speaking, enter is more 'aggressive' with what it does.
+    <ul>
+      <li><strong>Note</strong>: They have slightly different behaviors.
+        Generally speaking, enter is more 'aggressive' with what it does.
+        For example, while editing a field whose data is invalid, enter will let you
+        move on anyway, and tab will not.
+        Enter will open selected collections, tab will not.
+      </li>
+    </ul>
+      
     </li><li>
-      <strong>Escape</strong>: To undo changes.
+      <strong>Escape</strong>: Discards changes on the input currently being edited.
     </li><li>
-      <strong>Delete</strong>: To remove a field when it's empty.
+      <strong>Delete</strong>: Removes a field when the input currently being edited is empty.
     </li>
-    <li><strong>Shift and Ctrl-Click</strong>: For selecting multiple rows.</li>
+    <li><strong>Shift and Ctrl-Click</strong>: Selects multiple rows.</li>
   </ul>
   
-  <h3>Schema-Defined, Interface Enforced Constraints</h3>
+  <h3>Structural Restrictions</h3>
+  <h4>Schema-Defined, Interface Enforced</h4>
   
   <p>
     Whenever possible, the interface reflects the limits the schema imposes on the data, including:
@@ -438,14 +418,37 @@
     };
     treema = buildTreemaExample($('#contactsB'), contact_book_schemaB, contactsB);
   </script>
-
-  <h3>Conclusions</h3>
+  
+  <h3>Callbacks</h3>
   
   <p>
-    That's about it, really.
-    This is simply a super-flexible system for viewing and editing complicated but well defined data.
-    Hope you'll try it out, and join in the project to make it even better!
+    You can register callbacks for when:
   </p>
+  
+  <ul>
+    <li>Rows are hovered onto and off of</li>
+    <li>Selection changes</li>
+    <li>Data changes</li>
+  </ul>
+  
+  <p>
+    Say the user selects a contact on a contact list.
+    Use the callbacks to know when to update another part of the page, showing details about that contact. 
+  </p>
+  
+  <h3>Want More?</h3>
+  
+  <p>
+    It's open source!
+    <a href="https://github.com/sderickson/treema">Join the project</a> and make Treema even more awesome.
+  </p>
+
+  <footer>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+  </footer>
   
 </div>
 

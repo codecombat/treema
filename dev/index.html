@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    
+    <link rel="stylesheet" href="css/vendor/bootstrap.min.css" media="screen">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/index.css">
+    <title>Treema by sderickson</title>
+  </head>
+
+  <body>
+
+  
+  
+<div id="content">
+  <h1>Treema</h1>
+
+  <div id="downloads" class="row">
+    <div class="col-md-1"></div>
+    <div class="col-md-3">
+      <a href="https://github.com/sderickson/treema/zipball/master" class='btn btn-primary'>Download .zip</a>      
+    </div>
+    <div class="col-md-4">
+      <a href="https://github.com/sderickson/treema/tarball/master" class='btn btn-primary'>Download .tar.gz</a>
+    </div>
+    <div class="col-md-3">
+      <a href="https://github.com/sderickson/treema" class='btn btn-primary'><span>View on GitHub</span></a>
+    </div>
+    <div class="col-md-1"></div>
+  </div>
+
+  <div id="links" class="row">
+    <div class="col-md-1"></div>
+    <div class="col-md-3">
+      <a href="demo.html" class='btn btn-info'>Demo</a>
+    </div>
+    <div class="col-md-4">
+      <a href="install.html" class='btn btn-info'>Install</a>
+    </div>
+    <div class="col-md-3">
+      <a href="develop.html" class='btn btn-info'><span>Develop</span></a>
+    </div>
+    <div class="col-md-1"></div>
+  </div>
+  <hr>
+
+  <section id="main_content">
+        
+    <p>
+      <strong>Treema is</strong> a
+      <a href="http://jquery.com/">jQuery</a>
+      plugin that builds interfaces for editing complex, well-defined
+      <a href="http://www.w3resource.com/JSON/JSON-Schema.php">JSON</a>
+      data.
+      It builds on
+      <a href="https://github.com/geraintluff/tv4">tv4</a>,
+      which implements
+      <a href="http://json-schema.org/">JSON-Schema</a>
+      validation.
+      Originally built for <a href="http://codecombat.com/">Code Combat</a> level editing.
+    </p>
+
+    <h3>What is it good for?</h3>
+
+    <p>
+      Okay. You're rocking Node.js, MongoDB, Redis, ShareJS, CreateJS, and fifty other sweet
+      open-source projects in your stack
+      (they all look so good!) working with one common data format: <strong>JSON</strong>.
+    </p>
+    <p>
+      You've got JSON objects which have nested arrays nesting yet more objects
+      whose 'name' properties can't be more than 20 characters long or start with a number.
+      Not to mention all the references to yet more objects with a structure all their own.
+    </p>
+    <p>
+      You and your users need to be able to <strong>edit these monstrosities</strong>.
+      And woe to those whose data doesn't have the exact right structure.
+    </p>
+    <p>
+      You <em>could</em> build tons of HTML forms views or separate pages for each nesting and intricate systems
+      to make sure the data is woven back together just so,
+      but with documents this big and complex, this will get... <em>unwieldy</em>.
+    </p>
+    <p>
+      And yet! This problem has already been solved elsewhere.
+      In software like:
+    </p>
+    
+    <div id="tree-interfaces" class="row">
+      <div class="col-md-4">
+        <h5>Starcraft II Galaxy Editor</h5>
+        <a href="images/galaxy.png"><img src="images/galaxy.png" id="galaxy" /></a>
+      </div>
+      <div class="col-md-4">
+        <h5>Max OS X Finder</h5>
+        <a href="images/finder.png"><img src="images/finder.png" id="finder" /></a>
+      </div>
+      <div class="col-md-4">
+        <h5>Chrome Dev Tools (Elements)</h5>
+        <a href="images/chrome.png"><img src="images/chrome.png" class="img-thumbnail" id="chrome" /></a>
+      </div>
+    </div>
+    
+    <p>
+      That's the stuff right there. Collapsing collections. Keyboard navigation and control.
+      Compact, yet still practical. And the interfaces communicate the actions that you can actually do.
+      You want <em>that</em>.
+    </p>
+    
+    <hr />
+    
+    <p class="lead">
+      Treema is <em>that</em> for sites. It creates tree based interfaces based
+      on JSON-schemas that define how your data is structured, guiding and limiting
+      based on those constraints.
+    </p>
+    
+    <hr />
+
+    <h3>What else are JSON-Schemas good for?</h3>
+    
+    <p>
+      Lots of stuff!
+    </p>
+
+    <ul>
+      <li>
+        Validate data server-side, making sure no one is trying to submit gnarly data.
+        Just search for JSON-schema validators in your language of choice
+        (we recommend <a href="https://github.com/geraintluff/tv4">tv4</a> for Javascript).
+        Or check out <a href="http://json-schema.org/implementations.html">JSON-Schema's Software Lists</a>.
+      </li>
+      <li>
+        Generate other interfaces and forms with libraries like
+        <a href="http://www.alpacajs.org/">Alpaca</a>, 
+        <a href="https://github.com/josdejong/jsoneditor/">JSON Editor Online</a>, or
+        <a href="https://github.com/kevinburke/hulk">Hulk</a>.
+      </li>
+      <li>
+        Generate documentation and API documentation with tools like
+        <a href="https://github.com/mashery/iodocs">I/O Docs</a>.
+      </li>
+    </ul>
+
+    <h3>I Want to Know More!</h3>
+
+    <ul>
+      <li><a href="demo.html">Demos</a></li>
+      <li><a href="install.html">Installation</a></li>
+      <li><a href="dev.html">Developing</a></li>
+    </ul>
+    
+    <h3>Getting in Touch</h3>
+    
+    <ul>
+      <li><a href="https://github.com/sderickson/treema/issues">Treema GitHub Issues</a></li>
+      <li><a href="http://discourse.codecombat.com/">CodeCombat Discourse Forum</a></li>
+      <li><a href="http://www.hipchat.com/g3plnOKqa">CodeCombat HipChat</a></li>
+      <li><a href="mailto:team@codecombat.com">Email</a> the <a href="http://codecombat.com/about">CodeCombat Team</a>.</li>
+    </ul>
+
+  </section>
+  
+  <footer></footer>
+</div>
+  
+    </div>
+  </body>
+</html>

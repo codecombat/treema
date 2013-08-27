@@ -1,0 +1,16 @@
+#downloads, #links { text-align: center; }
+#downloads a, #links a { margin: 0 10px; }
+#downloads { margin-bottom: 20px; }
+
+#tree-interfaces { margin: 30px 0; }
+#tree-interfaces img { width: 100%; }
+
+#tree-interfaces h5 {
+  text-align: center;
+}
+
+#galaxy { position: relative; top: 10px; }
+#chrome { position: relative; top: 20px; }
+
+.lead { margin: 20px 40px; }
+

@@ -6,7 +6,7 @@ keyDown = function($el, which) {
   event.which = which;
   return $el.trigger(event);
 };
-(function() {
+;(function() {
   var addressTreema, data, downArrowPress, expectOneSelected, leftArrowPress, nameTreema, phoneTreema, rightArrowPress, schema, treema, upArrowPress;
   leftArrowPress = function($el) {
     return keyDown($el, 37);
@@ -187,7 +187,7 @@ keyDown = function($el, which) {
     });
   });
 })();
-describe('Delete key press', function() {
+;describe('Delete key press', function() {
   var addressTreema, deleteKeyPress, expectOneSelected, nameTreema, original_data, phoneTreema, rebuild, schema, treema;
   deleteKeyPress = function($el) {
     return keyDown($el, 8);
@@ -292,7 +292,7 @@ describe('Delete key press', function() {
     return expect(treema.data.name).toBeTruthy();
   });
 });
-describe('Enter key press', function() {
+;describe('Enter key press', function() {
   var data, enterKeyPress, nameTreema, phoneTreema, schema, treema;
   enterKeyPress = function($el) {
     return keyDown($el, 13);
@@ -388,7 +388,7 @@ describe('Enter key press', function() {
     return expect(phoneTreema.childrenTreemas[0].isEditing()).toBeTruthy();
   });
 });
-describe('Initialization', function() {
+;describe('Initialization', function() {
   var data, el, schema, treema;
   schema = {
     type: 'object',
@@ -428,7 +428,7 @@ describe('Initialization', function() {
     return expect(treema.isOpen()).toBeTruthy();
   });
 });
-describe('Mouse click behavior', function() {
+;describe('Mouse click behavior', function() {
   var data, metaClick, nameTreema, phoneTreema, schema, shiftClick, treema;
   schema = {
     type: 'object',
@@ -518,7 +518,7 @@ describe('Mouse click behavior', function() {
     return treema.deselectAll();
   });
 });
-describe('"N" key press', function() {
+;describe('"N" key press', function() {
   var data, nKeyPress, schema, treema;
   nKeyPress = function($el) {
     return keyDown($el, 78);
@@ -551,7 +551,7 @@ describe('"N" key press', function() {
     return expect(treema.data.length).toBe(3);
   });
 });
-describe('Tab key press', function() {
+;describe('Tab key press', function() {
   var addressTreema, data, nameTreema, phoneTreema, schema, tabKeyPress, treema;
   tabKeyPress = function($el) {
     return keyDown($el, 9);
@@ -650,7 +650,7 @@ describe('Tab key press', function() {
     return expect(phoneTreema.childrenTreemas[0].isEditing()).toBeTruthy();
   });
 });
-describe('TV4 Interface', function() {
+;describe('TV4 Interface', function() {
   var data, schema, treema;
   schema = {
     type: 'number'
@@ -667,5 +667,5 @@ describe('TV4 Interface', function() {
     return expect(treema.getErrors().length).toBe(1);
   });
 });
-
+;
 //@ sourceMappingURL=treema.spec.js.map

@@ -138,7 +138,6 @@
 
 @media -sass-debug-info{filename{}line{font-family:\00003132}}
 .treema-shortened {
-  max-width: 300px;
   overflow: hidden;
   text-overflow: ellipsis; }
 

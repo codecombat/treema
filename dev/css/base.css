@@ -1,0 +1,54 @@
+body {
+  background: #ddd;
+}
+
+#content {
+  box-shadow: 0 0 6px;
+  margin: 0 auto;
+  width: 800px;
+  background: white;
+  padding: 20px;
+}
+
+h1 {
+  padding: 30px 10px;
+  background: #0b97c4;
+  color: white;
+  text-shadow: 1px 1px 1px black;
+  margin-bottom: 40px;
+}
+
+h3 {
+  margin-top: 40px;
+}
+
+h4 {
+  margin: 20px 0;
+}
+
+li {
+  margin: 4px 0;
+}
+
+footer {
+  margin-top: 50px;
+  text-align: center;
+}
+
+footer div {
+  background-color: #666;
+}
+
+footer .bar {
+  margin-top: 10px;
+  width: 100%;
+}
+
+footer div:last-child {
+  height: 20px;
+}
+
+footer div:first-child {
+  height: 5px;
+}
+
