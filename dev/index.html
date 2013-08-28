@@ -187,9 +187,9 @@
       }
     };
 
-    ToppingSearchTreemaNode = makeFauxSearchTreemaNodeClass('/toppings.json');
+    ToppingSearchTreemaNode = makeFauxSearchTreemaNodeClass('toppings.json');
     TreemaNode.setNodeSubclass('topping', ToppingSearchTreemaNode);
-    BatterSearchTreemaNode = makeFauxSearchTreemaNodeClass('/batters.json');
+    BatterSearchTreemaNode = makeFauxSearchTreemaNodeClass('batters.json');
     TreemaNode.setNodeSubclass('batter', BatterSearchTreemaNode);
 
     var ProductTreemaNode = function () { this['super']('constructor').apply(this, arguments); };
