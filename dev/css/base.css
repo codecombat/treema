@@ -34,7 +34,15 @@ li { margin: 4px 0; }
   margin-bottom: 20px;
   border-left: 1px solid lightgray;
   border-right: 1px solid lightgray;
+  box-shadow: 0 0 10px #aaa;
 }
+
+.nav-tabs li { z-index: 1; }
+
+pre.tab-pane {
+  border: 0;
+}
+
 .treema-wrapper { margin-top: 20px;}
 
 pre { margin-bottom: 20px }
