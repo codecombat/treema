@@ -542,6 +542,7 @@ keyDown = function($el, which) {
     treema.childrenTreemas[0].select();
     expect(treema.childrenTreemas[2]).toBeUndefined();
     nKeyPress(treema.childrenTreemas[0].$el);
+    expect(treema.childrenTreemas[2]).toBeUndefined();
     enterKeyPress(treema.$el.find('input').val('410-555-1023'));
     expect(treema.childrenTreemas[2]).not.toBeUndefined();
     treema.childrenTreemas[2].display();
