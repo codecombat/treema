@@ -1531,10 +1531,10 @@ TreemaNode = (function() {
     var NodeClass, newNode;
     NodeClass = this.getNodeClassForSchema(options.schema);
     newNode = new NodeClass(element, options, parent);
-    if (parent) {
+    if (parent != null) {
       newNode.tv4 = parent.tv4;
     }
-    if (keyForParent) {
+    if (keyForParent != null) {
       newNode.keyForParent = keyForParent;
     }
     return newNode;

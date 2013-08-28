@@ -1,5 +1,6 @@
 describe '"N" key press', ->
   nKeyPress = ($el) -> keyDown($el, 78)
+  enterKeyPress = ($el) -> keyDown($el, 13)
 
   schema = {
     type: 'array',
@@ -14,10 +15,11 @@ describe '"N" key press', ->
     treema.childrenTreemas[0].select()
     expect(treema.childrenTreemas[2]).toBeUndefined()
     nKeyPress(treema.childrenTreemas[0].$el)
+    enterKeyPress(treema.$el.find('input').val('410-555-1023'))
     expect(treema.childrenTreemas[2]).not.toBeUndefined()
-    treema.childrenTreemas[2].$el.find('input').val('410-555-1023')
     treema.childrenTreemas[2].display()
     treema.childrenTreemas[2].select()
+    expect(treema.childrenTreemas[2]).not.toBeUndefined()
     
   it 'does not create a new row when there\'s no more space', ->
     expect(treema.data.length).toBe(3)

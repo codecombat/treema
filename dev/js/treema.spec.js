@@ -24,7 +24,10 @@ keyDown = function($el, which) {
     var selected;
     selected = treema.getSelectedTreemas();
     expect(selected.length).toBe(1);
-    return expect(selected[0]).toBe(t);
+    expect(t).toBeDefined();
+    if (t && selected.length === 1) {
+      return expect(selected[0].$el[0]).toBe(t.$el[0]);
+    }
   };
   schema = {
     type: 'object',
@@ -83,11 +86,7 @@ keyDown = function($el, which) {
       downArrowPress(treema.$el);
       expectOneSelected(phoneTreema);
       downArrowPress(treema.$el);
-      expectOneSelected(phoneTreema.childrenTreemas[0]);
-      downArrowPress(treema.$el);
-      expectOneSelected(phoneTreema.childrenTreemas[1]);
-      downArrowPress(treema.$el);
-      return expectOneSelected(addressTreema);
+      return expectOneSelected(phoneTreema.childrenTreemas[0]);
     });
     return it('does nothing if the last treema is selected', function() {
       expect(treema.getSelectedTreemas().length).toBe(0);
@@ -519,9 +518,12 @@ keyDown = function($el, which) {
   });
 });
 ;describe('"N" key press', function() {
-  var data, nKeyPress, schema, treema;
+  var data, enterKeyPress, nKeyPress, schema, treema;
   nKeyPress = function($el) {
     return keyDown($el, 78);
+  };
+  enterKeyPress = function($el) {
+    return keyDown($el, 13);
   };
   schema = {
     type: 'array',
@@ -540,10 +542,11 @@ keyDown = function($el, which) {
     treema.childrenTreemas[0].select();
     expect(treema.childrenTreemas[2]).toBeUndefined();
     nKeyPress(treema.childrenTreemas[0].$el);
+    enterKeyPress(treema.$el.find('input').val('410-555-1023'));
     expect(treema.childrenTreemas[2]).not.toBeUndefined();
-    treema.childrenTreemas[2].$el.find('input').val('410-555-1023');
     treema.childrenTreemas[2].display();
-    return treema.childrenTreemas[2].select();
+    treema.childrenTreemas[2].select();
+    return expect(treema.childrenTreemas[2]).not.toBeUndefined();
   });
   return it('does not create a new row when there\'s no more space', function() {
     expect(treema.data.length).toBe(3);

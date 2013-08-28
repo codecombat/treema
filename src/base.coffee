@@ -715,8 +715,8 @@ class TreemaNode
   @make: (element, options, parent, keyForParent) ->
     NodeClass = @getNodeClassForSchema(options.schema)
     newNode = new NodeClass(element, options, parent)
-    newNode.tv4 = parent.tv4 if parent
-    newNode.keyForParent = keyForParent if keyForParent
+    newNode.tv4 = parent.tv4 if parent?
+    newNode.keyForParent = keyForParent if keyForParent?
     newNode
     
   @extend: (child) ->
