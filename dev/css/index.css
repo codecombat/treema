@@ -7,7 +7,7 @@
 #tree-interfaces h5 { text-align: center; }
 
 #galaxy { position: relative; top: 10px; }
-#chrome { position: relative; top: 20px; }
+#chrome { position: relative; top: 20px; box-shadow: 0 5px 20px #666; }
 
 #image-modal img { width: 100%; }
 #image-modal .modal-dialog { width: 800px; }

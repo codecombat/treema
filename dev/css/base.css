@@ -33,3 +33,5 @@ footer div { background-color: #666; }
 footer .bar { margin-top: 10px; width: 100%; }
 footer div:first-child { height: 5px; }
 footer div:last-child { height: 20px; margin-top: 10px; }
+
+pre { font-size: 12px; }
