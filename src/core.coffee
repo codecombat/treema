@@ -97,8 +97,8 @@ do __init = ->
       @open() if @isClosed()
       new_index = Object.keys(@childrenTreemas).length
       schema = @getChildSchema()
-      newTreema = @addChildTreema(new_index, undefined, schema)
-      newTreema.justAdded = true
+      newTreema = TreemaNode.make(undefined, {schema: schema, data:undefined}, @, new_index)
+      newTreema.justCreated = true
       newTreema.tv4 = @tv4
       childNode = @createChildNode(newTreema)
       @getAddButtonEl().before(childNode)
@@ -270,14 +270,13 @@ do __init = ->
 
     addNewChildForKey: (key) ->
       schema = @getChildSchema(key)
-      newTreema = @addChildTreema(key, null, schema)
-      newTreema.justAdded = true
-      newTreema.tv4 = @tv4
+      newTreema = TreemaNode.make(null, {schema: schema, data:null}, @, key)
       childNode = @createChildNode(newTreema)
       @findObjectInsertionPoint(key).before(childNode)
       if newTreema.canEdit()
         newTreema.edit()
       else
+        @integrateChildTreema(newTreema)
         newTreema.addNewChild()
         
       @updateMyAddButton()

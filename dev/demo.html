@@ -6,57 +6,13 @@
   <script src="js/vendor/ace.js"></script>
   <script src="js/vendor/bootstrap.min.js"></script>
   <script src="js/treema.js"></script>
-
+  <script src="js/base.js"></script>
+  
   <link rel="stylesheet" href="css/vendor/jquery-ui-1.10.3.custom.css">
   <link rel="stylesheet" href="css/vendor/bootstrap.min.css" media="screen">
   <link rel="stylesheet" href="css/treema.css">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/demo.css">
-  
-  <script>
-    var demosMade = 0;
-
-    function buildTreemaExample (el, schema, data) {
-      el.addClass('treema-wrapper');
-      var nav = $('<ul class="nav nav-tabs"></ul>');
-      var treemaLink = $('<a>Treema</a>').attr('href', '#treema-'+demosMade);
-      var dataLink = $('<a>Data</a>').attr('href', '#data-'+demosMade).addClass('is-data');
-      var schemaLink = $('<a>Schema</a>').attr('href', '#schema-'+demosMade);
-      var errorsLink = $('<a>Errors</a>').attr('href', '#errors-'+demosMade).addClass('is-errors');
-      nav.append($('<li></li>').addClass('active').append(treemaLink));
-      nav.append($('<li></li>').append(dataLink));
-      nav.append($('<li></li>').append(schemaLink));
-      nav.append($('<li></li>').append(errorsLink));
-
-      var content = $('<div></div>').addClass('tab-content');
-      var treemaTab = $('<div></div>').addClass('tab-pane').addClass('active').attr('id', 'treema-'+demosMade);
-      content.append(treemaTab);
-      var dataTab = $('<pre></pre>').addClass('tab-pane').attr('id', 'data-'+demosMade);
-      content.append(dataTab);
-      var schemaTab = $('<pre></pre>').addClass('tab-pane').attr('id', 'schema-'+demosMade);
-      schemaTab.text(JSON.stringify(schema, null, 2));
-      content.append(schemaTab);
-      var errorsTab = $('<pre></pre>').addClass('tab-pane').attr('id', 'errors-'+demosMade);
-      content.append(errorsTab);
-
-      var treema = treemaTab.treema({schema: schema, data: data});
-      treema.build();
-      el.append(nav).append(content);
-
-      el.find('.nav a').click(function (e) {
-        e.preventDefault();
-        if ($(this).hasClass('is-data')) {
-          dataTab.text(JSON.stringify(treema.data, null, 2));
-        }
-        if ($(this).hasClass('is-errors')) {
-          errorsTab.text(JSON.stringify(treema.getErrors(), null, 2));
-        }
-        $(this).tab('show');
-      });
-      demosMade += 1;
-      return treema;
-    }
-  </script>
 
 </head>
 <body>
@@ -304,27 +260,10 @@
       }
     };
 
-    FastFoodSearchTreemaNode = function () {
-      this['super']('constructor').apply(this, arguments);
-    };
-    DatabaseSearchTreemaNode.extend(FastFoodSearchTreemaNode);
-    FastFoodSearchTreemaNode.prototype.url = '/fastfood.json';
-    FastFoodSearchTreemaNode.prototype.formatDocument = function (doc) { return doc.name; }; 
-    FastFoodSearchTreemaNode.prototype.searchCallback = function (results) {
-      // demo hack, since it's only using static resources
-      var newResults = [];
-      var term = this.lastTerm.toLowerCase();
-      for (var result in results) {
-        result = results[result];
-        if (result.name.toLowerCase().indexOf(term) == -1) continue;
-        newResults.push(result);
-      }
-      this['super']('searchCallback').apply(this, [newResults]);
-    };
+    FastFoodSearchTreemaNode = makeFauxSearchTreemaNodeClass('/fastfood.json');
     TreemaNode.setNodeSubclass('restaurant', FastFoodSearchTreemaNode);
-
     treema = buildTreemaExample($('#lookup'), lookup_schema, lookup);
-    treema.childrenTreemas.restaurants.open()
+    treema.childrenTreemas.restaurants.open();
   </script>
   
   <p>

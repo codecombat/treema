@@ -49,7 +49,7 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.childrenTreemas = null;
 
-  TreemaNode.prototype.justAdded = false;
+  TreemaNode.prototype.justCreated = true;
 
   TreemaNode.prototype.removed = false;
 
@@ -258,6 +258,9 @@ TreemaNode = (function() {
     }
     if (!this.parent) {
       this.$el.attr('tabindex', 9001);
+    }
+    if (!this.parent) {
+      this.justCreated = false;
     }
     if (this.collection) {
       this.$el.append($(this.childrenTemplate)).addClass('treema-closed');
@@ -506,7 +509,7 @@ TreemaNode = (function() {
     if (!this.isEditing()) {
       return;
     }
-    if (this.justAdded) {
+    if (this.justCreated) {
       return this.remove();
     }
     if (this.isEditing()) {
@@ -586,7 +589,9 @@ TreemaNode = (function() {
     if (editing) {
       shouldRemove = this.shouldTryToRemoveFromParent();
       this.saveChanges(this.getValEl());
-      this.flushChanges();
+      if (!shouldRemove) {
+        this.flushChanges();
+      }
       if (!(aggressive || this.isValid())) {
         this.parent.refreshErrors();
         return;
@@ -797,7 +802,10 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.flushChanges = function() {
-    this.justAdded = false;
+    if (this.parent && this.justCreated) {
+      this.parent.integrateChildTreema(this);
+    }
+    this.justCreated = false;
     this.markAsChanged();
     if (!this.parent) {
       return this.refreshErrors();
@@ -873,13 +881,20 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.open = function() {
     var childNode, childrenContainer, key, schema, treema, value, _base, _i, _len, _ref, _ref1;
+    if (!this.isClosed()) {
+      return;
+    }
     childrenContainer = this.$el.find('.treema-children').detach();
     childrenContainer.empty();
     this.childrenTreemas = {};
     _ref = this.getChildren();
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       _ref1 = _ref[_i], key = _ref1[0], value = _ref1[1], schema = _ref1[2];
-      treema = this.addChildTreema(key, value, schema);
+      treema = TreemaNode.make(null, {
+        schema: schema,
+        data: value
+      }, this, key);
+      this.integrateChildTreema(treema);
       childNode = this.createChildNode(treema);
       childrenContainer.append(childNode);
     }
@@ -919,6 +934,9 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.close = function() {
     var key, treema, _ref;
+    if (!this.isOpen()) {
+      return;
+    }
     _ref = this.childrenTreemas;
     for (key in _ref) {
       treema = _ref[key];
@@ -1006,16 +1024,11 @@ TreemaNode = (function() {
     return TreemaNode.didSelect = true;
   };
 
-  TreemaNode.prototype.addChildTreema = function(key, value, schema) {
-    var treema;
-    treema = TreemaNode.make(null, {
-      schema: schema,
-      data: value
-    }, this);
-    treema.keyForParent = key;
-    this.childrenTreemas[key] = treema;
+  TreemaNode.prototype.integrateChildTreema = function(treema) {
+    treema.justCreated = false;
+    this.childrenTreemas[treema.keyForParent] = treema;
     treema.populateData();
-    this.data[key] = treema.data;
+    this.data[treema.keyForParent] = treema.data;
     return treema;
   };
 
@@ -1049,7 +1062,7 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.showErrors = function() {
     var childErrors, deepestTreema, e, error, erroredTreemas, errors, message, messages, ownErrors, path, subpath, treema, _i, _j, _k, _len, _len1, _len2, _ref, _results;
-    if (this.justAdded) {
+    if (this.justCreated) {
       return;
     }
     errors = this.getErrors();
@@ -1292,10 +1305,17 @@ TreemaNode = (function() {
     return this.nodeMap['any'];
   };
 
-  TreemaNode.make = function(element, options, parent) {
-    var NodeClass;
+  TreemaNode.make = function(element, options, parent, keyForParent) {
+    var NodeClass, newNode;
     NodeClass = this.getNodeClassForSchema(options.schema);
-    return new NodeClass(element, options, parent);
+    newNode = new NodeClass(element, options, parent);
+    if (parent) {
+      newNode.tv4 = parent.tv4;
+    }
+    if (keyForParent) {
+      newNode.keyForParent = keyForParent;
+    }
+    return newNode;
   };
 
   TreemaNode.extend = function(child) {
@@ -1561,8 +1581,11 @@ TreemaNode = (function() {
       }
       new_index = Object.keys(this.childrenTreemas).length;
       schema = this.getChildSchema();
-      newTreema = this.addChildTreema(new_index, void 0, schema);
-      newTreema.justAdded = true;
+      newTreema = TreemaNode.make(void 0, {
+        schema: schema,
+        data: void 0
+      }, this, new_index);
+      newTreema.justCreated = true;
       newTreema.tv4 = this.tv4;
       childNode = this.createChildNode(newTreema);
       this.getAddButtonEl().before(childNode);
@@ -1867,14 +1890,16 @@ TreemaNode = (function() {
     ObjectNode.prototype.addNewChildForKey = function(key) {
       var childNode, newTreema, schema;
       schema = this.getChildSchema(key);
-      newTreema = this.addChildTreema(key, null, schema);
-      newTreema.justAdded = true;
-      newTreema.tv4 = this.tv4;
+      newTreema = TreemaNode.make(null, {
+        schema: schema,
+        data: null
+      }, this, key);
       childNode = this.createChildNode(newTreema);
       this.findObjectInsertionPoint(key).before(childNode);
       if (newTreema.canEdit()) {
         newTreema.edit();
       } else {
+        this.integrateChildTreema(newTreema);
         newTreema.addNewChild();
       }
       return this.updateMyAddButton();
@@ -2097,7 +2122,9 @@ TreemaNode = (function() {
     DatabaseSearchTreemaNode.prototype.lastTerm = null;
 
     DatabaseSearchTreemaNode.prototype.buildValueForDisplay = function(valEl) {
-      return this.buildValueForDisplaySimply(valEl, this.data ? this.formatDocument(this.data) : 'None');
+      var val;
+      val = this.data ? this.formatDocument(this.data) : 'None';
+      return this.buildValueForDisplaySimply(valEl, val);
     };
 
     DatabaseSearchTreemaNode.prototype.formatDocument = function(doc) {
@@ -2214,7 +2241,12 @@ TreemaNode = (function() {
     };
 
     DatabaseSearchTreemaNode.prototype.shouldTryToRemoveFromParent = function() {
-      return false;
+      var selected;
+      if (this.data != null) {
+        return;
+      }
+      selected = this.getSelectedResultEl();
+      return !selected.length;
     };
 
     return DatabaseSearchTreemaNode;

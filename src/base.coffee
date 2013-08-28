@@ -30,7 +30,7 @@ class TreemaNode
   # dynamically managed properties
   keyForParent: null
   childrenTreemas: null
-  justAdded: false
+  justCreated: true
   removed: false
 
   # Thin interface for tv4 ----------------------------------------------------
@@ -143,6 +143,7 @@ class TreemaNode
     @$el.data('instance', @)
     @$el.addClass('treema-root') unless @parent
     @$el.attr('tabindex', 9001) unless @parent
+    @justCreated = false unless @parent
     @$el.append($(@childrenTemplate)).addClass('treema-closed') if @collection
     valEl = @getValEl()
     valEl.addClass(@valueClass) if @valueClass
@@ -263,7 +264,7 @@ class TreemaNode
 
   onEscapePressed: ->
     return unless @isEditing()
-    return @remove() if @justAdded
+    return @remove() if @justCreated
     @display() if @isEditing()
     @select() unless @isRoot()
     @getRootEl().focus()
@@ -313,7 +314,7 @@ class TreemaNode
     if editing
       shouldRemove = @shouldTryToRemoveFromParent()
       @saveChanges(@getValEl())
-      @flushChanges()
+      @flushChanges() unless shouldRemove
       unless aggressive or @isValid()
         @parent.refreshErrors()
         return
@@ -454,7 +455,8 @@ class TreemaNode
       @markAsChanged()
       
   flushChanges: ->
-    @justAdded = false
+    @parent.integrateChildTreema(@) if @parent and @justCreated
+    @justCreated = false
     @markAsChanged()
     return @refreshErrors() unless @parent
     @parent.data[@keyForParent] = @data
@@ -505,11 +507,13 @@ class TreemaNode
     @
 
   open: ->
+    return unless @isClosed()
     childrenContainer = @$el.find('.treema-children').detach()
     childrenContainer.empty()
     @childrenTreemas = {}
     for [key, value, schema] in @getChildren()
-      treema = @addChildTreema(key, value, schema)
+      treema = TreemaNode.make(null, {schema: schema, data:value}, @, key)
+      @integrateChildTreema(treema)
       childNode = @createChildNode(treema)
       childrenContainer.append(childNode)
     @$el.append(childrenContainer).removeClass('treema-closed').addClass('treema-open')
@@ -533,6 +537,7 @@ class TreemaNode
     @flushChanges()
 
   close: ->
+    return unless @isOpen()
     @data[key] = treema.data for key, treema of @childrenTreemas
     @$el.find('.treema-children').empty()
     @$el.addClass('treema-closed').removeClass('treema-open')
@@ -587,12 +592,11 @@ class TreemaNode
     TreemaNode.didSelect = true
 
   # Child node utilities ------------------------------------------------------
-  addChildTreema: (key, value, schema) ->
-    treema = TreemaNode.make(null, {schema: schema, data:value}, @)
-    treema.keyForParent = key
-    @childrenTreemas[key] = treema
+  integrateChildTreema: (treema) ->
+    treema.justCreated = false # no longer in limbo
+    @childrenTreemas[treema.keyForParent] = treema
     treema.populateData()
-    @data[key] = treema.data
+    @data[treema.keyForParent] = treema.data
     treema
     
   createChildNode: (treema) ->
@@ -615,7 +619,7 @@ class TreemaNode
     @showErrors()
 
   showErrors: ->
-    return if @justAdded
+    return if @justCreated
     errors = @getErrors()
     erroredTreemas = []
     for error in errors
@@ -708,9 +712,12 @@ class TreemaNode
     return NodeClass if NodeClass
     @nodeMap['any']
     
-  @make: (element, options, parent) ->
+  @make: (element, options, parent, keyForParent) ->
     NodeClass = @getNodeClassForSchema(options.schema)
-    return new NodeClass(element, options, parent)
+    newNode = new NodeClass(element, options, parent)
+    newNode.tv4 = parent.tv4 if parent
+    newNode.keyForParent = keyForParent if keyForParent
+    newNode
     
   @extend: (child) ->
     # https://github.com/jashkenas/coffee-script/issues/2385

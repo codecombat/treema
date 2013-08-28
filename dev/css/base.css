@@ -27,6 +27,18 @@ h3 { margin-top: 40px; }
 h4 { margin: 20px 0; }
 li { margin: 4px 0; }
 
+/* Demos */
+
+.tab-pane {
+  padding: 10px;
+  margin-bottom: 20px;
+  border-left: 1px solid lightgray;
+  border-right: 1px solid lightgray;
+}
+.treema-wrapper { margin-top: 20px;}
+
+pre { margin-bottom: 20px }
+
 /* Musical double bar footer */
 footer { margin-top: 50px; text-align: center; clear: both; }
 footer div { background-color: #666; }

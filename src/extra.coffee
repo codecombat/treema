@@ -43,8 +43,9 @@ do ->
     lastTerm: null
   
     buildValueForDisplay: (valEl) ->
-      @buildValueForDisplaySimply(valEl, if @data then @formatDocument(@data) else 'None')
-  
+      val = if @data then @formatDocument(@data) else 'None'
+      @buildValueForDisplaySimply(valEl, val)
+    
     formatDocument: (doc) ->
       return doc if $.isString(doc)
       JSON.stringify(doc)
@@ -82,7 +83,7 @@ do ->
   
     getSearchResultsEl: -> @getValEl().find('.treema-search-results')
     getSelectedResultEl: -> @getValEl().find('.treema-search-selected')
-  
+    
     saveChanges: ->
       selected = @getSelectedResultEl()
       return unless selected.length
@@ -112,8 +113,10 @@ do ->
       @saveChanges()
       @display()
 
-    shouldTryToRemoveFromParent: -> false
-  
+    shouldTryToRemoveFromParent: ->
+      return if @data?
+      selected = @getSelectedResultEl()
+      return not selected.length
   
   # Source: http://coffeescriptcookbook.com/chapters/functions/debounce
   
