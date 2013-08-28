@@ -1,7 +1,15 @@
 #!/bin/bash
 
 # This script is for pushing changes in /dev to the gh-pages branch.
+# Probably actually shouldn't use it. If there's anything uncommitted
+# or unpushed at all, things may not work, and a commit could be pushed
+# to the repository.
 
+# Perhaps better to just copy and paste these into the command line
+# until someone with better bash-fu and git-fu than me makes this thing.
+
+git pull
+git push
 git checkout gh-pages
 git checkout master dev
 cp -r dev/* .
