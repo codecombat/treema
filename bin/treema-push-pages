@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# This script is for pushing changes in /dev to the gh-pages branch.
+
+git checkout gh-pages
+git checkout master dev
+cp -r dev/* .
+rm -rf dev
+git add -A
+git commit -m "Updated from master."
+git push
+git checkout master
