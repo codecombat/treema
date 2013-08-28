@@ -1,0 +1,9 @@
+.panel {
+  float: right;
+  width: 50%;
+  margin-left: 10px; 
+}
+
+.shortened {
+  display: inline-block;
+}

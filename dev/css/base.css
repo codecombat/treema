@@ -5,7 +5,7 @@ body {
 #content {
   box-shadow: 0 0 6px;
   margin: 0 auto;
-  width: 700px;
+  width: 800px;
   background: white;
   padding: 20px;
 }
@@ -23,20 +23,12 @@ h1 {
 .nav { padding: 0 5px; margin-top: 5px; }
 #github-link { float: right; }
 
-h3 {
-  margin-top: 40px;
-}
-
-h4 {
-  margin: 20px 0;
-}
-
-li {
-  margin: 4px 0;
-}
+h3 { margin-top: 40px; }
+h4 { margin: 20px 0; }
+li { margin: 4px 0; }
 
 /* Musical double bar footer */
-footer { margin-top: 50px; text-align: center; }
+footer { margin-top: 50px; text-align: center; clear: both; }
 footer div { background-color: #666; }
 footer .bar { margin-top: 10px; width: 100%; }
 footer div:first-child { height: 5px; }
