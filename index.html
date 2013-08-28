@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    <script src="js/vendor/jquery-1.8.1.js"></script>
+    <script src="js/vendor/jquery-ui-1.10.3.custom.js"></script>
+    <script src="js/vendor/tv4.js"></script>
+    <script src="js/vendor/ace.js"></script>
+    <script src="js/vendor/bootstrap.min.js"></script>
+    <script src="js/treema.js"></script>
+    <script src="js/base.js"></script>
+
+    <link rel="stylesheet" href="css/vendor/jquery-ui-1.10.3.custom.css">
+    <link rel="stylesheet" href="css/vendor/bootstrap.min.css" media="screen">
+    <link rel="stylesheet" href="css/treema.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/index.css">
+    <title>Treema by sderickson</title>
+  </head>
+
+  <body>
+
+  
+  
+<div id="content">
+  <a href="https://github.com/sderickson/treema">
+    <img style="position: absolute; top: 0; left: 0; border: 0;"
+         src="https://s3.amazonaws.com/github/ribbons/forkme_left_green_007200.png" alt="Fork me on GitHub">
+  </a>
+
+  <h1>Treema</h1>
+
+  <ul class="nav nav-pills navbar navbar-default">
+    <li class="active"><a href="index.html">Overview</a></li>
+    <li><a href="demo.html">Demo</a></li>
+    <li><a href="using.html">Usage</a></li>
+    <li><a href="develop.html">Dev</a></li>
+    <li id="tests-link"><a href="test.html">Run Tests</a></li>
+    <li id="github-link"><a href="https://github.com/sderickson/treema">Treema on Github</a></li>
+  </ul>
+  
+  <hr />
+  <p class="lead">
+    <strong>Treema</strong> is a
+    <a href="http://jquery.com/">jQuery</a>
+    plugin that builds interfaces for editing large, complex, well-defined
+    <a href="http://www.copterlabs.com/blog/json-what-it-is-how-it-works-how-to-use-it/">JSON</a>
+    data.
+    It runs on
+    <a href="https://github.com/geraintluff/tv4">tv4</a>,
+    which implements
+    <a href="http://json-schema.org/">JSON-Schema</a>
+    validation.
+  </p>
+  <hr />
+  <p>
+    Originally built for the <a href="http://codecombat.com/">Code Combat</a> level editor.
+  </p>
+  
+  <h3>Here's what it looks like:</h3>
+  
+  <div id="demo"></div>
+
+  <script>
+    // Got data at http://adobe.github.io/Spry/samples/data_region/JSONDataSetSample.html
+    
+    var products = [
+      {
+        "id": "0001",
+        "type": "Donut",
+        "name": "Cake",
+        "ppu": 0.55,
+        "batters":
+                [
+                  { "id": "1001", "name": "Regular" },
+                  { "id": "1002", "name": "Chocolate" },
+                  { "id": "1003", "name": "Blueberry" },
+                  { "id": "1004", "name": "Devil's Food" }
+                ],
+        "toppings":
+                [
+                  { "id": "5001", "name": "None" },
+                  { "id": "5002", "name": "Glazed" },
+                  { "id": "5005", "name": "Sugar" },
+                  { "id": "5007", "name": "Powdered Sugar" },
+                  { "id": "5006", "name": "Chocolate with Sprinkles" },
+                  { "id": "5003", "name": "Chocolate" },
+                  { "id": "5004", "name": "Maple" }
+                ]
+      },
+      {
+        "id": "0002",
+        "type": "Donut",
+        "name": "Raised",
+        "ppu": 0.55,
+        "batters":
+                  [
+                    { "id": "1001", "name": "Regular" }
+                  ],
+        "toppings":
+                [
+                  { "id": "5001", "name": "None" },
+                  { "id": "5002", "name": "Glazed" },
+                  { "id": "5005", "name": "Sugar" },
+                  { "id": "5003", "name": "Chocolate" },
+                  { "id": "5004", "name": "Maple" }
+                ]
+      },
+      {
+        "id": "0003",
+        "type": "Donut",
+        "name": "Old Fashioned",
+        "ppu": 0.55,
+        "batters":
+                  [
+                    { "id": "1001", "name": "Regular" },
+                    { "id": "1002", "name": "Chocolate" }
+                  ],
+        "toppings":
+                [
+                  { "id": "5001", "name": "None" },
+                  { "id": "5002", "name": "Glazed" },
+                  { "id": "5003", "name": "Chocolate" },
+                  { "id": "5004", "name": "Maple" }
+                ]
+      },
+      {
+        "id": "0004",
+        "type": "Pastry",
+        "name": "Croissant",
+        "ppu": 2.95,
+        "batters":
+                [
+                  { "id": "1001", "name": "Regular" },
+                ],
+        "toppings":
+                [
+                  { "id": "5001", "name": "None" },
+                  { "id": "5003", "name": "Chocolate" },
+                ]
+      }
+    ];
+
+    var product_schema = {
+      type: 'array',
+      items: {
+        "additionalProperties": false,
+        "type": "object",
+        "format": "product",
+        "displayProperty": 'name',
+        "properties": {
+          "id": { title: "ID", type: "string" },
+          "name": { title: "Name", type: "string", maxLength: 20 },
+          "type": { title: "Product Type", type: "string", enum: ['Donut', 'Pastry']},
+          "ppu": { title: "Price", type: "number", format: "price"},
+          "batters": {
+            type: "array",
+            title: "Batter Options",
+            uniqueItems: true,
+            maxItems: 4,
+            items: {
+              type: "object",
+              format: "batter",
+              properties: {
+                "id": { type:"string" },
+                "type": { type:"string" }
+              }
+            }
+          },
+          "toppings": {
+            type: "array",
+            title: "Topping Options",
+            uniqueItems: true,
+            maxItems: 7,
+            items: {
+              type: "object",
+              format: "topping",
+              properties: {
+                "id": { type:"string" },
+                "type": { type:"string" }
+              }
+            }
+          }
+        }
+      }
+    };
+
+    ToppingSearchTreemaNode = makeFauxSearchTreemaNodeClass('/toppings.json');
+    TreemaNode.setNodeSubclass('topping', ToppingSearchTreemaNode);
+    BatterSearchTreemaNode = makeFauxSearchTreemaNodeClass('/batters.json');
+    TreemaNode.setNodeSubclass('batter', BatterSearchTreemaNode);
+
+    var ProductTreemaNode = function () { this['super']('constructor').apply(this, arguments); };
+    TreemaNode.nodeMap['object'].extend(ProductTreemaNode);
+    ProductTreemaNode.prototype.buildValueForDisplay = function (valEl) {
+      var text = '';
+      if (!this.data.name && !this.data.type) { text = "New Product"; }
+      else if (!this.data.name) { text = "New " + this.data.type; }
+      else if (!this.data.type) { text = this.data.name; }
+      else text = this.data.type + ', ' + this.data.name;
+      valEl.text(text);
+    };
+    TreemaNode.setNodeSubclass('product', ProductTreemaNode);
+
+    var DollarPriceTreemaNode = function () { this['super']('constructor').apply(this, arguments); };
+    TreemaNode.nodeMap['number'].extend(DollarPriceTreemaNode);
+    DollarPriceTreemaNode.prototype.buildValueForDisplay = function (valEl) { valEl.text("$" + this.data.toFixed(2));};
+    TreemaNode.setNodeSubclass('price', DollarPriceTreemaNode);
+    
+    buildTreemaExample($('#demo'), product_schema, products);
+
+  </script>
+  
+  <p>
+    For more examples, check out the
+    <a href="demo.html">Demos</a>.
+  </p>
+
+  <h3>What is it good for?</h3>
+
+  <p>
+    Okay. You're rocking Node.js, MongoDB, Redis, ShareJS, CreateJS, Backbone, and fifty
+    other sweet open-source projects in your web site's stack
+    (they all look so good!) working with one common data format: <strong>JSON</strong>.
+  </p>
+  <p>
+    You've got JSON objects which have nested arrays nesting yet more objects
+    whose 'name' properties can't be more than 20 characters long or start with a number.
+    Not to mention all the references to yet more objects with a structure all their own.
+  </p>
+  <p>
+    You and your users need to be able to <strong>edit these fickle monstrosities</strong>.
+    Woe to those whose data doesn't have the exact right structure.
+  </p>
+  <p>
+    You <em>could</em> build tons of HTML forms views or separate pages for each nesting and intricate systems
+    to make sure the data is woven back together just so,
+    but with documents this big and complex, this will get... <em>unwieldy</em>.
+  </p>
+  <p>
+    And yet! This problem has already been solved elsewhere.
+    In software like:
+  </p>
+  
+  <div id="tree-interfaces" class="row">
+    <div class="col-md-4">
+      <h5>Starcraft II Galaxy Editor</h5>
+      <img src="images/galaxy.png" id="galaxy" />
+    </div>
+    <div class="col-md-4">
+      <h5>Max OS X Finder</h5>
+      <img src="images/finder.png" id="finder" />
+    </div>
+    <div class="col-md-4">
+      <h5>Chrome Dev Tools (Elements)</h5>
+      <img src="images/chrome.png" class="img-thumbnail" id="chrome" />
+    </div>
+  </div>
+
+  <div class="modal fade" id="image-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-body">
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    var showImage = function (name) {
+      var modal = $('#image-modal');
+      var fullImage = $('<img></img>').attr('src', '/images/'+name+'.png');
+      modal.find('.modal-body').empty().append(fullImage);
+      modal.modal();
+    };
+    
+    $('#tree-interfaces').find('img').click(function(e) {
+      var name = $(e.target).attr('id');
+      console.log('click', name);
+      showImage(name);
+    });
+  </script>
+  
+  <p>
+    That's the stuff right there.
+    That collapsible tree thing.
+    Works great for big, deep structures.
+    Keyboard navigation and control.
+    Dense information, yet still accessible.
+    And the interfaces seamlessly communicate the actions that are available to the user.
+    You want <em>that</em>.
+  </p>
+  
+  <hr />
+  
+  <p class="lead">
+    Treema is <em>that</em> for sites. It creates tree based interfaces based
+    on JSON-Schemas that define how your data is structured, guiding and limiting
+    based on those constraints.
+  </p>
+  
+  <hr />
+
+  <h3>What else are JSON-Schemas good for?</h3>
+  
+  <h4>Lots of stuff!</h4>
+
+  <ul>
+    <li>
+      Validate data server-side, making sure no one is trying to submit gnarly data.
+      Just search for JSON-schema validators in your language of choice
+      (we recommend <a href="https://github.com/geraintluff/tv4">tv4</a> for JavaScript).
+      Or check out <a href="http://json-schema.org/implementations.html">JSON-Schema's Software Lists</a>.
+    </li>
+    <li>
+      Generate interfaces and forms with countless other libraries like
+      <a href="http://www.alpacajs.org/">Alpaca</a>, 
+      <a href="https://github.com/josdejong/jsoneditor/">JSON Editor Online</a>, or
+      <a href="https://github.com/kevinburke/hulk">Hulk</a>.
+    </li>
+    <li>
+      Generate documentation, such as for APIs, with tools like
+      <a href="https://github.com/mashery/iodocs">I/O Docs</a>.
+    </li>
+  </ul>
+
+  <h3>I Want to Know More!</h3>
+
+  <ul>
+    <li><a href="demo.html">Demos</a></li>
+    <li><a href="using.html">Using Treema</a></li>
+    <li><a href="develop.html">Developing</a></li>
+  </ul>
+  
+  <h3>Getting in Touch</h3>
+  
+  <ul>
+    <li><a href="https://github.com/sderickson/treema/issues">Treema GitHub Issues</a></li>
+    <li><a href="http://discourse.codecombat.com/">CodeCombat Discourse Forum</a></li>
+    <li><a href="http://www.hipchat.com/g3plnOKqa">CodeCombat HipChat</a></li>
+    <li><a href="mailto:team@codecombat.com">Email</a> the <a href="http://codecombat.com/about">CodeCombat Team</a>.</li>
+  </ul>
+
+  <footer><div></div><div></div></footer>
+</div>
+  
+  </body>
+</html>

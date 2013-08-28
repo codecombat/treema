@@ -1,0 +1,16 @@
+#downloads a { margin-right: 10px; }
+#downloads { margin-bottom: 20px; }
+.lead a { font-weight: bold; }
+
+#tree-interfaces { margin: 30px 0; }
+#tree-interfaces img { width: 100%; cursor: pointer; }
+#tree-interfaces h5 { text-align: center; }
+
+#galaxy { position: relative; top: 10px; }
+#chrome { position: relative; top: 20px; box-shadow: 0 5px 20px #666; }
+
+#image-modal img { width: 100%; }
+#image-modal .modal-dialog { width: 800px; }
+
+.lead { margin: 20px 40px; }
+

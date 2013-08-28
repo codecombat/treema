@@ -6,7 +6,7 @@ keyDown = function($el, which) {
   event.which = which;
   return $el.trigger(event);
 };
-(function() {
+;(function() {
   var addressTreema, data, downArrowPress, expectOneSelected, leftArrowPress, nameTreema, phoneTreema, rightArrowPress, schema, treema, upArrowPress;
   leftArrowPress = function($el) {
     return keyDown($el, 37);
@@ -24,7 +24,10 @@ keyDown = function($el, which) {
     var selected;
     selected = treema.getSelectedTreemas();
     expect(selected.length).toBe(1);
-    return expect(selected[0]).toBe(t);
+    expect(t).toBeDefined();
+    if (t && selected.length === 1) {
+      return expect(selected[0].$el[0]).toBe(t.$el[0]);
+    }
   };
   schema = {
     type: 'object',
@@ -83,11 +86,7 @@ keyDown = function($el, which) {
       downArrowPress(treema.$el);
       expectOneSelected(phoneTreema);
       downArrowPress(treema.$el);
-      expectOneSelected(phoneTreema.childrenTreemas[0]);
-      downArrowPress(treema.$el);
-      expectOneSelected(phoneTreema.childrenTreemas[1]);
-      downArrowPress(treema.$el);
-      return expectOneSelected(addressTreema);
+      return expectOneSelected(phoneTreema.childrenTreemas[0]);
     });
     return it('does nothing if the last treema is selected', function() {
       expect(treema.getSelectedTreemas().length).toBe(0);
@@ -187,7 +186,7 @@ keyDown = function($el, which) {
     });
   });
 })();
-describe('Delete key press', function() {
+;describe('Delete key press', function() {
   var addressTreema, deleteKeyPress, expectOneSelected, nameTreema, original_data, phoneTreema, rebuild, schema, treema;
   deleteKeyPress = function($el) {
     return keyDown($el, 8);
@@ -292,7 +291,7 @@ describe('Delete key press', function() {
     return expect(treema.data.name).toBeTruthy();
   });
 });
-describe('Enter key press', function() {
+;describe('Enter key press', function() {
   var data, enterKeyPress, nameTreema, phoneTreema, schema, treema;
   enterKeyPress = function($el) {
     return keyDown($el, 13);
@@ -388,7 +387,7 @@ describe('Enter key press', function() {
     return expect(phoneTreema.childrenTreemas[0].isEditing()).toBeTruthy();
   });
 });
-describe('Initialization', function() {
+;describe('Initialization', function() {
   var data, el, schema, treema;
   schema = {
     type: 'object',
@@ -428,7 +427,7 @@ describe('Initialization', function() {
     return expect(treema.isOpen()).toBeTruthy();
   });
 });
-describe('Mouse click behavior', function() {
+;describe('Mouse click behavior', function() {
   var data, metaClick, nameTreema, phoneTreema, schema, shiftClick, treema;
   schema = {
     type: 'object',
@@ -518,10 +517,13 @@ describe('Mouse click behavior', function() {
     return treema.deselectAll();
   });
 });
-describe('"N" key press', function() {
-  var data, nKeyPress, schema, treema;
+;describe('"N" key press', function() {
+  var data, enterKeyPress, nKeyPress, schema, treema;
   nKeyPress = function($el) {
     return keyDown($el, 78);
+  };
+  enterKeyPress = function($el) {
+    return keyDown($el, 13);
   };
   schema = {
     type: 'array',
@@ -540,10 +542,12 @@ describe('"N" key press', function() {
     treema.childrenTreemas[0].select();
     expect(treema.childrenTreemas[2]).toBeUndefined();
     nKeyPress(treema.childrenTreemas[0].$el);
+    expect(treema.childrenTreemas[2]).toBeUndefined();
+    enterKeyPress(treema.$el.find('input').val('410-555-1023'));
     expect(treema.childrenTreemas[2]).not.toBeUndefined();
-    treema.childrenTreemas[2].$el.find('input').val('410-555-1023');
     treema.childrenTreemas[2].display();
-    return treema.childrenTreemas[2].select();
+    treema.childrenTreemas[2].select();
+    return expect(treema.childrenTreemas[2]).not.toBeUndefined();
   });
   return it('does not create a new row when there\'s no more space', function() {
     expect(treema.data.length).toBe(3);
@@ -551,7 +555,7 @@ describe('"N" key press', function() {
     return expect(treema.data.length).toBe(3);
   });
 });
-describe('Tab key press', function() {
+;describe('Tab key press', function() {
   var addressTreema, data, nameTreema, phoneTreema, schema, tabKeyPress, treema;
   tabKeyPress = function($el) {
     return keyDown($el, 9);
@@ -650,7 +654,7 @@ describe('Tab key press', function() {
     return expect(phoneTreema.childrenTreemas[0].isEditing()).toBeTruthy();
   });
 });
-describe('TV4 Interface', function() {
+;describe('TV4 Interface', function() {
   var data, schema, treema;
   schema = {
     type: 'number'
@@ -667,5 +671,5 @@ describe('TV4 Interface', function() {
     return expect(treema.getErrors().length).toBe(1);
   });
 });
-
+;
 //@ sourceMappingURL=treema.spec.js.map

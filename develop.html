@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+  <link rel="stylesheet" href="css/vendor/bootstrap.min.css" media="screen">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/develop.css">
+  <title>Treema by sderickson</title>
+</head>
+
+<body>
+
+
+
+<div id="content">
+  <a href="https://github.com/sderickson/treema">
+    <img style="position: absolute; top: 0; left: 0; border: 0;"
+         src="https://s3.amazonaws.com/github/ribbons/forkme_left_green_007200.png" alt="Fork me on GitHub">
+  </a>
+
+  <h1>Treema</h1>
+
+  <ul class="nav nav-pills navbar navbar-default">
+    <li><a href="index.html">Overview</a></li>
+    <li><a href="demo.html">Demo</a></li>
+    <li><a href="using.html">Usage</a></li>
+    <li class="active"><a href="develop.html">Dev</a></li>
+    <li id="tests-link"><a href="test.html">Run Tests</a></li>
+    <li id="github-link"><a href="https://github.com/sderickson/treema">Treema on Github</a></li>
+  </ul>
+  
+  <p>
+    So, you want to work on this open source project?
+    Awesome! Here's what you need to know.
+  </p>
+  
+  <h3>Setting Up Your Environment</h3>
+  
+  <p>
+    The <a href="https://github.com/sderickson/treema">Github Repository</a>
+    has <strong>everything</strong> you need to work on Treema.
+    You'll need <a href="http://www.joyent.com/blog/installing-node-and-npm">Node, NPM</a>
+    and <a href="http://git-scm.com/">Git</a> installed.
+  </p>
+  
+  <ol>
+    <li>
+      <strong>Clone the repository</strong>
+      <pre>git clone https://github.com/sderickson/treema.git</pre>
+    </li>
+    <li>
+      Go to the directory and <strong>NPM install</strong>
+      <pre>npm install</pre>
+    </li>
+  </ol>
+  
+  <p>
+    <strong>Bam</strong>. You're done.
+  </p>
+  
+  <h3>Running The Environment</h3>
+  
+  <p>
+    From the treema directory, run:
+  </p>
+  
+  <pre>bin/treema-brunch</pre>
+  
+  <div class="panel panel-success">
+    <div class="panel-heading">Convenience Tip</div>
+    <div class="panel-body">
+      
+      <p>
+        To make starting the dev environment easier, put the bin folder in your PATH.
+        Do that by putting in a line like this in your .profile file: 
+      </p>
+      
+      <pre>PATH=$PATH:~/path/to/treema/bin</pre>
+      
+      <p>
+        I also like to set up Mac OS X Window Groups to really make it easy.
+        To do that:
+      </p>
+      
+      <ol>
+        <li>
+          Go to Terminal preferences and add a Treema profile under the Settings tab,
+          running treema-brunch when it opens (in the Shell inner tab).
+        </li>
+        <li>
+          Open a Terminal with that profile (double clicking it works) and
+          set it just where you want it.
+        </li>
+        <li>
+          Close all other open terminals.
+        </li>
+        <li>
+          Under the Window menu, choose "Save Windows As Group..." and make one for Treema.
+        </li>
+      </ol>
+      <p>
+        Now, whenever you want to work on Treema, open that Window group from the same menu.
+        So easy.
+      </p>
+    </div>
+  </div>
+
+  <p>
+    The environment is a Node.js server.
+    It's used for several things:
+  </p>
+
+  <ul>
+    <li>
+      Statically serving scratch.html, which is intended as a sandbox for messing with whatever you're building.
+    </li>
+    <li>
+      Statically serving test.html, which runs all the Jasmine tests.
+    </li>
+    <li>
+      Statically serving all of these Github pages to make it easy to work on them.
+    </li>
+    <li>
+      Handling requests for testing subclasses that might use them, such as the DatabaseSearchTreemaNode.
+      The current handler for that one goes to sleep for a split second to give a feel for server wait time.
+    </li>
+    <li>
+      Whatever else you might like!
+    </li>
+  </ul>
+  
+  <p>
+    Brunch both runs this server, and also handles trans-compiling from Sass and CoffeeScript to CSS and JavaScript.
+    Assuming you've started brunch, you should be able to access the
+    test page at
+  </p>
+  
+  <pre class="shortened"><a href="http://localhost:9090/test.html">http://localhost:9090/test.html</a></pre>
+  
+  <p>
+    If that worked, you can edit the CoffeeScript files and view changes in
+    scratch.html or any of the html files in /dev.
+  </p>
+  
+  <h3>Things to keep in mind</h3>
+  
+  <ul>
+    <li>
+      Keep everything in CoffeeScript and Sass.
+      They are so good.
+    </li>
+    <li>
+      Remember to create tests in the /test folder.
+      jQuery actually works really well (and really efficiently) for testing interface behavior.
+      You never need to insert the treema element into the DOM,
+      you can just trigger events directly through functions like .click().
+      Check out some of the existing tests on interface behavior for examples.
+    </li>
+    <li>
+      Organize new subclasses in new files in /src.
+      All files have access to TreemaNode and its class methods.
+    </li>
+  </ul>
+
+  <h3>What to work on?</h3>
+  
+  <p>
+    We have a handful of advanced features we, ourselves, want next:
+  </p>
+  
+  <ul>
+    <li>
+      <strong>Undo/redo functionality</strong>.
+      Use <a href="https://github.com/benjamine/JsonDiffPatch">JsonDiffPatch</a>.
+    </li>
+    <li>
+      <strong>Backup sortable system</strong>.
+      Right now it relies on the jQuery UI Sortable component,
+      and if that fails there's so support for rearranging Array entities).
+    </li>
+    <li>
+      <strong>Icons</strong>.
+      Many native interface implementations of this structure supports icons for each element.
+      And they look spiffy.
+    </li>
+    <li>
+      <strong>Interface for changing the data or schema from without</strong>.
+      That way if some other interface makes an edit to the data,
+      Treema can quietly update things.
+    </li>
+    <li>
+      <strong>Make errors more human friendly</strong>.
+    </li>
+  </ul>
+  
+  <p>
+    You could always also add more tests, add more nodes for common cases, or handle
+    <a href="https://github.com/sderickson/treema/issues">reported issues</a>.
+  </p>
+  
+  <footer><div></div><div></div></footer>
+</div>
+
+</div>
+</body>
+</html>
