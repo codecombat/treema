@@ -21,7 +21,12 @@ h1 {
 }
 
 .nav { padding: 0 5px; margin-top: 5px; }
-#github-link { float: right; }
+#github-link, #tests-link {
+  float: right;
+  background-color: rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 2px; 
+}
 
 h3 { margin-top: 40px; }
 h4 { margin: 20px 0; }
