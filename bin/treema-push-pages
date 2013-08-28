@@ -1,0 +1,4 @@
+git checkout gh-pages
+
+
+rm -rf dev

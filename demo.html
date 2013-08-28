@@ -265,7 +265,7 @@
       }
     };
 
-    FastFoodSearchTreemaNode = makeFauxSearchTreemaNodeClass('/fastfood.json');
+    FastFoodSearchTreemaNode = makeFauxSearchTreemaNodeClass('fastfood.json');
     TreemaNode.setNodeSubclass('restaurant', FastFoodSearchTreemaNode);
     treema = buildTreemaExample($('#lookup'), lookup_schema, lookup);
     treema.childrenTreemas.restaurants.open();
