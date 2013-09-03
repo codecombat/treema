@@ -427,6 +427,51 @@ keyDown = function($el, which) {
     return expect(treema.isOpen()).toBeTruthy();
   });
 });
+
+describe('Schemaless', function() {
+  var data, el, schema, treema;
+  schema = {
+    type: 'object'
+  };
+  data = {
+    errors: [],
+    warnings: [
+      {
+        userInfo: {},
+        id: "jshint_W099",
+        message: "Mixed spaces and tabs.",
+        level: "warning",
+        type: "transpile",
+        ranges: [[[8, 0], [8, 3]]]
+      }
+    ],
+    infos: []
+  };
+  el = $('<div></div>');
+  treema = TreemaNode.make(el, {
+    data: data,
+    schema: schema
+  });
+  return it('initializes when given data for an empty schema', function() {
+    return expect(treema.$el).toBeDefined();
+  });
+});
+
+describe('Object.prototype properties', function() {
+  var data, schema, treema;
+  Object.prototype.hahaEatIt = function() {};
+  schema = {
+    type: 'object'
+  };
+  data = {};
+  treema = TreemaNode.make(null, {
+    data: data,
+    schema: schema
+  });
+  return it('survives adding Object.prototype functions', function() {
+    return expect(treema.$el).toBeDefined();
+  });
+});
 ;describe('Mouse click behavior', function() {
   var data, metaClick, nameTreema, phoneTreema, schema, shiftClick, treema;
   schema = {
