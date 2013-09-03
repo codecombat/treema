@@ -1,19 +1,19 @@
 do __init = ->
-  
+
   TreemaNode.setNodeSubclass 'string', class StringNode extends TreemaNode
     valueClass: 'treema-string'
     getDefaultValue: -> ''
     @inputTypes = ['color', 'date', 'datetime', 'datetime-local',
                    'email', 'month', 'range', 'search',
                    'tel', 'text', 'time', 'url', 'week']
-  
+
     buildValueForDisplay: (valEl) -> @buildValueForDisplaySimply(valEl, "\"#{@data}\"")
-  
+
     buildValueForEditing: (valEl) ->
       input = @buildValueForEditingSimply(valEl, @data)
       input.attr('maxlength', @schema.maxLength) if @schema.maxLength
       input.attr('type', @schema.format) if @schema.format in StringNode.inputTypes
-  
+
     saveChanges: (valEl) -> @data = $('input', valEl).val()
 
 
@@ -21,14 +21,14 @@ do __init = ->
   TreemaNode.setNodeSubclass 'number', class NumberNode extends TreemaNode
     valueClass: 'treema-number'
     getDefaultValue: -> 0
-  
+
     buildValueForDisplay: (valEl) -> @buildValueForDisplaySimply(valEl, JSON.stringify(@data))
-  
+
     buildValueForEditing: (valEl) ->
       input = @buildValueForEditingSimply(valEl, JSON.stringify(@data), 'number')
       input.attr('max', @schema.maximum) if @schema.maximum
       input.attr('min', @schema.minimum) if @schema.minimum
-  
+
     saveChanges: (valEl) -> @data = parseFloat($('input', valEl).val())
 
 
@@ -43,20 +43,20 @@ do __init = ->
   TreemaNode.setNodeSubclass 'boolean', class BooleanNode extends TreemaNode
     valueClass: 'treema-boolean'
     getDefaultValue: -> false
-  
+
     buildValueForDisplay: (valEl) -> @buildValueForDisplaySimply(valEl, JSON.stringify(@data))
-  
+
     buildValueForEditing: (valEl) ->
       input = @buildValueForEditingSimply(valEl, JSON.stringify(@data))
       $('<span></span>').text(JSON.stringify(@data)).insertBefore(input)
       input.focus()
-  
+
     toggleValue: (newValue=null) ->
       @data = not @data
       @data = newValue if newValue?
       valEl = @getValEl().empty()
       if @isDisplaying() then @buildValueForDisplay(valEl) else @buildValueForEditing(valEl)
-  
+
     onSpacePressed: -> @toggleValue()
     onFPressed: -> @toggleValue(false)
     onTPressed: -> @toggleValue(true)
@@ -70,7 +70,7 @@ do __init = ->
     collection: true
     ordered: true
     directlyEditable: false
-  
+
     getChildren: -> ([key, value, @getChildSchema()] for value, key in @data)
     getChildSchema: -> @schema.items or {}
     buildValueForDisplay: (valEl) ->
@@ -82,16 +82,16 @@ do __init = ->
         helperTreema.buildValueForDisplay(val)
         text.push(val.text())
       text.push('...') if @data.length > 3
-  
+
       @buildValueForDisplaySimply(valEl, text.join(', '))
-  
+
     buildValueForEditing: (valEl) -> @buildValueForEditingSimply(valEl, JSON.stringify(@data))
-  
+
     canAddChild: ->
       return false if @schema.additionalItems is false and @data.length >= @schema.items.length
       return false if @schema.maxItems? and @data.length >= @schema.maxItems
       return true
-  
+
     addNewChild: ->
       return unless @canAddChild()
       @open() if @isClosed()
@@ -119,7 +119,7 @@ do __init = ->
     collection: true
     keyed: true
     directlyEditable: false
-  
+
     getChildren: ->
       # order based on properties object first
       children = []
@@ -129,17 +129,17 @@ do __init = ->
           continue if typeof @data[key] is 'undefined'
           keysAccountedFor.push(key)
           children.push([key, @data[key], @getChildSchema(key)])
-  
+
       for key, value of @data
         continue if key in keysAccountedFor
         children.push([key, value, @getChildSchema(key)])
       children
-  
+
     getChildSchema: (key_or_title) ->
       for key, child_schema of @schema.properties
         return child_schema if key is key_or_title or child_schema.title is key_or_title
       {}
-  
+
     buildValueForDisplay: (valEl) ->
       text = []
       return unless @data
@@ -148,15 +148,15 @@ do __init = ->
         if @schema.displayProperty? and key isnt @schema.displayProperty
           skipped.push(key)
           continue
-          
+
         helperTreema = TreemaNode.make(null, {schema: @getChildSchema(key), data:value}, @)
         val = $('<div></div>')
         helperTreema.buildValueForDisplay(val)
         text.push(val.text())
       @buildValueForDisplaySimply(valEl, '{' + text.join(', ') + '}')
-      
+
     buildValueForEditing: (valEl) -> @buildValueForEditingSimply(valEl, JSON.stringify(@data))
-  
+
     populateData: ->
       super()
       return unless @schema.required
@@ -165,9 +165,9 @@ do __init = ->
         helperTreema = TreemaNode.make(null, {schema: @getChildSchema(key), data:null}, @)
         helperTreema.populateData()
         @data[key] = helperTreema.data
-        
+
     # adding children ---------------------------------------------------------
-    
+
     addNewChild: ->
       return unless @canAddChild()
       @open() unless @isRoot()
@@ -196,19 +196,19 @@ do __init = ->
         continue if @data[property]?
         properties.push(childSchema.title or property)
       properties.sort()
-      
+
     # event handling when adding a new property -------------------------------
-  
+
     onDeletePressed: (e) ->
       return super(e) unless @addingNewProperty()
       if not $(e.target).val()
         @cleanupAddNewChild()
         e.preventDefault()
         @$el.find('.treema-add-child').focus()
-  
+
     onEscapePressed: ->
       @cleanupAddNewChild()
-  
+
     onTabPressed: (e) ->
       return super(e) unless @addingNewProperty()
       e.preventDefault()
@@ -217,7 +217,7 @@ do __init = ->
     onEnterPressed: (e) ->
       return super(e) unless @addingNewProperty()
       @tryToAddNewChild(e, true)
-      
+
     # new property behavior ---------------------------------------------------
 
     tryToAddNewChild: (e, aggressive) ->
@@ -243,7 +243,7 @@ do __init = ->
         @cleanupAddNewChild()
         treema = @childrenTreemas[key]
         return if treema.canEdit() then treema.toggleEdit() else treema.select()
-        
+
       # otherwise add the new child
       @cleanupAddNewChild()
       @addNewChildForKey(key)
@@ -278,7 +278,7 @@ do __init = ->
       else
         @integrateChildTreema(newTreema)
         newTreema.addNewChild()
-        
+
       @updateMyAddButton()
 
     findObjectInsertionPoint: (key) ->
@@ -303,13 +303,13 @@ do __init = ->
 
 
   TreemaNode.setNodeSubclass 'any', class AnyNode extends TreemaNode
-  
+
     helper: null
-  
+
     constructor: (splat...) ->
       super(splat...)
       @updateShadowMethods()
-  
+
     buildValueForEditing: (valEl) -> @buildValueForEditingSimply(valEl, JSON.stringify(@data))
     saveChanges: (valEl) ->
       @data = $('input', valEl).val()
@@ -328,16 +328,16 @@ do __init = ->
           console.log('could not parse data', @data)
       @updateShadowMethods()
       @rebuild()
-  
+
     updateShadowMethods: ->
       # This node takes on the behaviors of the other basic nodes.
       NodeClass = TreemaNode.getNodeClassForSchema({type:$.type(@data)})
-      @helper = new NodeClass(@schema, @data, @parent)
+      @helper = new NodeClass(@schema, {data: @data, options: @options}, @parent)
       @helper.tv4 = @tv4
       for prop in ['collection', 'ordered', 'keyed', 'getChildSchema', 'getChildren', 'getChildSchema',
                    'buildValueForDisplay', 'addNewChild']
         @[prop] = @helper[prop]
-  
+
     rebuild: ->
       oldEl = @$el
       if @parent
@@ -345,7 +345,7 @@ do __init = ->
       else
         newNode = @build()
       @$el = newNode
-  
+
     onClick: (e) ->
       return if e.target.nodeName in ['INPUT', 'TEXTAREA']
       clickedValue = $(e.target).closest('.treema-value').length  # Clicks are in children of .treema-value nodes

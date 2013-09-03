@@ -2200,7 +2200,10 @@ TreemaNode = (function() {
       NodeClass = TreemaNode.getNodeClassForSchema({
         type: $.type(this.data)
       });
-      this.helper = new NodeClass(this.schema, this.data, this.parent);
+      this.helper = new NodeClass(this.schema, {
+        data: this.data,
+        options: this.options
+      }, this.parent);
       this.helper.tv4 = this.tv4;
       _ref6 = ['collection', 'ordered', 'keyed', 'getChildSchema', 'getChildren', 'getChildSchema', 'buildValueForDisplay', 'addNewChild'];
       _results = [];
