@@ -42,12 +42,3 @@ describe 'Schemaless', ->
 
   it 'initializes when given data for an empty schema', ->
     expect(treema.$el).toBeDefined()
-
-describe 'Object.prototype properties', ->
-
-  Object.prototype.hahaEatIt = ->
-  schema = type: 'object'
-  data = {}
-  treema = TreemaNode.make(null, {data: data, schema: schema})
-  it 'survives adding Object.prototype functions', ->
-    expect(treema.$el).toBeDefined()

@@ -456,22 +456,6 @@ describe('Schemaless', function() {
     return expect(treema.$el).toBeDefined();
   });
 });
-
-describe('Object.prototype properties', function() {
-  var data, schema, treema;
-  Object.prototype.hahaEatIt = function() {};
-  schema = {
-    type: 'object'
-  };
-  data = {};
-  treema = TreemaNode.make(null, {
-    data: data,
-    schema: schema
-  });
-  return it('survives adding Object.prototype functions', function() {
-    return expect(treema.$el).toBeDefined();
-  });
-});
 ;describe('Mouse click behavior', function() {
   var data, metaClick, nameTreema, phoneTreema, schema, shiftClick, treema;
   schema = {
