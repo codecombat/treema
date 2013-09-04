@@ -336,7 +336,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.canAddChild = function() {
-    return this.collection && this.editable;
+    return this.collection && this.editable && !this.settings.preventEditing;
   };
 
   TreemaNode.prototype.canAddProperty = function() {
@@ -956,6 +956,9 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.canEdit = function() {
+    if (this.settings.preventEditing) {
+      return false;
+    }
     if (!this.editable) {
       return false;
     }

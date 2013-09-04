@@ -63,7 +63,7 @@ class TreemaNode
   # collection specific
   getChildren: -> console.error('"getChildren" has not been overridden.') # should return a list of key-value-schema tuples
   getChildSchema: -> console.error('"getChildSchema" has not been overridden.')
-  canAddChild: -> @collection and @editable
+  canAddChild: -> @collection and @editable and not @settings.preventEditing  # preventEditing does yet get passed to children
   canAddProperty: -> true
   addingNewProperty: -> false
   addNewChild: -> false
@@ -419,6 +419,7 @@ class TreemaNode
 
   # Editing values ------------------------------------------------------------
   canEdit: ->
+    return false if @settings.preventEditing  # preventEditing does not yet get passed to children
     return false if not @editable
     return false if not @directlyEditable
     return false if @collection and @isOpen()
