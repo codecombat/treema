@@ -437,6 +437,7 @@ describe('Schemaless', function() {
     errors: [],
     warnings: [
       {
+        hint: void 0,
         userInfo: {},
         id: "jshint_W099",
         message: "Mixed spaces and tabs.",
@@ -584,6 +585,74 @@ describe('Schemaless', function() {
     return expect(treema.data.length).toBe(3);
   });
 });
+;(function() {
+  var data, expectClosed, expectOpen, schema, treema;
+  expectOpen = function(t) {
+    expect(t).toBeDefined();
+    return expect(t.isClosed()).toBeFalsy();
+  };
+  expectClosed = function(t) {
+    expect(t).toBeDefined();
+    return expect(t.isClosed()).toBeTruthy();
+  };
+  schema = {
+    type: 'object',
+    properties: {
+      name: {
+        type: 'string'
+      },
+      info: {
+        type: 'object',
+        properties: {
+          numbers: {
+            type: 'array',
+            items: {
+              type: ['string', 'array']
+            }
+          }
+        }
+      }
+    }
+  };
+  data = {
+    name: 'Thor',
+    info: {
+      numbers: ['401-401-1337', ['123-456-7890']]
+    }
+  };
+  treema = TreemaNode.make(null, {
+    data: data,
+    schema: schema
+  });
+  treema.build();
+  console.log("Got data", data);
+  beforeEach(function() {
+    treema.deselectAll();
+    return treema.close();
+  });
+  return describe('openDeep', function() {
+    it('opens everything by default', function() {
+      var infoTreema, phoneTreema;
+      expectClosed(treema);
+      treema.openDeep();
+      expectOpen(treema);
+      infoTreema = treema.childrenTreemas.info;
+      expectOpen(infoTreema);
+      phoneTreema = infoTreema.childrenTreemas.numbers;
+      return expectOpen(phoneTreema);
+    });
+    return it('can open n levels deep', function() {
+      var infoTreema, phoneTreema;
+      expectClosed(treema);
+      treema.openDeep(2);
+      expectOpen(treema);
+      infoTreema = treema.childrenTreemas.info;
+      expectOpen(infoTreema);
+      phoneTreema = infoTreema.childrenTreemas.numbers;
+      return expectClosed(phoneTreema);
+    });
+  });
+})();
 ;describe('Tab key press', function() {
   var addressTreema, data, nameTreema, phoneTreema, schema, tabKeyPress, treema;
   tabKeyPress = function($el) {

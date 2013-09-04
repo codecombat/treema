@@ -912,6 +912,21 @@ TreemaNode = (function() {
     return this.refreshErrors();
   };
 
+  TreemaNode.prototype.openDeep = function(n) {
+    var child, childIndex, _ref, _ref1, _results;
+    if (!(n != null ? n : n = 9001)) {
+      return;
+    }
+    this.open();
+    _ref1 = (_ref = this.childrenTreemas) != null ? _ref : {};
+    _results = [];
+    for (childIndex in _ref1) {
+      child = _ref1[childIndex];
+      _results.push(child.openDeep(n - 1));
+    }
+    return _results;
+  };
+
   TreemaNode.prototype.orderDataFromUI = function() {
     var child, children, index, treema, _i, _len;
     children = this.$el.find('> .treema-children > .treema-node');

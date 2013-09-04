@@ -28,6 +28,7 @@ describe 'Schemaless', ->
     errors: []
     warnings: [
       {
+        hint: undefined
         userInfo: {}
         id: "jshint_W099"
         message: "Mixed spaces and tabs."
