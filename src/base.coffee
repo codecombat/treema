@@ -13,7 +13,7 @@ class TreemaNode
   childrenTemplate: '<div class="treema-children"></div>'
   addChildTemplate: '<div class="treema-add-child" tabindex="9009">+</div>'
   tempErrorTemplate: '<span class="treema-temp-error"></span>'
-  toggleTemplate: '<span class="treema-toggle"></span>'
+  toggleTemplate: '<span class="treema-toggle-hit-area"><span class="treema-toggle"></span></span>'
   keyTemplate: '<span class="treema-key"></span>'
   errorTemplate: '<div class="treema-error"></div>'
   newPropertyTemplate: '<input class="treema-new-prop" />'
@@ -194,7 +194,7 @@ class TreemaNode
   onClick: (e) ->
     return if e.target.nodeName in ['INPUT', 'TEXTAREA']
     clickedValue = $(e.target).closest('.treema-value').length  # Clicks are in children of .treema-value nodes
-    clickedToggle = $(e.target).hasClass('treema-toggle')
+    clickedToggle = $(e.target).hasClass('treema-toggle') or $(e.target).hasClass('treema-toggle-hit-area')
     usedModKey = e.shiftKey or e.ctrlKey or e.metaKey
     @keepFocus() unless clickedValue and not @collection
     return @toggleEdit() if @isDisplaying() and clickedValue and @canEdit() and not usedModKey

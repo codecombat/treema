@@ -245,7 +245,7 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.tempErrorTemplate = '<span class="treema-temp-error"></span>';
 
-  TreemaNode.prototype.toggleTemplate = '<span class="treema-toggle"></span>';
+  TreemaNode.prototype.toggleTemplate = '<span class="treema-toggle-hit-area"><span class="treema-toggle"></span></span>';
 
   TreemaNode.prototype.keyTemplate = '<span class="treema-key"></span>';
 
@@ -594,7 +594,7 @@ TreemaNode = (function() {
       return;
     }
     clickedValue = $(e.target).closest('.treema-value').length;
-    clickedToggle = $(e.target).hasClass('treema-toggle');
+    clickedToggle = $(e.target).hasClass('treema-toggle') || $(e.target).hasClass('treema-toggle-hit-area');
     usedModKey = e.shiftKey || e.ctrlKey || e.metaKey;
     if (!(clickedValue && !this.collection)) {
       this.keepFocus();
