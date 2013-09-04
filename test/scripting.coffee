@@ -22,7 +22,6 @@ do ->
   data = name: 'Thor', info: {numbers: ['401-401-1337', ['123-456-7890']]}
   treema = TreemaNode.make(null, {data: data, schema: schema})
   treema.build()
-  console.log "Got data", data
 
   beforeEach ->
     treema.deselectAll()

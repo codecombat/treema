@@ -625,7 +625,6 @@ describe('Schemaless', function() {
     schema: schema
   });
   treema.build();
-  console.log("Got data", data);
   beforeEach(function() {
     treema.deselectAll();
     return treema.close();
