@@ -734,6 +734,9 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.canEdit = function() {
+    if (this.schema.readOnly) {
+      return false;
+    }
     if (this.settings.preventEditing) {
       return false;
     }
@@ -893,6 +896,9 @@ TreemaNode = (function() {
     _ref = this.getChildren();
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       _ref1 = _ref[_i], key = _ref1[0], value = _ref1[1], schema = _ref1[2];
+      if (schema.format === 'hidden') {
+        continue;
+      }
       treema = TreemaNode.make(null, {
         schema: schema,
         data: value

@@ -43,9 +43,9 @@
         "displayProperty": 'name',
         "properties": {
           "name": { type: "string", maxLength: 20 },
-          "street-address": { title: "Address 1", description: "Don't forget the number.", type: "string" },
-          "locality":{ "type": "string", title: "Locality" },
-          "region": { 'title': 'Region', type: 'string' },
+          "street-address": { title: "Address 1", description: "Don't forget the number.", type: "string", readOnly: true },
+          "locality":{ "type": "string", title: "Locality", format: 'hidden' },
+          "region": { 'title': 'Region', type: 'string'},
           "country-name": { "type": "string", title: "Country" },
           "friend": { "type": "boolean", title: "Friend" },
           "phone-numbers": {

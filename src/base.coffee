@@ -419,6 +419,7 @@ class TreemaNode
 
   # Editing values ------------------------------------------------------------
   canEdit: ->
+    return false if @schema.readOnly
     return false if @settings.preventEditing  # preventEditing does not yet get passed to children
     return false if not @editable
     return false if not @directlyEditable
@@ -513,6 +514,7 @@ class TreemaNode
     childrenContainer.empty()
     @childrenTreemas = {}
     for [key, value, schema] in @getChildren()
+      continue if schema.format is 'hidden'
       treema = TreemaNode.make(null, {schema: schema, data:value}, @, key)
       @integrateChildTreema(treema)
       childNode = @createChildNode(treema)
