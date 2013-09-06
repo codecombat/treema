@@ -194,6 +194,8 @@ do __init = ->
       properties = []
       for property, childSchema of @schema.properties
         continue if @data[property]?
+        continue if childSchema.format is 'hidden'
+        continue if childSchema.readOnly
         properties.push(childSchema.title or property)
       properties.sort()
 

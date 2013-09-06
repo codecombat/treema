@@ -1802,6 +1802,12 @@ TreemaNode = (function() {
         if (this.data[property] != null) {
           continue;
         }
+        if (childSchema.format === 'hidden') {
+          continue;
+        }
+        if (childSchema.readOnly) {
+          continue;
+        }
         properties.push(childSchema.title || property);
       }
       return properties.sort();
