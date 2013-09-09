@@ -233,20 +233,27 @@ class TreemaNode
   # Default keyboard behaviors ------------------------------------------------
 
   onLeftArrowPressed: (e) ->
-    @navigateOut() unless @editingIsHappening() or @addingNewProperty()
+    return if @inputFocused()
+    @navigateOut()
     e.preventDefault()
 
   onRightArrowPressed: (e) ->
-    @navigateIn() unless @editingIsHappening() or @addingNewProperty()
+    return if @inputFocused()
+    @navigateIn()
     e.preventDefault()
 
   onUpArrowPressed: (e) ->
-    @navigateSelection(-1) unless @editingIsHappening() or @addingNewProperty()
+    return if @inputFocused()
+    @navigateSelection(-1)
     e.preventDefault()
 
   onDownArrowPressed: (e) ->
-    @navigateSelection(1) unless @editingIsHappening() or @addingNewProperty()
+    return if @inputFocused()
+    @navigateSelection(1)
     e.preventDefault()
+  
+  inputFocused: ->
+    return true if document.activeElement.nodeName in ['INPUT', 'TEXTAREA']
 
   onSpacePressed: ->
   onTPressed: ->

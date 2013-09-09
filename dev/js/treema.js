@@ -457,31 +457,42 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.onLeftArrowPressed = function(e) {
-    if (!(this.editingIsHappening() || this.addingNewProperty())) {
-      this.navigateOut();
+    if (this.inputFocused()) {
+      return;
     }
+    this.navigateOut();
     return e.preventDefault();
   };
 
   TreemaNode.prototype.onRightArrowPressed = function(e) {
-    if (!(this.editingIsHappening() || this.addingNewProperty())) {
-      this.navigateIn();
+    if (this.inputFocused()) {
+      return;
     }
+    this.navigateIn();
     return e.preventDefault();
   };
 
   TreemaNode.prototype.onUpArrowPressed = function(e) {
-    if (!(this.editingIsHappening() || this.addingNewProperty())) {
-      this.navigateSelection(-1);
+    if (this.inputFocused()) {
+      return;
     }
+    this.navigateSelection(-1);
     return e.preventDefault();
   };
 
   TreemaNode.prototype.onDownArrowPressed = function(e) {
-    if (!(this.editingIsHappening() || this.addingNewProperty())) {
-      this.navigateSelection(1);
+    if (this.inputFocused()) {
+      return;
     }
+    this.navigateSelection(1);
     return e.preventDefault();
+  };
+
+  TreemaNode.prototype.inputFocused = function() {
+    var _ref;
+    if ((_ref = document.activeElement.nodeName) === 'INPUT' || _ref === 'TEXTAREA') {
+      return true;
+    }
   };
 
   TreemaNode.prototype.onSpacePressed = function() {};
