@@ -5,6 +5,8 @@
   <script src="js/vendor/tv4.js"></script>
   <script src="js/vendor/ace.js"></script>
   <script src="js/vendor/bootstrap.min.js"></script>
+  <script src="js/vendor/metaschema.js"></script>
+  <script src="js/vendor/metahyperschema.js"></script>
   <script src="js/treema.js"></script>
   <script src="js/base.js"></script>
   
@@ -389,6 +391,22 @@
     Say the user selects a contact on a contact list.
     Use the callbacks to know when to update another part of the page, showing details about that contact. 
   </p>
+
+  <h3>Meta! Validate JSON Schemas</h3>
+  <p>Want to make sure that what you're putting into a Treema is a valid JSON Schema? Metavalidate!</p>
+
+
+  <h4>Core JSON Schema</h4>
+  <div id="meta-core"></div>
+  <script>
+    buildTreemaExample($('#meta-core'), window.metaschema, contact_book_schemaB);
+  </script>
+  
+  <h4>Hyper JSON Schema</h4>
+  <div id="meta-hyper"></div>
+  <script>
+    buildTreemaExample($('#meta-hyper'), window.metahyperschema, contact_book_schemaB);
+  </script>
   
   <h3>Want More?</h3>
   
