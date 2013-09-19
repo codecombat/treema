@@ -645,6 +645,7 @@ class TreemaNode
     delete settings.data if settings.data
     newNode = new NodeClass(null, settings, @parent)
     newNode.data = newNode.getDefaultValue()
+    newNode.data = workingSchema.default if workingSchema.default?
     newNode.tv4 = @tv4
     newNode.keyForParent = @keyForParent if @keyForParent?
     newNode.setWorkingSchema(workingSchema, @workingSchemas)

@@ -1129,6 +1129,9 @@ TreemaNode = (function() {
     }
     newNode = new NodeClass(null, settings, this.parent);
     newNode.data = newNode.getDefaultValue();
+    if (workingSchema["default"] != null) {
+      newNode.data = workingSchema["default"];
+    }
     newNode.tv4 = this.tv4;
     if (this.keyForParent != null) {
       newNode.keyForParent = this.keyForParent;
@@ -2249,7 +2252,7 @@ TreemaNode = (function() {
         options: this.options
       }, this.parent);
       this.helper.tv4 = this.tv4;
-      _ref7 = ['collection', 'ordered', 'keyed', 'getChildSchema', 'getChildren', 'getChildSchema', 'buildValueForDisplay', 'addNewChild'];
+      _ref7 = ['collection', 'ordered', 'keyed', 'getChildSchema', 'getChildren', 'getChildSchema', 'buildValueForDisplay', 'addNewChild', 'childPropertiesAvailable'];
       _results = [];
       for (_i = 0, _len = _ref7.length; _i < _len; _i++) {
         prop = _ref7[_i];

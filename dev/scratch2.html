@@ -21,6 +21,10 @@
 
   <h1>Try Things Out Here</h1>
 
+  <h3>Generate a JSON-Schema</h3>
+  
+  <hr />
+  
   <div id="scratch"></div>
 
 </div>
@@ -32,39 +36,41 @@ $(document).ready(function () {
   var schema = {
 
     type: 'array',
-    items: {
-      type: 'array',
-      maxLength: 3
-    }
+    items: [{}]
   };
 
 
   var schema_schema = {
 //      "id": "http://json-schema.org/draft-04/schema#",
 //      "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "Schema",
     "description": "Core schema meta-schema",
     "definitions": {
       "schemaArray": {
         "type": "array",
         "minItems": 1,
-        "items": { "$ref": "#" }
+        "items": { "$ref": "#" },
+        "title": "Array of Schemas",
+        "default": [{}]
       },
       "positiveInteger": {
         "type": "integer",
-        "minimum": 0
+        "minimum": 0,
+        "title": "Positive Integer"
       },
       "positiveIntegerDefault0": {
         "allOf": [ { "$ref": "#/definitions/positiveInteger" }, { "default": 0 } ]
       },
       "simpleTypes": {
-        title: "JS Type",
+        title: "Single Type",
         "enum": [ "array", "boolean", "integer", "null", "number", "object", "string" ]
       },
       "stringArray": {
         "type": "array",
         "items": { "type": "string" },
         "minItems": 1,
-        "uniqueItems": true
+        "uniqueItems": true,
+        title: "String Array"
       }
     },
     "type": "object",
@@ -175,7 +181,8 @@ $(document).ready(function () {
             "type": "array",
             "items": { "$ref": "#/definitions/simpleTypes" },
             "minItems": 1,
-            "uniqueItems": true
+            "uniqueItems": true,
+            "title": "Array of Types"
           }
         ]
       },

@@ -359,7 +359,7 @@ do __init = ->
       @helper = new NodeClass(@schema, {data: @data, options: @options}, @parent)
       @helper.tv4 = @tv4
       for prop in ['collection', 'ordered', 'keyed', 'getChildSchema', 'getChildren', 'getChildSchema',
-                   'buildValueForDisplay', 'addNewChild']
+                   'buildValueForDisplay', 'addNewChild', 'childPropertiesAvailable']
         @[prop] = @helper[prop]
 
     rebuild: ->
