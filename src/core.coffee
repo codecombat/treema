@@ -118,6 +118,7 @@ do __init = ->
       childNode = @createChildNode(newTreema)
       @getAddButtonEl().before(childNode)
       if newTreema.canEdit() then newTreema.edit() else newTreema.select()
+      @integrateChildTreema(newTreema)
       true
 
 

@@ -2062,6 +2062,7 @@ TreemaNode = (function() {
       } else {
         newTreema.select();
       }
+      this.integrateChildTreema(newTreema);
       return true;
     };
 
