@@ -32,25 +32,33 @@ class TreemaNode
   childrenTreemas: null
   justCreated: true
   removed: false
+  workingSchema: null
 
   # Thin interface for tv4 ----------------------------------------------------
   isValid: ->
-    return true unless @tv4
-    @tv4.validate(@data, @schema)
+    errors = @getErrors()
+    return errors.length is 0
 
   getErrors: ->
     return [] unless @tv4
-    @tv4.validateMultiple(@data, @schema)['errors']
-
-  getMissing: ->
-    return [] unless @tv4
-    @tv4.validateMultiple(@data, @schema)['missing']
+    if @isRoot()
+      return @cachedErrors if @cachedErrors
+      @cachedErrors = @tv4.validateMultiple(@data, @schema)['errors'] if @isRoot()
+      return @cachedErrors
+    root = @getRoot()
+    errors = root.getErrors()
+    my_path = @getPath()
+    errors = (e for e in errors when e.dataPath[..my_path.length] is my_path)
+    errors
 
   setUpValidator: ->
-    return @tv4 = window['tv4']?.freshApi() if not @parent
-    node = @
-    node = node.parent while node.parent
-    @tv4 = node.tv4
+    if not @parent
+      @tv4 = window['tv4']?.freshApi()
+      @tv4.addSchema('#', @schema)
+      @tv4.addSchema(@schema.id, @schema) if @schema.id
+    else
+      root = @getRoot()
+      @tv4 = root.tv4
 
   # Abstract functions --------------------------------------------------------
   saveChanges: -> console.error('"saveChanges" has not been overridden.')
@@ -101,6 +109,7 @@ class TreemaNode
     return true
 
   limitChoices: (options) ->
+    console.log('limit choices', options)
     @enum = options
     @buildValueForEditing = (valEl) =>
       input = $('<select></select>')
@@ -153,11 +162,30 @@ class TreemaNode
     @setUpGlobalEvents() unless @parent
     @setUpLocalEvents() if @parent
     @updateMyAddButton() if @collection
-    @limitChoices(@schema.enum) if @schema.enum
+    @createSchemaSelector() if @workingSchemas?.length > 1
+    schema = @workingSchema or @schema
+    @limitChoices(schema.enum) if schema.enum
     @$el
 
   populateData: ->
     @data = @data or @schema.default or @getDefaultValue()
+    
+  setWorkingSchema: (@workingSchema, @workingSchemas) ->
+    
+  createSchemaSelector: ->
+    select = $('<select></select>').addClass('treema-schema-select')
+    for schema, i in @workingSchemas
+      label = @makeWorkingSchemaLabel(schema)
+      option = $('<option></option>').attr('value', i).text(label)
+      option.attr('selected', true) if schema is @workingSchema
+      select.append(option)
+    select.change(@onSelectSchema)
+    @$el.find('> .treema-row').prepend(select)
+    
+  makeWorkingSchemaLabel: (schema) ->
+    return schema.title if schema.title?
+    return schema.type if schema.type?
+    return 'Some Schema'
 
   # Event handling ------------------------------------------------------------
   setUpGlobalEvents: ->
@@ -465,6 +493,7 @@ class TreemaNode
 
   flushChanges: ->
     @parent.integrateChildTreema(@) if @parent and @justCreated
+    @getRoot().cachedErrors = null
     @justCreated = false
     @markAsChanged()
     return @refreshErrors() unless @parent
@@ -606,6 +635,23 @@ class TreemaNode
     @$el.addClass('treema-last-selected')
     TreemaNode.didSelect = true
 
+  # Switching working schema --------------------------------------------------
+
+  onSelectSchema: (e) =>
+    index = parseInt($(e.target).val())
+    workingSchema = @workingSchemas[index]
+    NodeClass = TreemaNode.getNodeClassForSchema(workingSchema)
+    settings = $.extend(true, {}, @settings)
+    delete settings.data if settings.data
+    newNode = new NodeClass(null, settings, @parent)
+    newNode.data = newNode.getDefaultValue()
+    newNode.tv4 = @tv4
+    newNode.keyForParent = @keyForParent if @keyForParent?
+    newNode.setWorkingSchema(workingSchema, @workingSchemas)
+    @parent.createChildNode(newNode)
+    @$el.replaceWith(newNode.$el)
+    newNode.flushChanges() # should integrate
+    
   # Child node utilities ------------------------------------------------------
   integrateChildTreema: (treema) ->
     treema.justCreated = false # no longer in limbo
@@ -637,8 +683,10 @@ class TreemaNode
     return if @justCreated
     errors = @getErrors()
     erroredTreemas = []
+    myPath = @getPath()
     for error in errors
-      path = error.dataPath.split('/').slice(1)
+      path = error.dataPath[myPath.length..]
+      path = if path then path.split('/') else []
       deepestTreema = @
       for subpath in path
         unless deepestTreema.childrenTreemas
@@ -682,7 +730,10 @@ class TreemaNode
 
   getValEl: -> @$el.find('> .treema-row .treema-value')
   getRootEl: -> @$el.closest('.treema-root')
-  getRoot: -> @$el.closest('.treema-root').data('instance')
+  getRoot: -> 
+    node = @
+    node = node.parent while node.parent?
+    node
   getInputs: -> @getValEl().find('input, textarea')
   getSelectedTreemas: -> ($(el).data('instance') for el in @getRootEl().find('.treema-selected'))
   getLastSelectedTreema: -> @getRootEl().find('.treema-last-selected').data('instance')
@@ -728,10 +779,18 @@ class TreemaNode
     @nodeMap['any']
 
   @make: (element, options, parent, keyForParent) ->
-    NodeClass = @getNodeClassForSchema(options.schema)
+    workingSchemas = []
+    if parent
+      workingSchemas = parent.buildWorkingSchemas(options.schema)
+      workingSchema = parent.chooseWorkingSchema(workingSchemas, options.data)
+      NodeClass = @getNodeClassForSchema(workingSchema)
+    else
+      NodeClass = @getNodeClassForSchema(options.schema)
     newNode = new NodeClass(element, options, parent)
     newNode.tv4 = parent.tv4 if parent?
     newNode.keyForParent = keyForParent if keyForParent?
+    if parent
+      newNode.setWorkingSchema(workingSchema, workingSchemas)
     newNode
 
   @extend: (child) ->
@@ -748,3 +807,54 @@ class TreemaNode
 
   @didSelect = false
   @changedTreemas = []
+
+
+
+  # Working schemas -----------------------------------------------------------
+
+  buildWorkingSchemas: (originalSchema) ->
+    # flattens $ref, allOf, anyOf, oneOf and type (array) into a list of
+    # simpler schemas this treema may reference for its own purposes
+    baseSchema = @resolveReference($.extend(true, {}, originalSchema or {}))
+    allOf = baseSchema.allOf
+    anyOf = baseSchema.anyOf
+    oneOf = baseSchema.oneOf
+    delete baseSchema.allOf if baseSchema.allOf?
+    delete baseSchema.anyOf if baseSchema.anyOf?
+    delete baseSchema.oneOf if baseSchema.oneOf?
+
+    if allOf?
+      for schema in allOf
+        schema = @resolveReference(schema)
+        $.extend(null, baseSchema, schema)
+
+    workingSchemas = []
+    singularSchemas = []
+    singularSchemas = singularSchemas.concat(anyOf) if anyOf?
+    singularSchemas = singularSchemas.concat(oneOf) if oneOf?
+
+    for singularSchema in singularSchemas
+      singularSchema = @resolveReference(singularSchema)
+      if $.isArray(singularSchema.type)
+        for type in singularSchema.type
+          s = $.extend(true, {}, baseSchema)
+          s = $.extend(true, s, singularSchema)
+          s.type = type
+          workingSchemas.push(s)
+      else
+        s = $.extend(true, {}, baseSchema)
+        s = $.extend(true, s, singularSchema)
+        workingSchemas.push(s)
+    workingSchemas = [baseSchema] if workingSchemas.length is 0
+    workingSchemas
+
+  resolveReference: (schema) ->
+    if schema.$ref? then @tv4.getSchema(schema.$ref) else schema
+
+  chooseWorkingSchema: (workingSchemas, data) ->
+    return workingSchemas[0] if workingSchemas.length is 1
+    root = @getRoot()
+    for schema in workingSchemas
+      result = tv4.validateMultiple(data, schema, false, root.schema)
+      return schema if result.valid
+    return workingSchemas[0]

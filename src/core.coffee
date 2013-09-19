@@ -33,6 +33,21 @@ do __init = ->
 
 
 
+  TreemaNode.setNodeSubclass 'integer', class IntegerNode extends TreemaNode
+    valueClass: 'treema-integer'
+    getDefaultValue: -> 0
+
+    buildValueForDisplay: (valEl) -> @buildValueForDisplaySimply(valEl, JSON.stringify(@data))
+
+    buildValueForEditing: (valEl) ->
+      input = @buildValueForEditingSimply(valEl, JSON.stringify(@data), 'number')
+      input.attr('max', @schema.maximum) if @schema.maximum
+      input.attr('min', @schema.minimum) if @schema.minimum
+
+    saveChanges: (valEl) -> @data = parseInt($('input', valEl).val())
+
+
+
   TreemaNode.setNodeSubclass 'null', NullNode = class NullNode extends TreemaNode
     valueClass: 'treema-null'
     editable: false
@@ -136,9 +151,14 @@ do __init = ->
       children
 
     getChildSchema: (key_or_title) ->
-      for key, child_schema of @schema.properties
+      schema = @workingSchema or @schema
+      for key, child_schema of schema.properties
         return child_schema if key is key_or_title or child_schema.title is key_or_title
-      {}
+      for key, child_schema of schema.patternProperties
+        re = new RegExp(key)
+        return child_schema if key.match(re)
+      return schema.additionalProperties if $.isPlainObject(schema.additionalProperties)
+      return {}
 
     buildValueForDisplay: (valEl) ->
       text = []
@@ -190,9 +210,10 @@ do __init = ->
       return false
 
     childPropertiesAvailable: ->
-      return [] unless @schema.properties
+      schema = @workingSchema or @schema
+      return [] unless schema.properties
       properties = []
-      for property, childSchema of @schema.properties
+      for property, childSchema of schema.properties
         continue if @data[property]?
         continue if childSchema.format is 'hidden'
         continue if childSchema.readOnly
