@@ -34,22 +34,20 @@
 var jade = {};
 $(document).ready(function () {
   var schema = {
-
     type: 'array',
     items: [{}]
   };
 
-
   var schema_schema = {
-//      "id": "http://json-schema.org/draft-04/schema#",
-//      "$schema": "http://json-schema.org/draft-04/schema#",
+    "id": "http://json-schema.org/draft-04/schema#",
+    "$schema": "http://json-schema.org/draft-04/schema#",
     "title": "Schema",
     "description": "Core schema meta-schema",
     "definitions": {
       "schemaArray": {
         "type": "array",
         "minItems": 1,
-        "items": { "$ref": "#" },
+        "items": { "$ref": "http://json-schema.org/draft-04/schema#" },
         "title": "Array of Schemas",
         "default": [{}]
       },
@@ -59,7 +57,7 @@ $(document).ready(function () {
         "title": "Positive Integer"
       },
       "positiveIntegerDefault0": {
-        "allOf": [ { "$ref": "#/definitions/positiveInteger" }, { "default": 0 } ]
+        "allOf": [ { "$ref": "http://json-schema.org/draft-04/schema#/definitions/positiveInteger" }, { "default": 0 } ]
       },
       "simpleTypes": {
         title: "Single Type",
@@ -109,8 +107,8 @@ $(document).ready(function () {
         "type": "boolean",
         "default": false
       },
-      "maxLength": { "$ref": "#/definitions/positiveInteger" },
-      "minLength": { "$ref": "#/definitions/positiveIntegerDefault0" },
+      "maxLength": { "$ref": "http://json-schema.org/draft-04/schema#/definitions/positiveInteger" },
+      "minLength": { "$ref": "http://json-schema.org/draft-04/schema#/definitions/positiveIntegerDefault0" },
       "pattern": {
         "type": "string",
         "format": "regex"
@@ -118,54 +116,54 @@ $(document).ready(function () {
       "additionalItems": {
         "anyOf": [
           { "type": "boolean" },
-          { "$ref": "#" }
+          { "$ref": "http://json-schema.org/draft-04/schema#" }
         ],
         "default": {}
       },
       "items": {
         "anyOf": [
-          { "$ref": "#" },
-          { "$ref": "#/definitions/schemaArray" }
+          { "$ref": "http://json-schema.org/draft-04/schema#" },
+          { "$ref": "http://json-schema.org/draft-04/schema#/definitions/schemaArray" }
         ],
         "default": {}
       },
-      "maxItems": { "$ref": "#/definitions/positiveInteger" },
-      "minItems": { "$ref": "#/definitions/positiveIntegerDefault0" },
+      "maxItems": { "$ref": "http://json-schema.org/draft-04/schema#/definitions/positiveInteger" },
+      "minItems": { "$ref": "http://json-schema.org/draft-04/schema#/definitions/positiveIntegerDefault0" },
       "uniqueItems": {
         "type": "boolean",
         "default": false
       },
-      "maxProperties": { "$ref": "#/definitions/positiveInteger" },
-      "minProperties": { "$ref": "#/definitions/positiveIntegerDefault0" },
-      "required": { "$ref": "#/definitions/stringArray" },
+      "maxProperties": { "$ref": "http://json-schema.org/draft-04/schema#/definitions/positiveInteger" },
+      "minProperties": { "$ref": "http://json-schema.org/draft-04/schema#/definitions/positiveIntegerDefault0" },
+      "required": { "$ref": "http://json-schema.org/draft-04/schema#/definitions/stringArray" },
       "additionalProperties": {
         "anyOf": [
           { "type": "boolean" },
-          { "$ref": "#" }
+          { "$ref": "http://json-schema.org/draft-04/schema#" }
         ],
         "default": {}
       },
       "definitions": {
         "type": "object",
-        "additionalProperties": { "$ref": "#" },
+        "additionalProperties": { "$ref": "http://json-schema.org/draft-04/schema#" },
         "default": {}
       },
       "properties": {
         "type": "object",
-        "additionalProperties": { "$ref": "#" },
+        "additionalProperties": { "$ref": "http://json-schema.org/draft-04/schema#" },
         "default": {}
       },
       "patternProperties": {
         "type": "object",
-        "additionalProperties": { "$ref": "#" },
+        "additionalProperties": { "$ref": "http://json-schema.org/draft-04/schema#" },
         "default": {}
       },
       "dependencies": {
         "type": "object",
         "additionalProperties": {
           "anyOf": [
-            { "$ref": "#" },
-            { "$ref": "#/definitions/stringArray" }
+            { "$ref": "http://json-schema.org/draft-04/schema#" },
+            { "$ref": "http://json-schema.org/draft-04/schema#/definitions/stringArray" }
           ]
         }
       },
@@ -176,20 +174,20 @@ $(document).ready(function () {
       },
       "type": {
         "anyOf": [
-          { "$ref": "#/definitions/simpleTypes" },
+          { "$ref": "http://json-schema.org/draft-04/schema#/definitions/simpleTypes" },
           {
             "type": "array",
-            "items": { "$ref": "#/definitions/simpleTypes" },
+            "items": { "$ref": "http://json-schema.org/draft-04/schema#/definitions/simpleTypes" },
             "minItems": 1,
             "uniqueItems": true,
             "title": "Array of Types"
           }
         ]
       },
-      "allOf": { "$ref": "#/definitions/schemaArray" },
-      "anyOf": { "$ref": "#/definitions/schemaArray" },
-      "oneOf": { "$ref": "#/definitions/schemaArray" },
-      "not": { "$ref": "#" }
+      "allOf": { "$ref": "http://json-schema.org/draft-04/schema#/definitions/schemaArray" },
+      "anyOf": { "$ref": "http://json-schema.org/draft-04/schema#/definitions/schemaArray" },
+      "oneOf": { "$ref": "http://json-schema.org/draft-04/schema#/definitions/schemaArray" },
+      "not": { "$ref": "http://json-schema.org/draft-04/schema#" }
     },
     "dependencies": {
       "exclusiveMaximum": [ "maximum" ],
@@ -198,55 +196,11 @@ $(document).ready(function () {
     "default": {}
   };
 
-//    schema = {
-//      "definitions": {
-//        "schemaArray": {
-//          "type": "array",
-//          "minItems": 1,
-//          "items": { "$ref": "#" }
-//        },
-//        "positiveNumber": {
-//          "type": "number",
-//          "minimum": 0,
-//          "title": "Positive Number"
-//        },
-//        "positiveIntegerDefault0": {
-//          "allOf": [ { "$ref": "#/definitions/positiveInteger" }, { "default": 0 } ]
-//        },
-//        "simpleTypes": {
-//          "enum": [ "array", "boolean", "integer", "null", "number", "object", "string" ]
-//        },
-//        "stringArray": {
-//          "type": "array",
-//          "items": { "type": "string" },
-//          "minItems": 1,
-//          "uniqueItems": true
-//        }
-//      },
-//      type: 'object',
-//      properties: {
-//        'x': {
-//          anyOf: [
-//            { type: 'string', title: "String" },
-//            { "$ref": "#/definitions/positiveNumber" }
-//          ]
-//        }
-//      }
-//    };
-//    
-//    data = { x: 5 }; 
-
   var el = $('#scratch');
   var options = {schema:schema_schema, data:schema};
-//    var options = { schema: schema, data: data };
   var treema = el.treema(options);
   treema.build();
   window.treema = treema
-//    tv4.addSchema('#', schema_schema);
-//    window.s = schema
-//    window.ss = schema_schema
-
-//    console.log(tv4.validateMultiple(-1, { "$ref": "#/definitions/positiveInteger" }, false, schema_schema));
 });
 
 </script>

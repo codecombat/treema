@@ -1996,26 +1996,40 @@ TreemaNode = (function() {
       _results = [];
       for (key = _i = 0, _len = _ref6.length; _i < _len; key = ++_i) {
         value = _ref6[key];
-        _results.push([key, value, this.getChildSchema()]);
+        _results.push([key, value, this.getChildSchema(key)]);
       }
       return _results;
     };
 
-    ArrayNode.prototype.getChildSchema = function() {
-      return this.schema.items || {};
+    ArrayNode.prototype.getChildSchema = function(index) {
+      var schema;
+      schema = this.workingSchema || this.schema;
+      if (!((schema.items != null) || (schema.additionalItems != null))) {
+        return {};
+      }
+      if ($.isPlainObject(schema.items)) {
+        return schema.items;
+      }
+      if (index < schema.length) {
+        return schema[index];
+      }
+      if ($.isPlainObject(schema.additionalItems)) {
+        return schema.additionalItems;
+      }
+      return {};
     };
 
     ArrayNode.prototype.buildValueForDisplay = function(valEl) {
-      var child, helperTreema, text, val, _i, _len, _ref6;
+      var child, helperTreema, index, text, val, _i, _len, _ref6;
       text = [];
       if (!this.data) {
         return;
       }
       _ref6 = this.data.slice(0, 3);
-      for (_i = 0, _len = _ref6.length; _i < _len; _i++) {
-        child = _ref6[_i];
+      for (index = _i = 0, _len = _ref6.length; _i < _len; index = ++_i) {
+        child = _ref6[index];
         helperTreema = TreemaNode.make(null, {
-          schema: this.getChildSchema(),
+          schema: this.getChildSchema(index),
           data: child
         }, this);
         val = $('<div></div>');
@@ -2051,7 +2065,7 @@ TreemaNode = (function() {
         this.open();
       }
       new_index = Object.keys(this.childrenTreemas).length;
-      schema = this.getChildSchema();
+      schema = this.getChildSchema(new_index);
       newTreema = TreemaNode.make(void 0, {
         schema: schema,
         data: void 0

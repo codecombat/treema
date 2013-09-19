@@ -86,13 +86,22 @@ do __init = ->
     ordered: true
     directlyEditable: false
 
-    getChildren: -> ([key, value, @getChildSchema()] for value, key in @data)
-    getChildSchema: -> @schema.items or {}
+    getChildren: ->
+      ([key, value, @getChildSchema(key)] for value, key in @data)
+      
+    getChildSchema: (index) ->
+      schema = @workingSchema or @schema
+      return {} unless schema.items? or schema.additionalItems?
+      return schema.items if $.isPlainObject(schema.items)
+      return schema[index] if index  < schema.length
+      return schema.additionalItems if $.isPlainObject(schema.additionalItems)
+      return {}
+
     buildValueForDisplay: (valEl) ->
       text = []
       return unless @data
-      for child in @data[..2]
-        helperTreema = TreemaNode.make(null, {schema: @getChildSchema(), data:child}, @)
+      for child, index in @data[..2]
+        helperTreema = TreemaNode.make(null, {schema: @getChildSchema(index), data:child}, @)
         val = $('<div></div>')
         helperTreema.buildValueForDisplay(val)
         text.push(val.text())
@@ -111,7 +120,7 @@ do __init = ->
       return unless @canAddChild()
       @open() if @isClosed()
       new_index = Object.keys(@childrenTreemas).length
-      schema = @getChildSchema()
+      schema = @getChildSchema(new_index)
       newTreema = TreemaNode.make(undefined, {schema: schema, data:undefined}, @, new_index)
       newTreema.justCreated = true
       newTreema.tv4 = @tv4
