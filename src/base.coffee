@@ -635,7 +635,49 @@ class TreemaNode
     @$el.addClass('treema-last-selected')
     TreemaNode.didSelect = true
 
-  # Switching working schema --------------------------------------------------
+  # Working schemas -----------------------------------------------------------
+  
+  # Schemas can be flexible using combinatorial properties and references.
+  # But it simplifies logic if schema props like $ref, allOf, anyOf, and oneOf 
+  # are flattened into a list of more straightforward user choices.
+  # These simplifications are called working schemas.
+
+  buildWorkingSchemas: (originalSchema) ->
+    baseSchema = @resolveReference($.extend(true, {}, originalSchema or {}))
+    allOf = baseSchema.allOf
+    anyOf = baseSchema.anyOf
+    oneOf = baseSchema.oneOf
+    delete baseSchema.allOf if baseSchema.allOf?
+    delete baseSchema.anyOf if baseSchema.anyOf?
+    delete baseSchema.oneOf if baseSchema.oneOf?
+
+    if allOf?
+      for schema in allOf
+        $.extend(null, baseSchema, @resolveReference(schema))
+
+    workingSchemas = []
+    singularSchemas = []
+    singularSchemas = singularSchemas.concat(anyOf) if anyOf?
+    singularSchemas = singularSchemas.concat(oneOf) if oneOf?
+
+    for singularSchema in singularSchemas
+      singularSchema = @resolveReference(singularSchema)
+      s = $.extend(true, {}, baseSchema)
+      s = $.extend(true, s, singularSchema)
+      workingSchemas.push(s)
+    workingSchemas = [baseSchema] if workingSchemas.length is 0
+    workingSchemas
+
+  resolveReference: (schema) ->
+    if schema.$ref? then @tv4.getSchema(schema.$ref) else schema
+
+  chooseWorkingSchema: (workingSchemas, data) ->
+    return workingSchemas[0] if workingSchemas.length is 1
+    root = @getRoot()
+    for schema in workingSchemas
+      result = tv4.validateMultiple(data, schema, false, root.schema)
+      return schema if result.valid
+  return workingSchemas[0]
 
   onSelectSchema: (e) =>
     index = parseInt($(e.target).val())
@@ -652,7 +694,8 @@ class TreemaNode
     @parent.createChildNode(newNode)
     @$el.replaceWith(newNode.$el)
     newNode.flushChanges() # should integrate
-    
+
+
   # Child node utilities ------------------------------------------------------
   integrateChildTreema: (treema) ->
     treema.justCreated = false # no longer in limbo
@@ -808,54 +851,3 @@ class TreemaNode
 
   @didSelect = false
   @changedTreemas = []
-
-
-
-  # Working schemas -----------------------------------------------------------
-
-  buildWorkingSchemas: (originalSchema) ->
-    # flattens $ref, allOf, anyOf, oneOf and type (array) into a list of
-    # simpler schemas this treema may reference for its own purposes
-    baseSchema = @resolveReference($.extend(true, {}, originalSchema or {}))
-    allOf = baseSchema.allOf
-    anyOf = baseSchema.anyOf
-    oneOf = baseSchema.oneOf
-    delete baseSchema.allOf if baseSchema.allOf?
-    delete baseSchema.anyOf if baseSchema.anyOf?
-    delete baseSchema.oneOf if baseSchema.oneOf?
-
-    if allOf?
-      for schema in allOf
-        schema = @resolveReference(schema)
-        $.extend(null, baseSchema, schema)
-
-    workingSchemas = []
-    singularSchemas = []
-    singularSchemas = singularSchemas.concat(anyOf) if anyOf?
-    singularSchemas = singularSchemas.concat(oneOf) if oneOf?
-
-    for singularSchema in singularSchemas
-      singularSchema = @resolveReference(singularSchema)
-      if $.isArray(singularSchema.type)
-        for type in singularSchema.type
-          s = $.extend(true, {}, baseSchema)
-          s = $.extend(true, s, singularSchema)
-          s.type = type
-          workingSchemas.push(s)
-      else
-        s = $.extend(true, {}, baseSchema)
-        s = $.extend(true, s, singularSchema)
-        workingSchemas.push(s)
-    workingSchemas = [baseSchema] if workingSchemas.length is 0
-    workingSchemas
-
-  resolveReference: (schema) ->
-    if schema.$ref? then @tv4.getSchema(schema.$ref) else schema
-
-  chooseWorkingSchema: (workingSchemas, data) ->
-    return workingSchemas[0] if workingSchemas.length is 1
-    root = @getRoot()
-    for schema in workingSchemas
-      result = tv4.validateMultiple(data, schema, false, root.schema)
-      return schema if result.valid
-    return workingSchemas[0]
