@@ -284,7 +284,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.getErrors = function() {
-    var e, errors, my_path, root;
+    var e, errors, moreErrors, my_path, root, _i, _len;
     if (!this.tv4) {
       return [];
     }
@@ -311,6 +311,14 @@ TreemaNode = (function() {
       }
       return _results;
     })();
+    for (_i = 0, _len = errors.length; _i < _len; _i++) {
+      e = errors[_i];
+      e.dataPath = e.dataPath.slice(0, +my_path.length + 1 || 9e9);
+    }
+    if (this.workingSchema) {
+      moreErrors = this.tv4.validateMultiple(this.data, this.workingSchema).errors;
+      errors = errors.concat(moreErrors);
+    }
     return errors;
   };
 
@@ -436,7 +444,6 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.limitChoices = function(options) {
     var _this = this;
-    console.log('limit choices', options);
     this["enum"] = options;
     this.buildValueForEditing = function(valEl) {
       var index, input, option, _i, _len, _ref;
@@ -474,6 +481,7 @@ TreemaNode = (function() {
   function TreemaNode($el, options, parent) {
     this.$el = $el;
     this.parent = parent;
+    this.onSelectType = __bind(this.onSelectType, this);
     this.onSelectSchema = __bind(this.onSelectSchema, this);
     this.orderDataFromUI = __bind(this.orderDataFromUI, this);
     this.onMouseLeave = __bind(this.onMouseLeave, this);
@@ -532,6 +540,9 @@ TreemaNode = (function() {
     if (((_ref = this.workingSchemas) != null ? _ref.length : void 0) > 1) {
       this.createSchemaSelector();
     }
+    if (this.getTypes().length > 1) {
+      this.createTypeSelector();
+    }
     schema = this.workingSchema || this.schema;
     if (schema["enum"]) {
       this.limitChoices(schema["enum"]);
@@ -572,7 +583,54 @@ TreemaNode = (function() {
     if (schema.type != null) {
       return schema.type;
     }
-    return 'Some Schema';
+    return '???';
+  };
+
+  TreemaNode.prototype.getTypes = function() {
+    var schema, types;
+    schema = this.workingSchema || this.schema;
+    types = schema.type || ["string", "number", "integer", "boolean", "null", "array", "object"];
+    if (!$.isArray(types)) {
+      types = [types];
+    }
+    return types;
+  };
+
+  TreemaNode.prototype.createTypeSelector = function() {
+    var button, currentType, div, option, select, type, _i, _len, _ref;
+    div = $('<div></div>').addClass('treema-type-select-container');
+    select = $('<select></select>').addClass('treema-type-select');
+    button = $('<button></button>').addClass('treema-type-select-button');
+    currentType = $.type(this.data);
+    if (currentType === 'number' && this.data % 1 === 0) {
+      currentType = 'integer';
+    }
+    _ref = this.getTypes();
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      type = _ref[_i];
+      option = $('<option></option>').attr('value', type).text(type);
+      if (type === currentType) {
+        option.attr('selected', true);
+        button.text(this.typeToLetter(type));
+      }
+      select.append(option);
+    }
+    div.append(button);
+    div.append(select);
+    select.change(this.onSelectType);
+    return this.$el.find('> .treema-row').prepend(div);
+  };
+
+  TreemaNode.prototype.typeToLetter = function(type) {
+    return {
+      'boolean': 'B',
+      'array': 'A',
+      'object': 'O',
+      'string': 'S',
+      'number': 'F',
+      'integer': 'I',
+      'null': 'N'
+    }[type];
   };
 
   TreemaNode.prototype.setUpGlobalEvents = function() {
@@ -884,7 +942,7 @@ TreemaNode = (function() {
         this.flushChanges();
       }
       if (!(aggressive || this.isValid())) {
-        this.parent.refreshErrors();
+        this.refreshErrors();
         return;
       }
       if (shouldRemove && ((_ref = $(this.$el[0].nextSibling)) != null ? _ref.hasClass('treema-add-child') : void 0) && offset === 1) {
@@ -1340,25 +1398,114 @@ TreemaNode = (function() {
     return TreemaNode.didSelect = true;
   };
 
+  TreemaNode.prototype.buildWorkingSchemas = function(originalSchema) {
+    var allOf, anyOf, baseSchema, oneOf, s, schema, singularSchema, singularSchemas, workingSchemas, _i, _j, _len, _len1;
+    baseSchema = this.resolveReference($.extend(true, {}, originalSchema || {}));
+    allOf = baseSchema.allOf;
+    anyOf = baseSchema.anyOf;
+    oneOf = baseSchema.oneOf;
+    if (baseSchema.allOf != null) {
+      delete baseSchema.allOf;
+    }
+    if (baseSchema.anyOf != null) {
+      delete baseSchema.anyOf;
+    }
+    if (baseSchema.oneOf != null) {
+      delete baseSchema.oneOf;
+    }
+    if (allOf != null) {
+      for (_i = 0, _len = allOf.length; _i < _len; _i++) {
+        schema = allOf[_i];
+        $.extend(null, baseSchema, this.resolveReference(schema));
+      }
+    }
+    workingSchemas = [];
+    singularSchemas = [];
+    if (anyOf != null) {
+      singularSchemas = singularSchemas.concat(anyOf);
+    }
+    if (oneOf != null) {
+      singularSchemas = singularSchemas.concat(oneOf);
+    }
+    for (_j = 0, _len1 = singularSchemas.length; _j < _len1; _j++) {
+      singularSchema = singularSchemas[_j];
+      singularSchema = this.resolveReference(singularSchema);
+      s = $.extend(true, {}, baseSchema);
+      s = $.extend(true, s, singularSchema);
+      workingSchemas.push(s);
+    }
+    if (workingSchemas.length === 0) {
+      workingSchemas = [baseSchema];
+    }
+    return workingSchemas;
+  };
+
+  TreemaNode.prototype.resolveReference = function(schema) {
+    if (schema.$ref != null) {
+      return this.tv4.getSchema(schema.$ref);
+    } else {
+      return schema;
+    }
+  };
+
+  TreemaNode.prototype.chooseWorkingSchema = function(workingSchemas, data) {
+    var result, root, schema, _i, _len;
+    if (workingSchemas.length === 1) {
+      return workingSchemas[0];
+    }
+    root = this.getRoot();
+    for (_i = 0, _len = workingSchemas.length; _i < _len; _i++) {
+      schema = workingSchemas[_i];
+      result = tv4.validateMultiple(data, schema, false, root.schema);
+      if (result.valid) {
+        return schema;
+      }
+    }
+    return workingSchemas[0];
+  };
+
   TreemaNode.prototype.onSelectSchema = function(e) {
-    var NodeClass, index, newNode, settings, workingSchema;
+    var NodeClass, defaultType, index, workingSchema;
     index = parseInt($(e.target).val());
     workingSchema = this.workingSchemas[index];
-    NodeClass = TreemaNode.getNodeClassForSchema(workingSchema);
+    defaultType = "null";
+    if (workingSchema["default"] != null) {
+      defaultType = $.type(workingSchema["default"]);
+    }
+    if (workingSchema.type != null) {
+      defaultType = workingSchema.type;
+    }
+    if ($.isArray(defaultType)) {
+      defaultType = defaultType[0];
+    }
+    NodeClass = TreemaNode.getNodeClassForSchema(workingSchema, defaultType);
+    this.workingSchema = workingSchema;
+    return this.replaceNode(NodeClass);
+  };
+
+  TreemaNode.prototype.onSelectType = function(e) {
+    var NodeClass, newType;
+    newType = $(e.target).val();
+    NodeClass = TreemaNode.getNodeClassForSchema(this.workingSchema, newType);
+    return this.replaceNode(NodeClass);
+  };
+
+  TreemaNode.prototype.replaceNode = function(NodeClass) {
+    var newNode, settings;
     settings = $.extend(true, {}, this.settings);
     if (settings.data) {
       delete settings.data;
     }
     newNode = new NodeClass(null, settings, this.parent);
     newNode.data = newNode.getDefaultValue();
-    if (workingSchema["default"] != null) {
-      newNode.data = workingSchema["default"];
+    if (this.workingSchema["default"] != null) {
+      newNode.data = this.workingSchema["default"];
     }
     newNode.tv4 = this.tv4;
     if (this.keyForParent != null) {
       newNode.keyForParent = this.keyForParent;
     }
-    newNode.setWorkingSchema(workingSchema, this.workingSchemas);
+    newNode.setWorkingSchema(this.workingSchema, this.workingSchemas);
     this.parent.createChildNode(newNode);
     this.$el.replaceWith(newNode.$el);
     return newNode.flushChanges();
@@ -1410,7 +1557,7 @@ TreemaNode = (function() {
     myPath = this.getPath();
     for (_i = 0, _len = errors.length; _i < _len; _i++) {
       error = errors[_i];
-      path = error.dataPath.slice(myPath.length);
+      path = error.dataPath.slice(1);
       path = path ? path.split('/') : [];
       deepestTreema = this;
       for (_j = 0, _len1 = path.length; _j < _len1; _j++) {
@@ -1423,6 +1570,10 @@ TreemaNode = (function() {
           subpath = parseInt(subpath);
         }
         deepestTreema = deepestTreema.childrenTreemas[subpath];
+        if (!deepestTreema) {
+          console.error('could not find treema down path', path, this);
+          return;
+        }
       }
       if (!(deepestTreema._errors && __indexOf.call(erroredTreemas, deepestTreema) >= 0)) {
         deepestTreema._errors = [];
@@ -1634,8 +1785,11 @@ TreemaNode = (function() {
     return this.nodeMap[key] = NodeClass;
   };
 
-  TreemaNode.getNodeClassForSchema = function(schema) {
+  TreemaNode.getNodeClassForSchema = function(schema, def) {
     var NodeClass;
+    if (def == null) {
+      def = 'string';
+    }
     NodeClass = null;
     if (schema.format) {
       NodeClass = this.nodeMap[schema.format];
@@ -1643,9 +1797,7 @@ TreemaNode = (function() {
     if (NodeClass) {
       return NodeClass;
     }
-    if (schema.type) {
-      NodeClass = this.nodeMap[schema.type];
-    }
+    NodeClass = this.nodeMap[schema.type || def];
     if (NodeClass) {
       return NodeClass;
     }
@@ -1653,14 +1805,18 @@ TreemaNode = (function() {
   };
 
   TreemaNode.make = function(element, options, parent, keyForParent) {
-    var NodeClass, newNode, workingSchema, workingSchemas;
+    var NodeClass, newNode, type, workingSchema, workingSchemas;
     workingSchemas = [];
+    type = options.data != null ? $.type(options.data) : 'string';
+    if (type === 'number' && options.data % 1) {
+      type = 'integer';
+    }
     if (parent) {
       workingSchemas = parent.buildWorkingSchemas(options.schema);
       workingSchema = parent.chooseWorkingSchema(workingSchemas, options.data);
-      NodeClass = this.getNodeClassForSchema(workingSchema);
+      NodeClass = this.getNodeClassForSchema(workingSchema, type);
     } else {
-      NodeClass = this.getNodeClassForSchema(options.schema);
+      NodeClass = this.getNodeClassForSchema(options.schema, type);
     }
     newNode = new NodeClass(element, options, parent);
     if (parent != null) {
@@ -1691,84 +1847,6 @@ TreemaNode = (function() {
   TreemaNode.didSelect = false;
 
   TreemaNode.changedTreemas = [];
-
-  TreemaNode.prototype.buildWorkingSchemas = function(originalSchema) {
-    var allOf, anyOf, baseSchema, oneOf, s, schema, singularSchema, singularSchemas, type, workingSchemas, _i, _j, _k, _len, _len1, _len2, _ref;
-    baseSchema = this.resolveReference($.extend(true, {}, originalSchema || {}));
-    allOf = baseSchema.allOf;
-    anyOf = baseSchema.anyOf;
-    oneOf = baseSchema.oneOf;
-    if (baseSchema.allOf != null) {
-      delete baseSchema.allOf;
-    }
-    if (baseSchema.anyOf != null) {
-      delete baseSchema.anyOf;
-    }
-    if (baseSchema.oneOf != null) {
-      delete baseSchema.oneOf;
-    }
-    if (allOf != null) {
-      for (_i = 0, _len = allOf.length; _i < _len; _i++) {
-        schema = allOf[_i];
-        schema = this.resolveReference(schema);
-        $.extend(null, baseSchema, schema);
-      }
-    }
-    workingSchemas = [];
-    singularSchemas = [];
-    if (anyOf != null) {
-      singularSchemas = singularSchemas.concat(anyOf);
-    }
-    if (oneOf != null) {
-      singularSchemas = singularSchemas.concat(oneOf);
-    }
-    for (_j = 0, _len1 = singularSchemas.length; _j < _len1; _j++) {
-      singularSchema = singularSchemas[_j];
-      singularSchema = this.resolveReference(singularSchema);
-      if ($.isArray(singularSchema.type)) {
-        _ref = singularSchema.type;
-        for (_k = 0, _len2 = _ref.length; _k < _len2; _k++) {
-          type = _ref[_k];
-          s = $.extend(true, {}, baseSchema);
-          s = $.extend(true, s, singularSchema);
-          s.type = type;
-          workingSchemas.push(s);
-        }
-      } else {
-        s = $.extend(true, {}, baseSchema);
-        s = $.extend(true, s, singularSchema);
-        workingSchemas.push(s);
-      }
-    }
-    if (workingSchemas.length === 0) {
-      workingSchemas = [baseSchema];
-    }
-    return workingSchemas;
-  };
-
-  TreemaNode.prototype.resolveReference = function(schema) {
-    if (schema.$ref != null) {
-      return this.tv4.getSchema(schema.$ref);
-    } else {
-      return schema;
-    }
-  };
-
-  TreemaNode.prototype.chooseWorkingSchema = function(workingSchemas, data) {
-    var result, root, schema, _i, _len;
-    if (workingSchemas.length === 1) {
-      return workingSchemas[0];
-    }
-    root = this.getRoot();
-    for (_i = 0, _len = workingSchemas.length; _i < _len; _i++) {
-      schema = workingSchemas[_i];
-      result = tv4.validateMultiple(data, schema, false, root.schema);
-      if (result.valid) {
-        return schema;
-      }
-    }
-    return workingSchemas[0];
-  };
 
   return TreemaNode;
 

@@ -213,6 +213,7 @@ ValidatorContext.prototype.getSchema = function (url) {
 	}
 };
 ValidatorContext.prototype.searchSchemas = function (schema, url) {
+	if (schema === undefined || schema === null) { return; }
 	if (typeof schema.id === "string") {
 		if (isTrustedUrl(url, schema.id)) {
 			if (this.schemas[schema.id] === undefined) {
@@ -889,6 +890,7 @@ function getDocumentUri(uri) {
 	return uri.split('#')[0];
 }
 function normSchema(schema, baseUri) {
+	if (schema === undefined || schema === null) { return; }
 	if (baseUri === undefined) {
 		baseUri = schema.id;
 	} else if (typeof schema.id === "string") {
@@ -1065,12 +1067,12 @@ function createApi(language) {
 			}
 			return result;
 		},
-		validate: function (data, schema, checkRecursive, contextSchema) {
+		validate: function (data, schema, checkRecursive) {
 			var context = new ValidatorContext(globalContext, false, languages[currentLanguage], checkRecursive);
 			if (typeof schema === "string") {
 				schema = {"$ref": schema};
 			}
-			context.addSchema("", contextSchema || schema);
+			context.addSchema("", schema);
 			var error = context.validateAll(data, schema);
 			this.error = error;
 			this.missing = context.missing;
@@ -1082,12 +1084,12 @@ function createApi(language) {
 			this.validate.apply(result, arguments);
 			return result;
 		},
-		validateMultiple: function (data, schema, checkRecursive, contextSchema) {
+		validateMultiple: function (data, schema, checkRecursive) {
 			var context = new ValidatorContext(globalContext, true, languages[currentLanguage], checkRecursive);
 			if (typeof schema === "string") {
 				schema = {"$ref": schema};
 			}
-			context.addSchema("", contextSchema || schema);
+			context.addSchema("", schema);
 			context.validateAll(data, schema);
 			var result = {};
 			result.errors = context.errors;

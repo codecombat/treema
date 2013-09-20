@@ -30,9 +30,7 @@
   var jade = {};
   $(document).ready(function () {
     var contacts = [
-//      { 'street-address': '10 Downing Street', 'country-name': 'UK', 'locality': 'London', 'name': 'Prime Minister' },
-//      { 'street-address': '1600 Amphitheatre Pkwy', 'phone-numbers': ['(650) 253-0000'], 'name': 'Google'},
-//      { 'street-address': '45 Rockefeller Plaza', 'region': 'NY', 'locality': 'New York', 'name': 'Rockefeller Center'},
+      { numberChoice: -1 }
     ]
 
     var contact_book_schema = {
@@ -43,22 +41,20 @@
         "displayProperty": 'name',
         "properties": {
           "name": { type: "string", maxLength: 20 },
-          "street-address": { title: "Address 1", description: "Don't forget the number.", type: "string", readOnly: true },
-          "locality":{ "type": "string", title: "Locality", format: 'hidden' },
-          "region": { 'title': 'Region', type: 'string'},
-          "country-name": { "type": "string", title: "Country" },
-          "friend": { "type": "boolean", title: "Friend" },
-          "phone-numbers": {
-            title: 'Phone Number',
-            items: { type: "string", maxLength: 20, minLength:4 },
-            type: 'array'
+          "data": {},
+          "someSchema": {
+            anyOf: [
+              { type: 'number', title: 'Numero' },
+              { type: 'boolean', title: 'Booleano' }
+            ]
           },
-          "fastfoodfavs": {
-            title: "Fast Food",
-            items: { type: "object", format: "fastfood" },
-            type: 'array'
-          } 
-          
+          "numberChoice": {
+            type: 'number',
+            anyOf: [
+              { title: 'Positive Number', minimum: 0, default: 1 },
+              { title: 'Negative Number', maximum: 0, default: -1 }
+            ]
+          }
         }
       }
     };

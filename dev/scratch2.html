@@ -35,7 +35,8 @@ var jade = {};
 $(document).ready(function () {
   var schema = {
     type: 'array',
-    items: [{}]
+    items: [{type: 'number'}],
+    additionalItems: {}
   };
 
   var schema_schema = {
@@ -197,7 +198,14 @@ $(document).ready(function () {
   };
 
   var el = $('#scratch');
-  var options = {schema:schema_schema, data:schema};
+  var options = {schema:{ properties: { 'number': { type: 'number' } } }, data:{
+    'number': 0,
+    'string': 'beans',
+    'null': null,
+    'array': [],
+    'object': {},
+    'boolean': true
+  }};
   var treema = el.treema(options);
   treema.build();
   window.treema = treema

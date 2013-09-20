@@ -49,6 +49,12 @@ class TreemaNode
     errors = root.getErrors()
     my_path = @getPath()
     errors = (e for e in errors when e.dataPath[..my_path.length] is my_path)
+    e.dataPath = e.dataPath[..my_path.length] for e in errors
+    
+    if @workingSchema
+      moreErrors = @tv4.validateMultiple(@data, @workingSchema).errors
+      errors = errors.concat(moreErrors)
+
     errors
 
   setUpValidator: ->
@@ -109,7 +115,6 @@ class TreemaNode
     return true
 
   limitChoices: (options) ->
-    console.log('limit choices', options)
     @enum = options
     @buildValueForEditing = (valEl) =>
       input = $('<select></select>')
@@ -163,6 +168,7 @@ class TreemaNode
     @setUpLocalEvents() if @parent
     @updateMyAddButton() if @collection
     @createSchemaSelector() if @workingSchemas?.length > 1
+    @createTypeSelector() if @getTypes().length > 1
     schema = @workingSchema or @schema
     @limitChoices(schema.enum) if schema.enum
     @$el
@@ -185,7 +191,41 @@ class TreemaNode
   makeWorkingSchemaLabel: (schema) ->
     return schema.title if schema.title?
     return schema.type if schema.type?
-    return 'Some Schema'
+    return '???'
+
+  getTypes: ->
+    schema = @workingSchema or @schema
+    types = schema.type or [ "string", "number", "integer", "boolean", "null", "array", "object" ]
+    types = [types] unless $.isArray(types)
+    types
+    
+  createTypeSelector: ->
+    div = $('<div></div>').addClass('treema-type-select-container')
+    select = $('<select></select>').addClass('treema-type-select')
+    button = $('<button></button>').addClass('treema-type-select-button')
+    currentType = $.type(@data)
+    currentType = 'integer' if currentType == 'number' and @data % 1 is 0
+    for type in @getTypes()
+      option = $('<option></option>').attr('value', type).text(type)
+      if type is currentType
+        option.attr('selected', true)
+        button.text(@typeToLetter(type))
+      select.append(option)
+    div.append(button)
+    div.append(select)
+    select.change(@onSelectType)
+    @$el.find('> .treema-row').prepend(div)
+    
+  typeToLetter: (type) ->
+    return {
+      'boolean': 'B'
+      'array': 'A'
+      'object': 'O'
+      'string': 'S'
+      'number': 'F'
+      'integer': 'I'
+      'null': 'N'
+    }[type]
 
   # Event handling ------------------------------------------------------------
   setUpGlobalEvents: ->
@@ -351,7 +391,7 @@ class TreemaNode
       @saveChanges(@getValEl())
       @flushChanges() unless shouldRemove
       unless aggressive or @isValid()
-        @parent.refreshErrors()
+        @refreshErrors() # make sure workingSchema's errors come through
         return
       if shouldRemove and $(@$el[0].nextSibling)?.hasClass('treema-add-child') and offset is 1
         offset = 2
@@ -677,20 +717,33 @@ class TreemaNode
     for schema in workingSchemas
       result = tv4.validateMultiple(data, schema, false, root.schema)
       return schema if result.valid
-  return workingSchemas[0]
+    return workingSchemas[0]
 
   onSelectSchema: (e) =>
     index = parseInt($(e.target).val())
     workingSchema = @workingSchemas[index]
-    NodeClass = TreemaNode.getNodeClassForSchema(workingSchema)
+    defaultType = "null"
+    defaultType = $.type(workingSchema.default) if workingSchema.default?
+    defaultType = workingSchema.type if workingSchema.type?
+    defaultType = defaultType[0] if $.isArray(defaultType)
+    NodeClass = TreemaNode.getNodeClassForSchema(workingSchema, defaultType)
+    @workingSchema = workingSchema
+    @replaceNode(NodeClass)
+
+  onSelectType: (e) =>
+    newType = $(e.target).val()
+    NodeClass = TreemaNode.getNodeClassForSchema(@workingSchema, newType)
+    @replaceNode(NodeClass)
+    
+  replaceNode: (NodeClass) ->
     settings = $.extend(true, {}, @settings)
     delete settings.data if settings.data
     newNode = new NodeClass(null, settings, @parent)
     newNode.data = newNode.getDefaultValue()
-    newNode.data = workingSchema.default if workingSchema.default?
+    newNode.data = @workingSchema.default if @workingSchema.default?
     newNode.tv4 = @tv4
     newNode.keyForParent = @keyForParent if @keyForParent?
-    newNode.setWorkingSchema(workingSchema, @workingSchemas)
+    newNode.setWorkingSchema(@workingSchema, @workingSchemas)
     @parent.createChildNode(newNode)
     @$el.replaceWith(newNode.$el)
     newNode.flushChanges() # should integrate
@@ -729,7 +782,7 @@ class TreemaNode
     erroredTreemas = []
     myPath = @getPath()
     for error in errors
-      path = error.dataPath[myPath.length..]
+      path = error.dataPath[1..]
       path = if path then path.split('/') else []
       deepestTreema = @
       for subpath in path
@@ -738,6 +791,9 @@ class TreemaNode
           break
         subpath = parseInt(subpath) if deepestTreema.ordered
         deepestTreema = deepestTreema.childrenTreemas[subpath]
+        unless deepestTreema
+          console.error('could not find treema down path', path, @)
+          return
       deepestTreema._errors = [] unless deepestTreema._errors and deepestTreema in erroredTreemas
       deepestTreema._errors.push(error)
       erroredTreemas.push(deepestTreema)
@@ -814,22 +870,24 @@ class TreemaNode
 
   @setNodeSubclass: (key, NodeClass) -> @nodeMap[key] = NodeClass
 
-  @getNodeClassForSchema: (schema) ->
+  @getNodeClassForSchema: (schema, def='string') ->
     NodeClass = null
     NodeClass = @nodeMap[schema.format] if schema.format
     return NodeClass if NodeClass
-    NodeClass = @nodeMap[schema.type] if schema.type
+    NodeClass = @nodeMap[schema.type or def]
     return NodeClass if NodeClass
     @nodeMap['any']
 
   @make: (element, options, parent, keyForParent) ->
     workingSchemas = []
+    type = if options.data? then $.type(options.data) else 'string'
+    type = 'integer' if type == 'number' and options.data % 1
     if parent
       workingSchemas = parent.buildWorkingSchemas(options.schema)
       workingSchema = parent.chooseWorkingSchema(workingSchemas, options.data)
-      NodeClass = @getNodeClassForSchema(workingSchema)
+      NodeClass = @getNodeClassForSchema(workingSchema, type)
     else
-      NodeClass = @getNodeClassForSchema(options.schema)
+      NodeClass = @getNodeClassForSchema(options.schema, type)
     newNode = new NodeClass(element, options, parent)
     newNode.tv4 = parent.tv4 if parent?
     newNode.keyForParent = keyForParent if keyForParent?
