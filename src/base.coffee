@@ -43,7 +43,7 @@ class TreemaNode
     return [] unless @tv4
     if @isRoot()
       return @cachedErrors if @cachedErrors
-      @cachedErrors = @tv4.validateMultiple(@data, @schema)['errors'] if @isRoot()
+      @cachedErrors = @tv4.validateMultiple(@data, @schema)['errors']
       return @cachedErrors
     root = @getRoot()
     errors = root.getErrors()
@@ -862,7 +862,7 @@ class TreemaNode
     pathPieces.reverse()
     return '/' + pathPieces.join('/')
 
-  isRoot: -> @$el.hasClass('treema-root')
+  isRoot: -> not @parent
   isEditing: -> @getValEl().hasClass('treema-edit')
   isDisplaying: -> @getValEl().hasClass('treema-display')
   isOpen: -> @$el.hasClass('treema-open')

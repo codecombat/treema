@@ -70,9 +70,7 @@ TreemaNode = (function() {
       if (this.cachedErrors) {
         return this.cachedErrors;
       }
-      if (this.isRoot()) {
-        this.cachedErrors = this.tv4.validateMultiple(this.data, this.schema)['errors'];
-      }
+      this.cachedErrors = this.tv4.validateMultiple(this.data, this.schema)['errors'];
       return this.cachedErrors;
     }
     root = this.getRoot();
@@ -1527,7 +1525,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.isRoot = function() {
-    return this.$el.hasClass('treema-root');
+    return !this.parent;
   };
 
   TreemaNode.prototype.isEditing = function() {
