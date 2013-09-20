@@ -68,7 +68,8 @@ $(document).ready(function () {
         "items": { "type": "string" },
         "minItems": 1,
         "uniqueItems": true,
-        title: "String Array"
+        title: "String Array",
+        "default": ['']
       }
     },
     "type": "object",
@@ -170,7 +171,8 @@ $(document).ready(function () {
       "enum": {
         "type": "array",
         "minItems": 1,
-        "uniqueItems": true
+        "uniqueItems": true,
+        "default": ['']
       },
       "type": {
         "anyOf": [

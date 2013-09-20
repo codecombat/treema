@@ -92,9 +92,9 @@ do __init = ->
     getChildSchema: (index) ->
       schema = @workingSchema or @schema
       return {} unless schema.items? or schema.additionalItems?
-      return schema.items if $.isPlainObject(schema.items)
-      return schema[index] if index  < schema.length
-      return schema.additionalItems if $.isPlainObject(schema.additionalItems)
+      return @resolveReference(schema.items, true) if $.isPlainObject(schema.items)
+      return @resolveReference(schema[index], true) if index  < schema.length
+      return @resolveReference(schema.additionalItems, true) if $.isPlainObject(schema.additionalItems)
       return {}
 
     buildValueForDisplay: (valEl) ->
@@ -163,11 +163,11 @@ do __init = ->
     getChildSchema: (key_or_title) ->
       schema = @workingSchema or @schema
       for key, child_schema of schema.properties
-        return child_schema if key is key_or_title or child_schema.title is key_or_title
+        return @resolveReference(child_schema, true) if key is key_or_title or child_schema.title is key_or_title
       for key, child_schema of schema.patternProperties
         re = new RegExp(key)
-        return child_schema if key.match(re)
-      return schema.additionalProperties if $.isPlainObject(schema.additionalProperties)
+        return @resolveReference(child_schema, true) if key.match(re)
+      return @resolveReference(schema.additionalProperties, true) if $.isPlainObject(schema.additionalProperties)
       return {}
 
     buildValueForDisplay: (valEl) ->
@@ -303,6 +303,7 @@ do __init = ->
 
     addNewChildForKey: (key) ->
       schema = @getChildSchema(key)
+      console.log('got schema for child key', key, schema)
       newTreema = TreemaNode.make(null, {schema: schema, data:null}, @, key)
       childNode = @createChildNode(newTreema)
       @findObjectInsertionPoint(key).before(childNode)
@@ -310,7 +311,14 @@ do __init = ->
         newTreema.edit()
       else
         @integrateChildTreema(newTreema)
-        newTreema.addNewChild()
+        # new treemas may already have children from default
+        children = newTreema.getChildren()
+        if children.length
+          newTreema.open()
+          child = newTreema.childrenTreemas[children[0][0]]
+          child.select()
+        else
+          newTreema.addNewChild()
 
       @updateMyAddButton()
 

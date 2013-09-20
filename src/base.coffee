@@ -40,6 +40,8 @@ class TreemaNode
     return errors.length is 0
 
   getErrors: ->
+    console.log('')
+    console.log('ERRORS -------------------------------------------------', @data, @getPath())
     return [] unless @tv4
     if @isRoot()
       return @cachedErrors if @cachedErrors
@@ -49,10 +51,12 @@ class TreemaNode
     errors = root.getErrors()
     my_path = @getPath()
     errors = (e for e in errors when e.dataPath[..my_path.length] is my_path)
+    console.log('errors from root...', errors)
     e.dataPath = e.dataPath[..my_path.length] for e in errors
     
     if @workingSchema
       moreErrors = @tv4.validateMultiple(@data, @workingSchema).errors
+      console.log('errors from working schema...', moreErrors, @data, @workingSchema)
       errors = errors.concat(moreErrors)
 
     errors
@@ -144,6 +148,7 @@ class TreemaNode
     @$el = @$el or $('<div></div>')
     @settings = $.extend {}, defaults, options
     @schema = @settings.schema
+    @schema.id = '__base__' unless (@schema.id or @parent)
     @data = options.data
     @patches = []
     @callbacks = @settings.callbacks
@@ -717,8 +722,11 @@ class TreemaNode
     workingSchemas = [baseSchema] if workingSchemas.length is 0
     workingSchemas
 
-  resolveReference: (schema) ->
-    if schema.$ref? then @tv4.getSchema(schema.$ref) else schema
+  resolveReference: (schema, scrubTitle=false) ->
+    return schema unless schema.$ref?
+    schema = @tv4.getSchema(schema.$ref)
+    delete schema.title if scrubTitle and schema.title?
+    schema
 
   chooseWorkingSchema: (workingSchemas, data) ->
     return workingSchemas[0] if workingSchemas.length is 1
@@ -771,6 +779,7 @@ class TreemaNode
     row = childNode.find('.treema-row')
     if @collection and @keyed
       name = treema.schema.title or treema.keyForParent
+      console.log('my schema is', treema.schema)
       keyEl = $(@keyTemplate).text(name)
       keyEl.attr('title', treema.schema.description) if treema.schema.description
       row.prepend(' : ')
