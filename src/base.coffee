@@ -96,8 +96,10 @@ class TreemaNode
     input.blur @onEditInputBlur
     input
 
-  onEditInputBlur: =>
+  onEditInputBlur: (e) =>
     shouldRemove = @shouldTryToRemoveFromParent()
+    closest = $(e.relatedTarget).closest('.treema-node')[0]
+    shouldRemove = false if closest is @$el[0]
     @markAsChanged()
     @saveChanges(@getValEl())
     input = @getValEl().find('input, textarea, select')
@@ -262,6 +264,7 @@ class TreemaNode
   onMouseLeave: (e) => @callbacks.mouseleave(e, @)
 
   onClick: (e) ->
+    console.log('clicky...')
     return if e.target.nodeName in ['INPUT', 'TEXTAREA']
     clickedValue = $(e.target).closest('.treema-value').length  # Clicks are in children of .treema-value nodes
     clickedToggle = $(e.target).hasClass('treema-toggle') or $(e.target).hasClass('treema-toggle-hit-area')

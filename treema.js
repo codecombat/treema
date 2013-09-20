@@ -404,9 +404,13 @@ TreemaNode = (function() {
     return input;
   };
 
-  TreemaNode.prototype.onEditInputBlur = function() {
-    var input, shouldRemove;
+  TreemaNode.prototype.onEditInputBlur = function(e) {
+    var closest, input, shouldRemove;
     shouldRemove = this.shouldTryToRemoveFromParent();
+    closest = $(e.relatedTarget).closest('.treema-node')[0];
+    if (closest === this.$el[0]) {
+      shouldRemove = false;
+    }
     this.markAsChanged();
     this.saveChanges(this.getValEl());
     input = this.getValEl().find('input, textarea, select');
@@ -708,6 +712,7 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.onClick = function(e) {
     var clickedToggle, clickedValue, usedModKey, _ref;
+    console.log('clicky...');
     if ((_ref = e.target.nodeName) === 'INPUT' || _ref === 'TEXTAREA') {
       return;
     }
