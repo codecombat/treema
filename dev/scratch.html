@@ -30,7 +30,7 @@
   var jade = {};
   $(document).ready(function () {
     var contacts = [
-      { numberChoice: -1 }
+      { numberChoice: -1, someSchema: false }
     ]
 
     var contact_book_schema = {
@@ -44,8 +44,8 @@
           "data": {},
           "someSchema": {
             anyOf: [
-              { type: 'number', title: 'Numero' },
-              { type: 'boolean', title: 'Booleano' }
+              { title: 'Title 1' },
+              { title: 'Title 2' }
             ]
           },
           "numberChoice": {

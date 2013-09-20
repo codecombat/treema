@@ -315,11 +315,11 @@ TreemaNode = (function() {
     if (this.collection) {
       this.updateMyAddButton();
     }
-    if (((_ref = this.workingSchemas) != null ? _ref.length : void 0) > 1) {
-      this.createSchemaSelector();
-    }
     if (this.getTypes().length > 1) {
       this.createTypeSelector();
+    }
+    if (((_ref = this.workingSchemas) != null ? _ref.length : void 0) > 1) {
+      this.createSchemaSelector();
     }
     schema = this.workingSchema || this.schema;
     if (schema["enum"]) {
@@ -338,8 +338,10 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.createSchemaSelector = function() {
-    var i, label, option, schema, select, _i, _len, _ref;
+    var button, div, i, label, option, schema, select, _i, _len, _ref;
+    div = $('<div></div>').addClass('treema-schema-select-container');
     select = $('<select></select>').addClass('treema-schema-select');
+    button = $('<button></button>').addClass('treema-schema-select-button').text('...');
     _ref = this.workingSchemas;
     for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
       schema = _ref[i];
@@ -350,8 +352,9 @@ TreemaNode = (function() {
       }
       select.append(option);
     }
+    div.append(button).append(select);
     select.change(this.onSelectSchema);
-    return this.$el.find('> .treema-row').prepend(select);
+    return this.$el.find('> .treema-row').prepend(div);
   };
 
   TreemaNode.prototype.makeWorkingSchemaLabel = function(schema) {
@@ -393,8 +396,7 @@ TreemaNode = (function() {
       }
       select.append(option);
     }
-    div.append(button);
-    div.append(select);
+    div.append(button).append(select);
     select.change(this.onSelectType);
     return this.$el.find('> .treema-row').prepend(div);
   };
@@ -1326,13 +1328,12 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.showErrors = function() {
-    var childErrors, deepestTreema, e, error, erroredTreemas, errors, message, messages, myPath, ownErrors, path, subpath, treema, _i, _j, _k, _len, _len1, _len2, _ref, _results;
+    var childErrors, deepestTreema, e, error, erroredTreemas, errors, message, messages, ownErrors, path, subpath, treema, _i, _j, _k, _len, _len1, _len2, _ref, _results;
     if (this.justCreated) {
       return;
     }
     errors = this.getErrors();
     erroredTreemas = [];
-    myPath = this.getPath();
     for (_i = 0, _len = errors.length; _i < _len; _i++) {
       error = errors[_i];
       path = error.dataPath.slice(1);

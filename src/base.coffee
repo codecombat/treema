@@ -167,8 +167,8 @@ class TreemaNode
     @setUpGlobalEvents() unless @parent
     @setUpLocalEvents() if @parent
     @updateMyAddButton() if @collection
-    @createSchemaSelector() if @workingSchemas?.length > 1
     @createTypeSelector() if @getTypes().length > 1
+    @createSchemaSelector() if @workingSchemas?.length > 1
     schema = @workingSchema or @schema
     @limitChoices(schema.enum) if schema.enum
     @$el
@@ -179,14 +179,17 @@ class TreemaNode
   setWorkingSchema: (@workingSchema, @workingSchemas) ->
     
   createSchemaSelector: ->
+    div = $('<div></div>').addClass('treema-schema-select-container')
     select = $('<select></select>').addClass('treema-schema-select')
+    button = $('<button></button>').addClass('treema-schema-select-button').text('...')
     for schema, i in @workingSchemas
       label = @makeWorkingSchemaLabel(schema)
       option = $('<option></option>').attr('value', i).text(label)
       option.attr('selected', true) if schema is @workingSchema
       select.append(option)
+    div.append(button).append(select)
     select.change(@onSelectSchema)
-    @$el.find('> .treema-row').prepend(select)
+    @$el.find('> .treema-row').prepend(div)
     
   makeWorkingSchemaLabel: (schema) ->
     return schema.title if schema.title?
@@ -211,8 +214,7 @@ class TreemaNode
         option.attr('selected', true)
         button.text(@typeToLetter(type))
       select.append(option)
-    div.append(button)
-    div.append(select)
+    div.append(button).append(select)
     select.change(@onSelectType)
     @$el.find('> .treema-row').prepend(div)
     
@@ -780,7 +782,6 @@ class TreemaNode
     return if @justCreated
     errors = @getErrors()
     erroredTreemas = []
-    myPath = @getPath()
     for error in errors
       path = error.dataPath[1..]
       path = if path then path.split('/') else []
