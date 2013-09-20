@@ -392,20 +392,178 @@
     Use the callbacks to know when to update another part of the page, showing details about that contact. 
   </p>
 
-  <h3>Meta! Validate JSON Schemas</h3>
-  <p>Want to make sure that what you're putting into a Treema is a valid JSON Schema? Metavalidate!</p>
+  <h3>Meta! Create and Edit JSON Schemas</h3>
+  <p>
+    There's a JSON-Schema for JSON-Schemas of course.
+    It uses definitions and self-references, which Treema handles like a charm.
+  </p>
 
 
   <h4>Core JSON Schema</h4>
   <div id="meta-core"></div>
   <script>
-    buildTreemaExample($('#meta-core'), window.metaschema, contact_book_schemaB);
-  </script>
-  
-  <h4>Hyper JSON Schema</h4>
-  <div id="meta-hyper"></div>
-  <script>
-    buildTreemaExample($('#meta-hyper'), window.metahyperschema, contact_book_schemaB);
+    var schema_schema = {
+      "displayProperty": "title",
+      "$schema": "http://json-schema.org/draft-04/schema#",
+      "title": "Schema",
+      "description": "Core schema meta-schema",
+      "definitions": {
+        "schemaArray": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#" },
+          "title": "Array of Schemas",
+          "default": [{}]
+        },
+        "positiveInteger": {
+          "type": "integer",
+          "minimum": 0,
+          "title": "Positive Integer"
+        },
+        "positiveIntegerDefault0": {
+          "allOf": [ { "$ref": "#/definitions/positiveInteger" }, { "default": 0 } ]
+        },
+        "simpleTypes": {
+          title: "Single Type",
+          "enum": [ "array", "boolean", "integer", "null", "number", "object", "string" ]
+        },
+        "stringArray": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "uniqueItems": true,
+          title: "String Array",
+          "default": ['']
+        }
+      },
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uri"
+        },
+        "$schema": {
+          "type": "string",
+          "format": "uri",
+          "default": "http://json-schema.org/draft-04/schema#"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "default": {},
+        "multipleOf": {
+          "type": "number",
+          "minimum": 0,
+          "exclusiveMinimum": true
+        },
+        "maximum": {
+          "type": "number"
+        },
+        "exclusiveMaximum": {
+          "type": "boolean",
+          "default": false
+        },
+        "minimum": {
+          "type": "number"
+        },
+        "exclusiveMinimum": {
+          "type": "boolean",
+          "default": false
+        },
+        "maxLength": { "$ref": "#/definitions/positiveInteger" },
+        "minLength": { "$ref": "#/definitions/positiveIntegerDefault0" },
+        "pattern": {
+          "type": "string",
+          "format": "regex"
+        },
+        "additionalItems": {
+          "anyOf": [
+            { "type": "boolean", "default": false },
+            { "$ref": "#" }
+          ]
+        },
+        "items": {
+          "anyOf": [
+            { "$ref": "#" },
+            { "$ref": "#/definitions/schemaArray" }
+          ],
+          "default": {}
+        },
+        "maxItems": { "$ref": "#/definitions/positiveInteger" },
+        "minItems": { "$ref": "#/definitions/positiveIntegerDefault0" },
+        "uniqueItems": {
+          "type": "boolean",
+          "default": false
+        },
+        "maxProperties": { "$ref": "#/definitions/positiveInteger" },
+        "minProperties": { "$ref": "#/definitions/positiveIntegerDefault0" },
+        "required": { "$ref": "#/definitions/stringArray" },
+        "additionalProperties": {
+          "anyOf": [
+            { "type": "boolean", default: true },
+            { "$ref": "#" }
+          ],
+          default: {}
+        },
+        "definitions": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#" },
+          "default": {}
+        },
+        "properties": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#" },
+          "default": {}
+        },
+        "patternProperties": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#" },
+          "default": {}
+        },
+        "dependencies": {
+          "type": "object",
+          "additionalProperties": {
+            "anyOf": [
+              { "$ref": "#" },
+              { "$ref": "#/definitions/stringArray" }
+            ]
+          }
+        },
+        "enum": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "default": ['']
+        },
+        "type": {
+          "anyOf": [
+            { "$ref": "#/definitions/simpleTypes" },
+            {
+              "type": "array",
+              "items": { "$ref": "#/definitions/simpleTypes" },
+              "minItems": 1,
+              "uniqueItems": true,
+              "title": "Array of Types",
+              "default": ['string']
+            }
+          ]
+        },
+        "allOf": { "$ref": "#/definitions/schemaArray" },
+        "anyOf": { "$ref": "#/definitions/schemaArray" },
+        "oneOf": { "$ref": "#/definitions/schemaArray" },
+        "not": { "$ref": "#" }
+      },
+      "dependencies": {
+        "exclusiveMaximum": [ "maximum" ],
+        "exclusiveMinimum": [ "minimum" ]
+      },
+      "default": {}
+    };
+    
+    buildTreemaExample($('#meta-core'), schema_schema, contact_book_schemaB.items);
   </script>
   
   <h3>Want More?</h3>

@@ -40,6 +40,7 @@ $(document).ready(function () {
   };
 
   var schema_schema = {
+    "displayProperty": "title",
     "$schema": "http://json-schema.org/draft-04/schema#",
     "title": "Schema",
     "description": "Core schema meta-schema",
@@ -199,8 +200,15 @@ $(document).ready(function () {
     "default": {}
   };
 
+  var contact_book_schemaB = {
+    type: 'array',
+    items: {
+      "additionalProperties": false
+    }
+  };
+  
   var el = $('#scratch');
-  var options = {schema: schema_schema, data: {}};
+  var options = {schema: schema_schema, data: contact_book_schemaB.items};
   var treema = el.treema(options);
   treema.build();
   window.treema = treema

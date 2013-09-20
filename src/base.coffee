@@ -40,8 +40,6 @@ class TreemaNode
     return errors.length is 0
 
   getErrors: ->
-    console.log('')
-    console.log('ERRORS -------------------------------------------------', @data, @getPath())
     return [] unless @tv4
     if @isRoot()
       return @cachedErrors if @cachedErrors
@@ -51,12 +49,10 @@ class TreemaNode
     errors = root.getErrors()
     my_path = @getPath()
     errors = (e for e in errors when e.dataPath[..my_path.length] is my_path)
-    console.log('errors from root...', errors)
     e.dataPath = e.dataPath[..my_path.length] for e in errors
     
     if @workingSchema
       moreErrors = @tv4.validateMultiple(@data, @workingSchema).errors
-      console.log('errors from working schema...', moreErrors, @data, @workingSchema)
       errors = errors.concat(moreErrors)
 
     errors
@@ -181,6 +177,7 @@ class TreemaNode
     @$el
 
   populateData: ->
+    return unless @data is undefined
     @data = @data or @schema.default or @getDefaultValue()
     
   setWorkingSchema: (@workingSchema, @workingSchemas) ->
@@ -273,7 +270,6 @@ class TreemaNode
   onMouseLeave: (e) => @callbacks.mouseleave(e, @)
 
   onClick: (e) ->
-    console.log('clicky...')
     return if e.target.nodeName in ['INPUT', 'TEXTAREA']
     clickedValue = $(e.target).closest('.treema-value').length  # Clicks are in children of .treema-value nodes
     clickedToggle = $(e.target).hasClass('treema-toggle') or $(e.target).hasClass('treema-toggle-hit-area')
@@ -779,7 +775,6 @@ class TreemaNode
     row = childNode.find('.treema-row')
     if @collection and @keyed
       name = treema.schema.title or treema.keyForParent
-      console.log('my schema is', treema.schema)
       keyEl = $(@keyTemplate).text(name)
       keyEl.attr('title', treema.schema.description) if treema.schema.description
       row.prepend(' : ')
@@ -904,7 +899,9 @@ class TreemaNode
     type = 'string' unless type?
     if parent
       workingSchemas = parent.buildWorkingSchemas(options.schema)
-      workingSchema = parent.chooseWorkingSchema(workingSchemas, options.data or options.schema.default)
+      data = options.data
+      data = options.schema.default if data is undefined
+      workingSchema = parent.chooseWorkingSchema(workingSchemas, data)
       NodeClass = @getNodeClassForSchema(workingSchema, type)
     else
       NodeClass = @getNodeClassForSchema(options.schema, type)
