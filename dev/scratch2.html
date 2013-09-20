@@ -40,7 +40,6 @@ $(document).ready(function () {
   };
 
   var schema_schema = {
-    "id": "http://json-schema.org/draft-04/schema#",
     "$schema": "http://json-schema.org/draft-04/schema#",
     "title": "Schema",
     "description": "Core schema meta-schema",
@@ -48,7 +47,7 @@ $(document).ready(function () {
       "schemaArray": {
         "type": "array",
         "minItems": 1,
-        "items": { "$ref": "http://json-schema.org/draft-04/schema#" },
+        "items": { "$ref": "#" },
         "title": "Array of Schemas",
         "default": [{}]
       },
@@ -58,7 +57,7 @@ $(document).ready(function () {
         "title": "Positive Integer"
       },
       "positiveIntegerDefault0": {
-        "allOf": [ { "$ref": "http://json-schema.org/draft-04/schema#/definitions/positiveInteger" }, { "default": 0 } ]
+        "allOf": [ { "$ref": "#/definitions/positiveInteger" }, { "default": 0 } ]
       },
       "simpleTypes": {
         title: "Single Type",
@@ -80,7 +79,8 @@ $(document).ready(function () {
       },
       "$schema": {
         "type": "string",
-        "format": "uri"
+        "format": "uri",
+        "default": "http://json-schema.org/draft-04/schema#"
       },
       "title": {
         "type": "string"
@@ -108,63 +108,62 @@ $(document).ready(function () {
         "type": "boolean",
         "default": false
       },
-      "maxLength": { "$ref": "http://json-schema.org/draft-04/schema#/definitions/positiveInteger" },
-      "minLength": { "$ref": "http://json-schema.org/draft-04/schema#/definitions/positiveIntegerDefault0" },
+      "maxLength": { "$ref": "#/definitions/positiveInteger" },
+      "minLength": { "$ref": "#/definitions/positiveIntegerDefault0" },
       "pattern": {
         "type": "string",
         "format": "regex"
       },
       "additionalItems": {
         "anyOf": [
-          { "type": "boolean" },
-          { "$ref": "http://json-schema.org/draft-04/schema#" }
-        ],
-        "default": {}
+          { "type": "boolean", "default": false },
+          { "$ref": "#" }
+        ]
       },
       "items": {
         "anyOf": [
-          { "$ref": "http://json-schema.org/draft-04/schema#" },
-          { "$ref": "http://json-schema.org/draft-04/schema#/definitions/schemaArray" }
+          { "$ref": "#" },
+          { "$ref": "#/definitions/schemaArray" }
         ],
         "default": {}
       },
-      "maxItems": { "$ref": "http://json-schema.org/draft-04/schema#/definitions/positiveInteger" },
-      "minItems": { "$ref": "http://json-schema.org/draft-04/schema#/definitions/positiveIntegerDefault0" },
+      "maxItems": { "$ref": "#/definitions/positiveInteger" },
+      "minItems": { "$ref": "#/definitions/positiveIntegerDefault0" },
       "uniqueItems": {
         "type": "boolean",
         "default": false
       },
-      "maxProperties": { "$ref": "http://json-schema.org/draft-04/schema#/definitions/positiveInteger" },
-      "minProperties": { "$ref": "http://json-schema.org/draft-04/schema#/definitions/positiveIntegerDefault0" },
-      "required": { "$ref": "http://json-schema.org/draft-04/schema#/definitions/stringArray" },
+      "maxProperties": { "$ref": "#/definitions/positiveInteger" },
+      "minProperties": { "$ref": "#/definitions/positiveIntegerDefault0" },
+      "required": { "$ref": "#/definitions/stringArray" },
       "additionalProperties": {
         "anyOf": [
-          { "type": "boolean" },
-          { "$ref": "http://json-schema.org/draft-04/schema#" }
+          { "type": "boolean", default: true },
+          { "$ref": "#" }
         ],
-        "default": {}
+        default: {}
       },
       "definitions": {
         "type": "object",
-        "additionalProperties": { "$ref": "http://json-schema.org/draft-04/schema#" },
+        "additionalProperties": { "$ref": "#" },
         "default": {}
       },
       "properties": {
         "type": "object",
-        "additionalProperties": { "$ref": "http://json-schema.org/draft-04/schema#" },
+        "additionalProperties": { "$ref": "#" },
         "default": {}
       },
       "patternProperties": {
         "type": "object",
-        "additionalProperties": { "$ref": "http://json-schema.org/draft-04/schema#" },
+        "additionalProperties": { "$ref": "#" },
         "default": {}
       },
       "dependencies": {
         "type": "object",
         "additionalProperties": {
           "anyOf": [
-            { "$ref": "http://json-schema.org/draft-04/schema#" },
-            { "$ref": "http://json-schema.org/draft-04/schema#/definitions/stringArray" }
+            { "$ref": "#" },
+            { "$ref": "#/definitions/stringArray" }
           ]
         }
       },
@@ -175,20 +174,21 @@ $(document).ready(function () {
       },
       "type": {
         "anyOf": [
-          { "$ref": "http://json-schema.org/draft-04/schema#/definitions/simpleTypes" },
+          { "$ref": "#/definitions/simpleTypes" },
           {
             "type": "array",
-            "items": { "$ref": "http://json-schema.org/draft-04/schema#/definitions/simpleTypes" },
+            "items": { "$ref": "#/definitions/simpleTypes" },
             "minItems": 1,
             "uniqueItems": true,
-            "title": "Array of Types"
+            "title": "Array of Types",
+            "default": ['string']
           }
         ]
       },
-      "allOf": { "$ref": "http://json-schema.org/draft-04/schema#/definitions/schemaArray" },
-      "anyOf": { "$ref": "http://json-schema.org/draft-04/schema#/definitions/schemaArray" },
-      "oneOf": { "$ref": "http://json-schema.org/draft-04/schema#/definitions/schemaArray" },
-      "not": { "$ref": "http://json-schema.org/draft-04/schema#" }
+      "allOf": { "$ref": "#/definitions/schemaArray" },
+      "anyOf": { "$ref": "#/definitions/schemaArray" },
+      "oneOf": { "$ref": "#/definitions/schemaArray" },
+      "not": { "$ref": "#" }
     },
     "dependencies": {
       "exclusiveMaximum": [ "maximum" ],
@@ -198,14 +198,7 @@ $(document).ready(function () {
   };
 
   var el = $('#scratch');
-  var options = {schema:{ properties: { 'number': { type: 'number' } } }, data:{
-    'number': 0,
-    'string': 'beans',
-    'null': null,
-    'array': [],
-    'object': {},
-    'boolean': true
-  }};
+  var options = {schema: schema_schema, data: {}};
   var treema = el.treema(options);
   treema.build();
   window.treema = treema

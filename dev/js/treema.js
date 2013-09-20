@@ -319,9 +319,7 @@ TreemaNode = (function() {
     if (this.collection) {
       this.updateMyAddButton();
     }
-    if (this.getTypes().length > 1) {
-      this.createTypeSelector();
-    }
+    this.createTypeSelector();
     if (((_ref = this.workingSchemas) != null ? _ref.length : void 0) > 1) {
       this.createSchemaSelector();
     }
@@ -382,7 +380,15 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.createTypeSelector = function() {
-    var button, currentType, div, option, select, type, _i, _len, _ref;
+    var button, currentType, div, option, schema, select, type, types, _i, _len;
+    types = this.getTypes();
+    if (!(types.length > 1)) {
+      return;
+    }
+    schema = this.workingSchema || this.schema;
+    if (schema["enum"]) {
+      return;
+    }
     div = $('<div></div>').addClass('treema-type-select-container');
     select = $('<select></select>').addClass('treema-type-select');
     button = $('<button></button>').addClass('treema-type-select-button');
@@ -390,9 +396,8 @@ TreemaNode = (function() {
     if (currentType === 'number' && this.data % 1 === 0) {
       currentType = 'integer';
     }
-    _ref = this.getTypes();
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      type = _ref[_i];
+    for (_i = 0, _len = types.length; _i < _len; _i++) {
+      type = types[_i];
       option = $('<option></option>').attr('value', type).text(type);
       if (type === currentType) {
         option.attr('selected', true);
@@ -613,7 +618,7 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.inputFocused = function() {
     var _ref;
-    if ((_ref = document.activeElement.nodeName) === 'INPUT' || _ref === 'TEXTAREA') {
+    if ((_ref = document.activeElement.nodeName) === 'INPUT' || _ref === 'TEXTAREA' || _ref === 'SELECT') {
       return true;
     }
   };
@@ -1591,13 +1596,22 @@ TreemaNode = (function() {
   TreemaNode.make = function(element, options, parent, keyForParent) {
     var NodeClass, newNode, type, workingSchema, workingSchemas;
     workingSchemas = [];
-    type = options.data != null ? $.type(options.data) : 'string';
+    type = null;
+    if (options.schema["default"] !== void 0) {
+      type = $.type(options.schema["default"]);
+    }
+    if (options.data != null) {
+      type = $.type(options.data);
+    }
     if (type === 'number' && options.data % 1) {
       type = 'integer';
     }
+    if (type == null) {
+      type = 'string';
+    }
     if (parent) {
       workingSchemas = parent.buildWorkingSchemas(options.schema);
-      workingSchema = parent.chooseWorkingSchema(workingSchemas, options.data);
+      workingSchema = parent.chooseWorkingSchema(workingSchemas, options.data || options.schema["default"]);
       NodeClass = this.getNodeClassForSchema(workingSchema, type);
     } else {
       NodeClass = this.getNodeClassForSchema(options.schema, type);

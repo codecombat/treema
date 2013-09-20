@@ -169,7 +169,7 @@ class TreemaNode
     @setUpGlobalEvents() unless @parent
     @setUpLocalEvents() if @parent
     @updateMyAddButton() if @collection
-    @createTypeSelector() if @getTypes().length > 1
+    @createTypeSelector()
     @createSchemaSelector() if @workingSchemas?.length > 1
     schema = @workingSchema or @schema
     @limitChoices(schema.enum) if schema.enum
@@ -205,12 +205,16 @@ class TreemaNode
     types
     
   createTypeSelector: ->
+    types = @getTypes()
+    return unless types.length > 1
+    schema = @workingSchema or @schema
+    return if schema.enum
     div = $('<div></div>').addClass('treema-type-select-container')
     select = $('<select></select>').addClass('treema-type-select')
     button = $('<button></button>').addClass('treema-type-select-button')
     currentType = $.type(@data)
     currentType = 'integer' if currentType == 'number' and @data % 1 is 0
-    for type in @getTypes()
+    for type in types
       option = $('<option></option>').attr('value', type).text(type)
       if type is currentType
         option.attr('selected', true)
@@ -326,7 +330,7 @@ class TreemaNode
     e.preventDefault()
   
   inputFocused: ->
-    return true if document.activeElement.nodeName in ['INPUT', 'TEXTAREA']
+    return true if document.activeElement.nodeName in ['INPUT', 'TEXTAREA', 'SELECT']
 
   onSpacePressed: ->
   onTPressed: ->
@@ -884,11 +888,14 @@ class TreemaNode
 
   @make: (element, options, parent, keyForParent) ->
     workingSchemas = []
-    type = if options.data? then $.type(options.data) else 'string'
+    type = null
+    type = $.type(options.schema.default) unless options.schema.default is undefined
+    type = $.type(options.data) if options.data?
     type = 'integer' if type == 'number' and options.data % 1
+    type = 'string' unless type?
     if parent
       workingSchemas = parent.buildWorkingSchemas(options.schema)
-      workingSchema = parent.chooseWorkingSchema(workingSchemas, options.data)
+      workingSchema = parent.chooseWorkingSchema(workingSchemas, options.data or options.schema.default)
       NodeClass = @getNodeClassForSchema(workingSchema, type)
     else
       NodeClass = @getNodeClassForSchema(options.schema, type)
