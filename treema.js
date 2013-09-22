@@ -2197,6 +2197,7 @@ TreemaNode = (function() {
     return ArrayNode;
 
   })(TreemaNode));
+  window.TreemaArrayNode = ArrayNode;
   TreemaNode.setNodeSubclass('object', ObjectNode = (function(_super) {
     __extends(ObjectNode, _super);
 
@@ -2568,6 +2569,7 @@ TreemaNode = (function() {
     return ObjectNode;
 
   })(TreemaNode));
+  window.TreemaObjectNode = ObjectNode;
   return TreemaNode.setNodeSubclass('any', AnyNode = (function(_super) {
     __extends(AnyNode, _super);
 

@@ -88,7 +88,7 @@ do __init = ->
 
     getChildren: ->
       ([key, value, @getChildSchema(key)] for value, key in @data)
-      
+
     getChildSchema: (index) ->
       schema = @workingSchema or @schema
       return {} unless schema.items? or schema.additionalItems?
@@ -130,7 +130,7 @@ do __init = ->
       @integrateChildTreema(newTreema)
       true
 
-
+  window.TreemaArrayNode = ArrayNode  # TODO: how should we be making these available?
 
   TreemaNode.setNodeSubclass 'object', class ObjectNode extends TreemaNode
     valueClass: 'treema-object'
@@ -192,7 +192,7 @@ do __init = ->
         t = val.text()
         text.push(t)
         overallSize += t.length
-        
+
       @buildValueForDisplaySimply(valEl, '{' + text.join(', ') + '}')
 
     buildValueForEditing: (valEl) -> @buildValueForEditingSimply(valEl, JSON.stringify(@data))
@@ -351,7 +351,7 @@ do __init = ->
 
     addingNewProperty: -> document.activeElement is @$el.find('.treema-new-prop')[0]
 
-
+  window.TreemaObjectNode = ObjectNode  # TODO: how should we be making these available?
 
   TreemaNode.setNodeSubclass 'any', class AnyNode extends TreemaNode
 
