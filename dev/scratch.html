@@ -55,6 +55,11 @@
 
     var el = $('#scratch');
     var options = {schema:contact_book_schema, data:contacts, readOnly: true};
+    options.callbacks = {
+      select: function (e) {
+        console.log('select?', e);
+      }
+    };
     var treema = el.treema(options);
     treema.build();
     window.treema = treema

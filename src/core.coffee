@@ -315,7 +315,6 @@ do __init = ->
 
     addNewChildForKey: (key) ->
       schema = @getChildSchema(key)
-      console.log('got schema for child key', key, schema)
       newTreema = TreemaNode.make(null, {schema: schema, data:null}, @, key)
       childNode = @createChildNode(newTreema)
       @findObjectInsertionPoint(key).before(childNode)

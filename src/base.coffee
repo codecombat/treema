@@ -143,7 +143,6 @@ class TreemaNode
   constructor: (@$el, options, @parent) ->
     @$el = @$el or $('<div></div>')
     @settings = $.extend {}, defaults, options
-    console.log('created! my settings are', @settings)
     @schema = @settings.schema
     @schema.id = '__base__' unless (@schema.id or @parent)
     @data = options.data
@@ -596,7 +595,6 @@ class TreemaNode
     @
 
   open: ->
-    console.log('open given my settings', @settings)
     return unless @isClosed()
     childrenContainer = @$el.find('.treema-children').detach()
     childrenContainer.empty()
