@@ -362,7 +362,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.canAddChild = function() {
-    return this.collection && this.editable && !this.settings.preventEditing;
+    return this.collection && this.editable && !this.settings.readOnly;
   };
 
   TreemaNode.prototype.canAddProperty = function() {
@@ -491,6 +491,7 @@ TreemaNode = (function() {
     this.onEditInputBlur = __bind(this.onEditInputBlur, this);
     this.$el = this.$el || $('<div></div>');
     this.settings = $.extend({}, defaults, options);
+    console.log('created! my settings are', this.settings);
     this.schema = this.settings.schema;
     if (!(this.schema.id || this.parent)) {
       this.schema.id = '__base__';
@@ -1101,7 +1102,7 @@ TreemaNode = (function() {
     if (this.schema.readOnly) {
       return false;
     }
-    if (this.settings.preventEditing) {
+    if (this.settings.readOnly) {
       return false;
     }
     if (!this.editable) {
@@ -1252,6 +1253,7 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.open = function() {
     var childNode, childrenContainer, key, schema, treema, value, _base, _i, _len, _ref, _ref1;
+    console.log('open given my settings', this.settings);
     if (!this.isClosed()) {
       return;
     }
@@ -1825,7 +1827,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.make = function(element, options, parent, keyForParent) {
-    var NodeClass, data, newNode, type, workingSchema, workingSchemas;
+    var NodeClass, combinedOps, data, newNode, type, workingSchema, workingSchemas;
     workingSchemas = [];
     type = null;
     if (options.schema["default"] !== void 0) {
@@ -1851,7 +1853,12 @@ TreemaNode = (function() {
     } else {
       NodeClass = this.getNodeClassForSchema(options.schema, type);
     }
-    newNode = new NodeClass(element, options, parent);
+    combinedOps = {};
+    if (parent) {
+      $.extend(true, combinedOps, parent.settings);
+    }
+    $.extend(true, combinedOps, options);
+    newNode = new NodeClass(element, combinedOps, parent);
     if (parent != null) {
       newNode.tv4 = parent.tv4;
     }
@@ -2158,6 +2165,9 @@ TreemaNode = (function() {
     };
 
     ArrayNode.prototype.canAddChild = function() {
+      if (this.settings.readOnly) {
+        return false;
+      }
       if (this.schema.additionalItems === false && this.data.length >= this.schema.items.length) {
         return false;
       }
@@ -2371,6 +2381,9 @@ TreemaNode = (function() {
     };
 
     ObjectNode.prototype.canAddChild = function() {
+      if (this.settings.readOnly) {
+        return false;
+      }
       if ((this.schema.maxProperties != null) && Object.keys(this.data).length >= this.schema.maxProperties) {
         return false;
       }

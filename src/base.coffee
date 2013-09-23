@@ -77,7 +77,7 @@ class TreemaNode
   # collection specific
   getChildren: -> console.error('"getChildren" has not been overridden.') # should return a list of key-value-schema tuples
   getChildSchema: -> console.error('"getChildSchema" has not been overridden.')
-  canAddChild: -> @collection and @editable and not @settings.preventEditing  # preventEditing does yet get passed to children
+  canAddChild: -> @collection and @editable and not @settings.readOnly
   canAddProperty: -> true
   addingNewProperty: -> false
   addNewChild: -> false
@@ -143,6 +143,7 @@ class TreemaNode
   constructor: (@$el, options, @parent) ->
     @$el = @$el or $('<div></div>')
     @settings = $.extend {}, defaults, options
+    console.log('created! my settings are', @settings)
     @schema = @settings.schema
     @schema.id = '__base__' unless (@schema.id or @parent)
     @data = options.data
@@ -505,7 +506,7 @@ class TreemaNode
   # Editing values ------------------------------------------------------------
   canEdit: ->
     return false if @schema.readOnly
-    return false if @settings.preventEditing  # preventEditing does not yet get passed to children
+    return false if @settings.readOnly  
     return false if not @editable
     return false if not @directlyEditable
     return false if @collection and @isOpen()
@@ -595,6 +596,7 @@ class TreemaNode
     @
 
   open: ->
+    console.log('open given my settings', @settings)
     return unless @isClosed()
     childrenContainer = @$el.find('.treema-children').detach()
     childrenContainer.empty()
@@ -905,7 +907,10 @@ class TreemaNode
       NodeClass = @getNodeClassForSchema(workingSchema, type)
     else
       NodeClass = @getNodeClassForSchema(options.schema, type)
-    newNode = new NodeClass(element, options, parent)
+    combinedOps = {}
+    $.extend(true, combinedOps, parent.settings) if parent
+    $.extend(true, combinedOps, options)
+    newNode = new NodeClass(element, combinedOps, parent)
     newNode.tv4 = parent.tv4 if parent?
     newNode.keyForParent = keyForParent if keyForParent?
     if parent

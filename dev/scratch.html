@@ -30,8 +30,10 @@
   var jade = {};
   $(document).ready(function () {
     var contacts = [
-      { numberChoice: -1, someSchema: false }
-    ]
+      { 'street-address': '10 Downing Street', 'country-name': 'UK', 'locality': 'London', 'name': 'Prime Minister' },
+      { 'street-address': '1600 Amphitheatre Pkwy', 'phone-number': '(650) 253-0000', 'name': 'Google'},
+      { 'street-address': '45 Rockefeller Plaza', 'region': 'NY', 'locality': 'New York', 'name': 'Rockefeller Center'},
+    ];
 
     var contact_book_schema = {
       type: 'array',
@@ -41,27 +43,18 @@
         "displayProperty": 'name',
         "properties": {
           "name": { type: "string", maxLength: 20 },
-          "data": {},
-          "someSchema": {
-            anyOf: [
-              { title: 'Title 1' },
-              { title: 'Title 2' }
-            ]
-          },
-          "numberChoice": {
-            type: 'number',
-            anyOf: [
-              { title: 'Positive Number', minimum: 0, default: 1 },
-              { title: 'Negative Number', maximum: 0, default: -1 }
-            ]
-          }
+          "street-address": { title: "Address 1", description: "Don't forget the number.", type: "string" },
+          "locality":{ "type": "string", title: "Locality" },
+          "region": { 'title': 'Region', type: 'string' },
+          "country-name": { "type": "string", title: "Country" },
+          "friend": { "type": "boolean", title: "Friend" },
+          "phone-number": { type: "string", maxLength: 20, minLength:4, title: 'Phone Number' }
         }
       }
     };
 
     var el = $('#scratch');
-    var options = {schema:contact_book_schema, data:contacts};
-//    var treema = TreemaNode.make(el, options);
+    var options = {schema:contact_book_schema, data:contacts, readOnly: true};
     var treema = el.treema(options);
     treema.build();
     window.treema = treema

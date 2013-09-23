@@ -112,6 +112,7 @@ do __init = ->
     buildValueForEditing: (valEl) -> @buildValueForEditingSimply(valEl, JSON.stringify(@data))
 
     canAddChild: ->
+      return false if @settings.readOnly
       return false if @schema.additionalItems is false and @data.length >= @schema.items.length
       return false if @schema.maxItems? and @data.length >= @schema.maxItems
       return true
@@ -223,6 +224,7 @@ do __init = ->
       true
 
     canAddChild: ->
+      return false if @settings.readOnly
       return false if @schema.maxProperties? and Object.keys(@data).length >= @schema.maxProperties
       return true if @schema.additionalProperties isnt false
       return true if @schema.patternProperties?
