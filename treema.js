@@ -662,8 +662,10 @@ TreemaNode = (function() {
       return _this.broadcastChanges(e);
     });
     return this.$el.keydown(function(e) {
-      var _ref;
-      if ((_ref = $(e.target).closest('.treema-node').data('instance')) != null) {
+      var closest, lastSelected, _ref;
+      closest = $(e.target).closest('.treema-node').data('instance');
+      lastSelected = _this.getLastSelectedTreema();
+      if ((_ref = lastSelected || closest) != null) {
         _ref.onKeyDown(e);
       }
       return _this.broadcastChanges(e);
@@ -756,21 +758,19 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.onDoubleClick = function(e) {
-    var clickedKey, _base;
-    if (typeof (_base = this.callbacks).dblclick === "function") {
-      _base.dblclick(e, this);
-    }
+    var clickedKey, _base, _base1, _base2;
     if (!this.collection) {
-      return;
+      return typeof (_base = this.callbacks).dblclick === "function" ? _base.dblclick(e, this) : void 0;
     }
     clickedKey = $(e.target).hasClass('treema-key');
     if (!clickedKey) {
-      return;
+      return typeof (_base1 = this.callbacks).dblclick === "function" ? _base1.dblclick(e, this) : void 0;
     }
     if (this.isClosed()) {
       this.open();
     }
-    return this.addNewChild();
+    this.addNewChild();
+    return typeof (_base2 = this.callbacks).dblclick === "function" ? _base2.dblclick(e, this) : void 0;
   };
 
   TreemaNode.prototype.onKeyDown = function(e) {

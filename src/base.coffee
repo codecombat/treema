@@ -246,7 +246,9 @@ class TreemaNode
       @broadcastChanges(e)
 
     @$el.keydown (e) =>
-      $(e.target).closest('.treema-node').data('instance')?.onKeyDown(e)
+      closest = $(e.target).closest('.treema-node').data('instance')
+      lastSelected = @getLastSelectedTreema()
+      (lastSelected or closest)?.onKeyDown(e)
       @broadcastChanges(e)
 
   broadcastChanges: (e) ->
@@ -288,12 +290,12 @@ class TreemaNode
     return @select()
 
   onDoubleClick: (e) ->
-    @callbacks.dblclick?(e, @) 
-    return unless @collection
+    return @callbacks.dblclick?(e, @) unless @collection
     clickedKey = $(e.target).hasClass('treema-key')
-    return unless clickedKey
+    return @callbacks.dblclick?(e, @) unless clickedKey
     @open() if @isClosed()
     @addNewChild()
+    @callbacks.dblclick?(e, @)
 
   onKeyDown: (e) ->
     @onEscapePressed(e) if e.which is 27
