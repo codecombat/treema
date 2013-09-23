@@ -739,13 +739,13 @@ class TreemaNode
     defaultType = $.type(workingSchema.default) if workingSchema.default?
     defaultType = workingSchema.type if workingSchema.type?
     defaultType = defaultType[0] if $.isArray(defaultType)
-    NodeClass = TreemaNode.getNodeClassForSchema(workingSchema, defaultType)
+    NodeClass = TreemaNode.getNodeClassForSchema(workingSchema, defaultType, @settings.nodeClasses)
     @workingSchema = workingSchema
     @replaceNode(NodeClass)
 
   onSelectType: (e) =>
     newType = $(e.target).val()
-    NodeClass = TreemaNode.getNodeClassForSchema(@workingSchema, newType)
+    NodeClass = TreemaNode.getNodeClassForSchema(@workingSchema, newType, @settings.nodeClasses)
     @replaceNode(NodeClass)
     
   replaceNode: (NodeClass) ->
@@ -882,11 +882,13 @@ class TreemaNode
 
   @setNodeSubclass: (key, NodeClass) -> @nodeMap[key] = NodeClass
 
-  @getNodeClassForSchema: (schema, def='string') ->
+  @getNodeClassForSchema: (schema, def='string', localClasses=null) ->
     NodeClass = null
-    NodeClass = @nodeMap[schema.format] if schema.format
+    localClasses = localClasses or {} 
+    NodeClass = localClasses[schema.format] or @nodeMap[schema.format] if schema.format
     return NodeClass if NodeClass
-    NodeClass = @nodeMap[schema.type or def]
+    type = schema.type or def
+    NodeClass = localClasses[type] or @nodeMap[type]
     return NodeClass if NodeClass
     @nodeMap['any']
 
@@ -897,17 +899,20 @@ class TreemaNode
     type = $.type(options.data) if options.data?
     type = 'integer' if type == 'number' and options.data % 1
     type = 'string' unless type?
+    localClasses = if parent then parent.settings.nodeClasses else {}
     if parent
       workingSchemas = parent.buildWorkingSchemas(options.schema)
       data = options.data
       data = options.schema.default if data is undefined
       workingSchema = parent.chooseWorkingSchema(workingSchemas, data)
-      NodeClass = @getNodeClassForSchema(workingSchema, type)
+      NodeClass = @getNodeClassForSchema(workingSchema, type, localClasses)
     else
-      NodeClass = @getNodeClassForSchema(options.schema, type)
+      NodeClass = @getNodeClassForSchema(options.schema, type, localClasses)
+      
     combinedOps = {}
-    $.extend(true, combinedOps, parent.settings) if parent
-    $.extend(true, combinedOps, options)
+    $.extend(combinedOps, parent.settings) if parent
+    $.extend(combinedOps, options)
+    
     newNode = new NodeClass(element, combinedOps, parent)
     newNode.tv4 = parent.tv4 if parent?
     newNode.keyForParent = keyForParent if keyForParent?

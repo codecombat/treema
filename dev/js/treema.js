@@ -269,7 +269,6 @@ TreemaNode = (function() {
     this.onEditInputBlur = __bind(this.onEditInputBlur, this);
     this.$el = this.$el || $('<div></div>');
     this.settings = $.extend({}, defaults, options);
-    console.log('created! my settings are', this.settings);
     this.schema = this.settings.schema;
     if (!(this.schema.id || this.parent)) {
       this.schema.id = '__base__';
@@ -1031,7 +1030,6 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.open = function() {
     var childNode, childrenContainer, key, schema, treema, value, _base, _i, _len, _ref, _ref1;
-    console.log('open given my settings', this.settings);
     if (!this.isClosed()) {
       return;
     }
@@ -1279,7 +1277,7 @@ TreemaNode = (function() {
     if ($.isArray(defaultType)) {
       defaultType = defaultType[0];
     }
-    NodeClass = TreemaNode.getNodeClassForSchema(workingSchema, defaultType);
+    NodeClass = TreemaNode.getNodeClassForSchema(workingSchema, defaultType, this.settings.nodeClasses);
     this.workingSchema = workingSchema;
     return this.replaceNode(NodeClass);
   };
@@ -1287,7 +1285,7 @@ TreemaNode = (function() {
   TreemaNode.prototype.onSelectType = function(e) {
     var NodeClass, newType;
     newType = $(e.target).val();
-    NodeClass = TreemaNode.getNodeClassForSchema(this.workingSchema, newType);
+    NodeClass = TreemaNode.getNodeClassForSchema(this.workingSchema, newType, this.settings.nodeClasses);
     return this.replaceNode(NodeClass);
   };
 
@@ -1585,19 +1583,24 @@ TreemaNode = (function() {
     return this.nodeMap[key] = NodeClass;
   };
 
-  TreemaNode.getNodeClassForSchema = function(schema, def) {
-    var NodeClass;
+  TreemaNode.getNodeClassForSchema = function(schema, def, localClasses) {
+    var NodeClass, type;
     if (def == null) {
       def = 'string';
     }
+    if (localClasses == null) {
+      localClasses = null;
+    }
     NodeClass = null;
+    localClasses = localClasses || {};
     if (schema.format) {
-      NodeClass = this.nodeMap[schema.format];
+      NodeClass = localClasses[schema.format] || this.nodeMap[schema.format];
     }
     if (NodeClass) {
       return NodeClass;
     }
-    NodeClass = this.nodeMap[schema.type || def];
+    type = schema.type || def;
+    NodeClass = localClasses[type] || this.nodeMap[type];
     if (NodeClass) {
       return NodeClass;
     }
@@ -1605,7 +1608,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.make = function(element, options, parent, keyForParent) {
-    var NodeClass, combinedOps, data, newNode, type, workingSchema, workingSchemas;
+    var NodeClass, combinedOps, data, localClasses, newNode, type, workingSchema, workingSchemas;
     workingSchemas = [];
     type = null;
     if (options.schema["default"] !== void 0) {
@@ -1620,6 +1623,7 @@ TreemaNode = (function() {
     if (type == null) {
       type = 'string';
     }
+    localClasses = parent ? parent.settings.nodeClasses : {};
     if (parent) {
       workingSchemas = parent.buildWorkingSchemas(options.schema);
       data = options.data;
@@ -1627,15 +1631,15 @@ TreemaNode = (function() {
         data = options.schema["default"];
       }
       workingSchema = parent.chooseWorkingSchema(workingSchemas, data);
-      NodeClass = this.getNodeClassForSchema(workingSchema, type);
+      NodeClass = this.getNodeClassForSchema(workingSchema, type, localClasses);
     } else {
-      NodeClass = this.getNodeClassForSchema(options.schema, type);
+      NodeClass = this.getNodeClassForSchema(options.schema, type, localClasses);
     }
     combinedOps = {};
     if (parent) {
-      $.extend(true, combinedOps, parent.settings);
+      $.extend(combinedOps, parent.settings);
     }
-    $.extend(true, combinedOps, options);
+    $.extend(combinedOps, options);
     newNode = new NodeClass(element, combinedOps, parent);
     if (parent != null) {
       newNode.tv4 = parent.tv4;
@@ -2308,7 +2312,6 @@ TreemaNode = (function() {
     ObjectNode.prototype.addNewChildForKey = function(key) {
       var child, childNode, children, newTreema, schema;
       schema = this.getChildSchema(key);
-      console.log('got schema for child key', key, schema);
       newTreema = TreemaNode.make(null, {
         schema: schema,
         data: null
