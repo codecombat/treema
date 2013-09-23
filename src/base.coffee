@@ -288,6 +288,7 @@ class TreemaNode
     return @select()
 
   onDoubleClick: (e) ->
+    @callbacks.dblclick?(e, @) 
     return unless @collection
     clickedKey = $(e.target).hasClass('treema-key')
     return unless clickedKey

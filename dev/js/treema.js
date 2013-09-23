@@ -534,7 +534,10 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.onDoubleClick = function(e) {
-    var clickedKey;
+    var clickedKey, _base;
+    if (typeof (_base = this.callbacks).dblclick === "function") {
+      _base.dblclick(e, this);
+    }
     if (!this.collection) {
       return;
     }
