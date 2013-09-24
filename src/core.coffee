@@ -122,7 +122,7 @@ do __init = ->
       @open() if @isClosed()
       new_index = Object.keys(@childrenTreemas).length
       schema = @getChildSchema(new_index)
-      newTreema = TreemaNode.make(undefined, {schema: schema, data:undefined}, @, new_index)
+      newTreema = TreemaNode.make(undefined, {schema: schema}, @, new_index)
       newTreema.justCreated = true
       newTreema.tv4 = @tv4
       childNode = @createChildNode(newTreema)
@@ -315,7 +315,7 @@ do __init = ->
 
     addNewChildForKey: (key) ->
       schema = @getChildSchema(key)
-      newTreema = TreemaNode.make(null, {schema: schema, data:null}, @, key)
+      newTreema = TreemaNode.make(null, {schema: schema}, @, key)
       childNode = @createChildNode(newTreema)
       @findObjectInsertionPoint(key).before(childNode)
       if newTreema.canEdit()

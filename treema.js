@@ -1459,17 +1459,24 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.resolveReference = function(schema, scrubTitle) {
+    var resolved;
     if (scrubTitle == null) {
       scrubTitle = false;
     }
     if (schema.$ref == null) {
       return schema;
     }
-    schema = this.tv4.getSchema(schema.$ref);
-    if (scrubTitle && (schema.title != null)) {
-      delete schema.title;
+    resolved = this.tv4.getSchema(schema.$ref);
+    if (!resolved) {
+      console.warn('could not resolve reference', schema.$ref, tv4.getMissingUris());
     }
-    return schema;
+    if (resolved == null) {
+      resolved = {};
+    }
+    if (scrubTitle && (resolved.title != null)) {
+      delete resolved.title;
+    }
+    return resolved;
   };
 
   TreemaNode.prototype.chooseWorkingSchema = function(workingSchemas, data) {
@@ -1833,8 +1840,15 @@ TreemaNode = (function() {
   };
 
   TreemaNode.make = function(element, options, parent, keyForParent) {
-    var NodeClass, combinedOps, data, localClasses, newNode, type, workingSchema, workingSchemas;
+    var NodeClass, combinedOps, d, data, localClasses, newNode, type, workingSchema, workingSchemas;
+    if (options.data === void 0 && (options.schema["default"] != null)) {
+      d = options.schema["default"];
+      options.data = $.extend(true, {}, {
+        'x': d
+      })['x'];
+    }
     workingSchemas = [];
+    workingSchema = null;
     type = null;
     if (options.schema["default"] !== void 0) {
       type = $.type(options.schema["default"]);
@@ -1859,6 +1873,27 @@ TreemaNode = (function() {
       NodeClass = this.getNodeClassForSchema(workingSchema, type, localClasses);
     } else {
       NodeClass = this.getNodeClassForSchema(options.schema, type, localClasses);
+    }
+    if (options.data === void 0) {
+      type = options.schema.type;
+      if (type == null) {
+        type = workingSchema != null ? workingSchema.type : void 0;
+      }
+      if (type == null) {
+        type = 'string';
+      }
+      if ($.isArray(type)) {
+        type = type[0];
+      }
+      options.data = {
+        'string': '',
+        'number': 0,
+        'null': null,
+        'object': {},
+        'integer': 0,
+        'boolean': false,
+        'array': []
+      }[type];
     }
     combinedOps = {};
     if (parent) {
@@ -2195,8 +2230,7 @@ TreemaNode = (function() {
       new_index = Object.keys(this.childrenTreemas).length;
       schema = this.getChildSchema(new_index);
       newTreema = TreemaNode.make(void 0, {
-        schema: schema,
-        data: void 0
+        schema: schema
       }, this, new_index);
       newTreema.justCreated = true;
       newTreema.tv4 = this.tv4;
@@ -2538,8 +2572,7 @@ TreemaNode = (function() {
       var child, childNode, children, newTreema, schema;
       schema = this.getChildSchema(key);
       newTreema = TreemaNode.make(null, {
-        schema: schema,
-        data: null
+        schema: schema
       }, this, key);
       childNode = this.createChildNode(newTreema);
       this.findObjectInsertionPoint(key).before(childNode);

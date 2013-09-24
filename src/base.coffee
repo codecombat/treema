@@ -723,9 +723,12 @@ class TreemaNode
 
   resolveReference: (schema, scrubTitle=false) ->
     return schema unless schema.$ref?
-    schema = @tv4.getSchema(schema.$ref)
-    delete schema.title if scrubTitle and schema.title?
-    schema
+    resolved = @tv4.getSchema(schema.$ref)
+    unless resolved
+      console.warn('could not resolve reference', schema.$ref, tv4.getMissingUris())
+    resolved ?= {}
+    delete resolved.title if scrubTitle and resolved.title?
+    resolved
 
   chooseWorkingSchema: (workingSchemas, data) ->
     return workingSchemas[0] if workingSchemas.length is 1
@@ -894,9 +897,16 @@ class TreemaNode
     NodeClass = localClasses[type] or @nodeMap[type]
     return NodeClass if NodeClass
     @nodeMap['any']
-
+    
   @make: (element, options, parent, keyForParent) ->
+    # this is a mess, make a factory which is able to deal with working schemas
+    # and setting defaults.
+    if options.data is undefined and options.schema.default?
+      d = options.schema.default
+      options.data = $.extend(true, {}, {'x':d})['x']
+
     workingSchemas = []
+    workingSchema = null
     type = null
     type = $.type(options.schema.default) unless options.schema.default is undefined
     type = $.type(options.data) if options.data?
@@ -911,7 +921,22 @@ class TreemaNode
       NodeClass = @getNodeClassForSchema(workingSchema, type, localClasses)
     else
       NodeClass = @getNodeClassForSchema(options.schema, type, localClasses)
-      
+
+    if options.data is undefined
+      type = options.schema.type
+      type ?= workingSchema?.type
+      type ?= 'string'
+      type = type[0] if $.isArray(type)
+      options.data = {
+        'string':'',
+        'number':0,
+        'null': null,
+        'object': {},
+        'integer': 0,
+        'boolean': false,
+        'array':[]
+      }[type]
+
     combinedOps = {}
     $.extend(combinedOps, parent.settings) if parent
     $.extend(combinedOps, options)
