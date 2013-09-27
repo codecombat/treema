@@ -1726,7 +1726,6 @@ TreemaNode = (function() {
     if (path.length === 0) {
       this.data = newData;
       this.refreshDisplay();
-      this.flushChanges();
       return true;
     }
     if (this.childrenTreemas != null) {
@@ -1874,8 +1873,10 @@ TreemaNode = (function() {
     }
     if (this.collection && this.isOpen()) {
       this.close();
-      return this.open();
+      this.open();
     }
+    this.flushChanges();
+    return this.broadcastChanges();
   };
 
   TreemaNode.prototype.getValEl = function() {
@@ -2429,8 +2430,9 @@ TreemaNode = (function() {
         newTreema.edit();
       } else {
         newTreema.select();
+        this.integrateChildTreema(newTreema);
+        newTreema.flushChanges();
       }
-      this.integrateChildTreema(newTreema);
       return true;
     };
 

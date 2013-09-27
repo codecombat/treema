@@ -127,8 +127,12 @@ do __init = ->
       newTreema.tv4 = @tv4
       childNode = @createChildNode(newTreema)
       @getAddButtonEl().before(childNode)
-      if newTreema.canEdit() then newTreema.edit() else newTreema.select()
-      @integrateChildTreema(newTreema)
+      if newTreema.canEdit()
+        newTreema.edit()
+      else 
+        newTreema.select()
+        @integrateChildTreema(newTreema)
+        newTreema.flushChanges()
       true
 
   window.TreemaArrayNode = ArrayNode  # TODO: how should we be making these available?

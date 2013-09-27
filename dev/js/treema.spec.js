@@ -6,8 +6,14 @@ keyDown = function($el, which) {
   event.which = which;
   return $el.trigger(event);
 };
-;describe('TreemaNode.set', function() {
-  var data, nameTreema, schema, treema;
+;describe('Change callback', function() {
+  var data, deleteKeyPress, fired, nameTreema, numbersTreema, schema, tabKeyPress, tagsTreema, treema;
+  tabKeyPress = function($el) {
+    return keyDown($el, 9);
+  };
+  deleteKeyPress = function($el) {
+    return keyDown($el, 8);
+  };
   schema = {
     type: 'object',
     properties: {
@@ -18,6 +24,12 @@ keyDown = function($el, which) {
         type: 'array',
         items: {
           type: 'object'
+        }
+      },
+      tags: {
+        type: 'array',
+        items: {
+          type: 'string'
         }
       }
     }
@@ -32,36 +44,95 @@ keyDown = function($el, which) {
         'number': '123-456-7890',
         'type': 'Work'
       }
-    ]
+    ],
+    tags: ['Friend']
+  };
+  fired = {
+    f: true
   };
   treema = TreemaNode.make(null, {
     data: data,
-    schema: schema
+    schema: schema,
+    callbacks: {
+      change: function() {
+        return fired.f = true;
+      }
+    }
   });
   treema.build();
   nameTreema = treema.childrenTreemas.name;
-  it('sets immediate values', function() {
-    expect(treema.set('/name', 'Bobby')).toBeTruthy();
-    return expect(treema.get('/name')).toBe('Bobby');
+  numbersTreema = treema.childrenTreemas.numbers;
+  tagsTreema = treema.childrenTreemas.tags;
+  beforeEach(function() {
+    return fired.f = false;
   });
-  it('can search an object within an array', function() {
-    expect(treema.set('/numbers/type=Home/number', '1234')).toBeTruthy();
-    return expect(treema.get('/numbers/type=Home/number')).toBe('1234');
+  it('fires when editing a field', function() {
+    var valEl;
+    valEl = nameTreema.getValEl();
+    valEl.click();
+    valEl.find('input').val('Boom').blur();
+    return expect(fired.f).toBe(true);
   });
-  it('can set new properties', function() {
-    expect(treema.set('/numbers/0/daytime', true)).toBeTruthy();
-    return expect(treema.get('/numbers/0/daytime')).toBe(true);
+  it('fires when you use set()', function() {
+    nameTreema.set('/', 'Foo');
+    return expect(fired.f).toBe(true);
   });
-  it('updates the visuals of the node and all its parents', function() {
-    var t;
-    treema.childrenTreemas.numbers.open();
-    treema.childrenTreemas.numbers.childrenTreemas[0].open();
-    expect(treema.set('/numbers/0/type', 'Cell')).toBeTruthy();
-    t = treema.childrenTreemas.numbers.$el.find('> .treema-row > .treema-value').text();
-    return expect(t.indexOf('Home')).toBe(-1);
+  it('fires when you use insert()', function() {
+    treema.insert('/numbers', {});
+    return expect(fired.f).toBe(true);
   });
-  return it('affects the base data', function() {
-    return expect(treema.data['numbers'][0]['daytime']).toBe(true);
+  it('fires when you use delete()', function() {
+    treema["delete"]('/numbers/2');
+    return expect(fired.f).toBe(true);
+  });
+  it('does not fire when set() fails', function() {
+    nameTreema.set('/a/b/c/d/e', 'Foo');
+    return expect(fired.f).toBe(false);
+  });
+  it('does not fire when insert() fails', function() {
+    treema.insert('//a/b/c/d/e', {});
+    return expect(fired.f).toBe(false);
+  });
+  it('does not fire when delete() fails', function() {
+    treema["delete"]('//a/b/c/d/e');
+    return expect(fired.f).toBe(false);
+  });
+  it('fires when you add a new property to an object', function() {
+    treema.$el.find('.treema-add-child').click();
+    expect(fired.f).toBe(false);
+    tabKeyPress(treema.$el.find('input').val('red'));
+    expect(fired.f).toBe(false);
+    tabKeyPress(treema.$el.find('input').val('blue'));
+    return expect(fired.f).toBe(true);
+  });
+  it('fires when you add an object to an array', function() {
+    var newDataLength, oldDataLength;
+    oldDataLength = numbersTreema.data.length;
+    numbersTreema.open();
+    numbersTreema.$el.find('.treema-add-child').click();
+    newDataLength = numbersTreema.data.length;
+    expect(oldDataLength).not.toBe(newDataLength);
+    return expect(fired.f).toBe(true);
+  });
+  it('fires when you add a non-collection to an array', function() {
+    tagsTreema.open();
+    tagsTreema.$el.find('.treema-add-child').click();
+    expect(fired.f).toBe(false);
+    tabKeyPress(treema.$el.find('input').val('Star'));
+    return expect(fired.f).toBe(true);
+  });
+  it('fires when you delete an element in an array', function() {
+    var tagTreema;
+    treema.endExistingEdits();
+    tagTreema = tagsTreema.childrenTreemas[0];
+    tagTreema.select();
+    deleteKeyPress(treema.$el);
+    return expect(fired.f).toBe(true);
+  });
+  return it('fires when you delete a property in an object', function() {
+    nameTreema.select();
+    deleteKeyPress(treema.$el);
+    return expect(fired.f).toBe(true);
   });
 });
 ;describe('TreemaNode.delete', function() {
@@ -207,7 +278,7 @@ keyDown = function($el, which) {
   });
 });
 ;describe('TreemaNode.set', function() {
-  var data, nameTreema, schema, treema;
+  var data, schema, treema;
   schema = {
     type: 'object',
     properties: {
@@ -239,7 +310,6 @@ keyDown = function($el, which) {
     schema: schema
   });
   treema.build();
-  nameTreema = treema.childrenTreemas.name;
   it('sets immediate values', function() {
     expect(treema.set('/name', 'Bobby')).toBeTruthy();
     return expect(treema.get('/name')).toBe('Bobby');
@@ -733,7 +803,7 @@ describe('Schemaless', function() {
     treema.childrenTreemas[0].select();
     expect(treema.childrenTreemas[2]).toBeUndefined();
     nKeyPress(treema.childrenTreemas[0].$el);
-    expect(treema.childrenTreemas[2]).not.toBeUndefined('');
+    expect(treema.childrenTreemas[2]).toBeUndefined();
     enterKeyPress(treema.$el.find('input').val('410-555-1023'));
     expect(treema.childrenTreemas[2]).not.toBeUndefined();
     treema.childrenTreemas[2].display();

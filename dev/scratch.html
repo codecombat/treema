@@ -31,24 +31,28 @@
 
   var jade = {};
   $(document).ready(function () {
-    var schema = {
+    schema = {
       type: 'object',
       properties: {
         name: { type: 'string' },
-        numbers: { type: 'array', items: { type: 'object' } }
+        numbers: { type: 'array', items: { type: 'object' } },
+        tags: { type: 'array', items: { type: 'string' } }
       }
-    };
-    var data = { name: 'Bob', numbers: [
-      {'number':'401-401-1337', 'type':'Home'},
-      {'number':'123-456-7890', 'type':'Work'}
-    ]};
-
-
+    }
+    data = {
+      name: 'Bob',
+      numbers: [
+        {'number':'401-401-1337', 'type':'Home'},
+        {'number':'123-456-7890', 'type':'Work'}
+      ],
+      tags: ['Friend']
+    }
+    
     var el = $('#scratch');
-    var options = {schema:schema, data:data, readOnly: true};
+    var options = {schema:schema, data:data};
     options.callbacks = {
-      dblclick: function (e, treema) {
-        console.log('dblclick?', e, treema.data);
+      change: function (e, treema) {
+        console.log('change?', e, treema.data);
       }
     };
     var treema = el.treema(options);

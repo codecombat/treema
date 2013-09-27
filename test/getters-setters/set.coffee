@@ -13,7 +13,6 @@ describe 'TreemaNode.set', ->
 
   treema = TreemaNode.make(null, {data: data, schema: schema})
   treema.build()
-  nameTreema = treema.childrenTreemas.name
 
   it 'sets immediate values', ->
     expect(treema.set('/name', 'Bobby')).toBeTruthy()

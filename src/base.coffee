@@ -874,7 +874,6 @@ class TreemaNode
     if path.length is 0
       @data = newData
       @refreshDisplay()
-      @flushChanges()
       return true
 
     if @childrenTreemas?
@@ -973,6 +972,9 @@ class TreemaNode
       @close()
       @open()
 
+    @flushChanges()
+    @broadcastChanges()
+    
   # Utilities -----------------------------------------------------------------
 
   getValEl: -> @$el.find('> .treema-row .treema-value')
