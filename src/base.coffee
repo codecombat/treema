@@ -552,7 +552,10 @@ class TreemaNode
     return @refreshErrors() unless @parent
     @parent.data[@keyForParent] = @data
     @parent.refreshErrors()
-    @parent.buildValueForDisplay(@parent.getValEl().empty())
+    parent = @parent
+    while parent
+      parent.buildValueForDisplay(parent.getValEl().empty())
+      parent = parent.parent
 
   focusLastInput: ->
     inputs = @getInputs()
@@ -843,6 +846,132 @@ class TreemaNode
     return $(@tempErrorTemplate).text(message).delay(3000).fadeOut(1000, -> $(@).remove())
 
   clearTemporaryErrors: -> @getRootEl().find('.treema-temp-error').remove()
+  
+  # Getting/setting data ------------------------------------------------------
+  # The four functions have similar structures:
+  
+  #   1. normalize path
+  #   2. perform action if treema is the end of the line
+  #   3. dig deeper if there are deeper treemas
+  #   4. perform action if treema path is over but need to dig deeper into data
+  
+  # Could refactor this into a template method pattern.
+  
+  get: (path='/') ->
+    path = @normalizePath(path)
+    return @data if path.length is 0
+    return @digDeeper(path, 'get', undefined, []) if @childrenTreemas?
+    
+    data = @data
+    for seg in path
+      data = data[@normalizeKey(seg, data)]
+      break if data is undefined
+    return data
+  
+  set: (path, newData) ->
+    path = @normalizePath(path)
+      
+    if path.length is 0
+      @data = newData
+      @refreshDisplay()
+      @flushChanges()
+      return true
+
+    if @childrenTreemas?
+      result = @digDeeper(path, 'set', false, [newData])
+      if result is false and path.length is 1 and $.isPlainObject(@data)
+        # handles inserting values into objects
+        @data[path[0]] = newData
+        return true
+      return result
+
+    data = @data
+    for seg, i in path
+      seg = @normalizeKey(seg, data)
+      if path.length is i+1
+        data[seg] = newData
+        @refreshDisplay()
+        return true
+      else
+        data = data[seg]
+        return false if data is undefined
+        
+  delete: (path) ->
+    path = @normalizePath(path)
+    return @remove() if path.length is 0
+    return @digDeeper(path, 'delete', false, []) if @childrenTreemas?
+
+    data = @data
+    for seg, i in path
+      seg = @normalizeKey(seg, data)
+      if path.length is i+1
+        if $.isArray(data) then data.splice(seg, 1) else delete data[seg]
+        @refreshDisplay()
+        return true
+      else
+        data = data[seg]
+        return false if data is undefined
+        
+  insert: (path, newData) ->
+    # inserts objects at the end of arrays, path is to the array
+    # for adding properties to object, use set
+    path = @normalizePath(path)
+    if path.length is 0
+      return false unless $.isArray(@data)
+      @data.push(newData)
+      @refreshDisplay()
+      @flushChanges()
+      return true
+      
+    return @digDeeper(path, 'insert', false, [newData]) if @childrenTreemas?
+
+    data = @data
+    for seg, i in path
+      seg = @normalizeKey(seg, data)
+      data = data[seg]
+      return false if data is undefined
+
+    return false unless $.isArray(data)
+    data.push(newData)
+    @refreshDisplay()
+    return true
+
+
+  normalizeKey: (key, collection) ->
+    if $.isArray(collection)
+      if '=' in key
+        parts = key.split('=')
+        for value, i in collection
+          if value[parts[0]] is parts[1]
+            return i
+      else
+        return parseInt(key)
+    return key
+    
+  normalizePath: (path) ->
+    if $.type(path) is 'string'
+      path = path.split('/')
+      path = (s for s in path when s.length)
+    path
+    
+  digDeeper: (path, func, def, args) ->
+    seg = @normalizeKey(path[0], @data)
+    childTreema = @childrenTreemas[seg]
+    return def if childTreema is undefined
+    return childTreema[func](path[1..], args...)
+
+  refreshDisplay: ->
+    if @isDisplaying()
+      valEl = @getValEl()
+      valEl.empty()
+      @buildValueForDisplay(valEl)
+      
+    else
+      @display()
+      
+    if @collection and @isOpen()
+      @close()
+      @open()
 
   # Utilities -----------------------------------------------------------------
 

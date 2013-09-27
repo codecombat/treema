@@ -1,6 +1,7 @@
 var TreemaNode,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
+  __slice = [].slice;
 
 TreemaNode = (function() {
   var defaults;
@@ -953,6 +954,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.flushChanges = function() {
+    var parent, _results;
     if (this.parent && this.justCreated) {
       this.parent.integrateChildTreema(this);
     }
@@ -964,7 +966,13 @@ TreemaNode = (function() {
     }
     this.parent.data[this.keyForParent] = this.data;
     this.parent.refreshErrors();
-    return this.parent.buildValueForDisplay(this.parent.getValEl().empty());
+    parent = this.parent;
+    _results = [];
+    while (parent) {
+      parent.buildValueForDisplay(parent.getValEl().empty());
+      _results.push(parent = parent.parent);
+    }
+    return _results;
   };
 
   TreemaNode.prototype.focusLastInput = function() {
@@ -1465,6 +1473,187 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.clearTemporaryErrors = function() {
     return this.getRootEl().find('.treema-temp-error').remove();
+  };
+
+  TreemaNode.prototype.get = function(path) {
+    var data, seg, _i, _len;
+    if (path == null) {
+      path = '/';
+    }
+    path = this.normalizePath(path);
+    if (path.length === 0) {
+      return this.data;
+    }
+    if (this.childrenTreemas != null) {
+      return this.digDeeper(path, 'get', void 0, []);
+    }
+    data = this.data;
+    for (_i = 0, _len = path.length; _i < _len; _i++) {
+      seg = path[_i];
+      data = data[this.normalizeKey(seg, data)];
+      if (data === void 0) {
+        break;
+      }
+    }
+    return data;
+  };
+
+  TreemaNode.prototype.set = function(path, newData) {
+    var data, i, result, seg, _i, _len;
+    path = this.normalizePath(path);
+    if (path.length === 0) {
+      this.data = newData;
+      this.refreshDisplay();
+      this.flushChanges();
+      return true;
+    }
+    if (this.childrenTreemas != null) {
+      result = this.digDeeper(path, 'set', false, [newData]);
+      if (result === false && path.length === 1 && $.isPlainObject(this.data)) {
+        this.data[path[0]] = newData;
+        return true;
+      }
+      return result;
+    }
+    data = this.data;
+    for (i = _i = 0, _len = path.length; _i < _len; i = ++_i) {
+      seg = path[i];
+      seg = this.normalizeKey(seg, data);
+      if (path.length === i + 1) {
+        data[seg] = newData;
+        this.refreshDisplay();
+        return true;
+      } else {
+        data = data[seg];
+        if (data === void 0) {
+          return false;
+        }
+      }
+    }
+  };
+
+  TreemaNode.prototype["delete"] = function(path) {
+    var data, i, seg, _i, _len;
+    path = this.normalizePath(path);
+    if (path.length === 0) {
+      return this.remove();
+    }
+    if (this.childrenTreemas != null) {
+      return this.digDeeper(path, 'delete', false, []);
+    }
+    data = this.data;
+    for (i = _i = 0, _len = path.length; _i < _len; i = ++_i) {
+      seg = path[i];
+      seg = this.normalizeKey(seg, data);
+      if (path.length === i + 1) {
+        if ($.isArray(data)) {
+          data.splice(seg, 1);
+        } else {
+          delete data[seg];
+        }
+        this.refreshDisplay();
+        return true;
+      } else {
+        data = data[seg];
+        if (data === void 0) {
+          return false;
+        }
+      }
+    }
+  };
+
+  TreemaNode.prototype.insert = function(path, newData) {
+    var data, i, seg, _i, _len;
+    path = this.normalizePath(path);
+    if (path.length === 0) {
+      if (!$.isArray(this.data)) {
+        return false;
+      }
+      this.data.push(newData);
+      this.refreshDisplay();
+      this.flushChanges();
+      return true;
+    }
+    if (this.childrenTreemas != null) {
+      return this.digDeeper(path, 'insert', false, [newData]);
+    }
+    data = this.data;
+    for (i = _i = 0, _len = path.length; _i < _len; i = ++_i) {
+      seg = path[i];
+      seg = this.normalizeKey(seg, data);
+      data = data[seg];
+      if (data === void 0) {
+        return false;
+      }
+    }
+    if (!$.isArray(data)) {
+      return false;
+    }
+    data.push(newData);
+    this.refreshDisplay();
+    return true;
+  };
+
+  TreemaNode.prototype.normalizeKey = function(key, collection) {
+    var i, parts, value, _i, _len;
+    if ($.isArray(collection)) {
+      if (__indexOf.call(key, '=') >= 0) {
+        parts = key.split('=');
+        for (i = _i = 0, _len = collection.length; _i < _len; i = ++_i) {
+          value = collection[i];
+          if (value[parts[0]] === parts[1]) {
+            return i;
+          }
+        }
+      } else {
+        return parseInt(key);
+      }
+    }
+    return key;
+  };
+
+  TreemaNode.prototype.normalizePath = function(path) {
+    var s;
+    if ($.type(path) === 'string') {
+      path = path.split('/');
+      path = (function() {
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = path.length; _i < _len; _i++) {
+          s = path[_i];
+          if (s.length) {
+            _results.push(s);
+          }
+        }
+        return _results;
+      })();
+    }
+    return path;
+  };
+
+  TreemaNode.prototype.digDeeper = function(path, func, def, args) {
+    var childTreema, seg;
+    seg = this.normalizeKey(path[0], this.data);
+    childTreema = this.childrenTreemas[seg];
+    if (childTreema === void 0) {
+      return def;
+    }
+    return childTreema[func].apply(childTreema, [path.slice(1)].concat(__slice.call(args)));
+  };
+
+  TreemaNode.prototype.refreshDisplay = function() {
+    var valEl;
+    if (this.isDisplaying()) {
+      valEl = this.getValEl();
+      valEl.empty();
+      this.buildValueForDisplay(valEl);
+    } else {
+      this.display();
+    }
+    if (this.collection && this.isOpen()) {
+      this.close();
+      return this.open();
+    }
   };
 
   TreemaNode.prototype.getValEl = function() {

@@ -291,6 +291,52 @@ keyDown = function($el, which) {
     return expect(treema.data.name).toBeTruthy();
   });
 });
+;describe('TreemaNode.delete', function() {
+  var data, schema, treema;
+  schema = {
+    type: 'object',
+    properties: {
+      name: {
+        type: 'string'
+      },
+      numbers: {
+        type: 'array',
+        items: {
+          type: 'object'
+        }
+      }
+    }
+  };
+  data = {
+    name: 'Bob',
+    numbers: [
+      {
+        'number': '401-401-1337',
+        'type': 'Home'
+      }, {
+        'number': '123-456-7890',
+        'type': 'Work'
+      }
+    ]
+  };
+  treema = TreemaNode.make(null, {
+    data: data,
+    schema: schema
+  });
+  treema.build();
+  it('removes objects from an array', function() {
+    var numbers;
+    expect(treema["delete"]('/numbers/0')).toBeTruthy();
+    numbers = treema.get('/numbers');
+    expect(numbers.length).toBe(1);
+    return expect(numbers[0].type).toBe('Work');
+  });
+  return it('removes properties from an object', function() {
+    expect(treema["delete"]('/numbers/0/type')).toBeTruthy();
+    expect(treema.get('/numbers').type).toBeUndefined();
+    return expect(treema.get('/numbers/type')).toBeUndefined();
+  });
+});
 ;describe('Enter key press', function() {
   var data, enterKeyPress, nameTreema, phoneTreema, schema, treema;
   enterKeyPress = function($el) {
@@ -387,6 +433,53 @@ keyDown = function($el, which) {
     return expect(phoneTreema.childrenTreemas[0].isEditing()).toBeTruthy();
   });
 });
+;describe('TreemaNode.get', function() {
+  var data, nameTreema, schema, treema;
+  schema = {
+    type: 'object',
+    properties: {
+      name: {
+        type: 'string'
+      },
+      numbers: {
+        type: 'array',
+        items: {
+          type: 'object'
+        }
+      }
+    }
+  };
+  data = {
+    name: 'Bob',
+    numbers: [
+      {
+        'number': '401-401-1337',
+        'type': 'Home'
+      }, {
+        'number': '123-456-7890',
+        'type': 'Work'
+      }
+    ]
+  };
+  treema = TreemaNode.make(null, {
+    data: data,
+    schema: schema
+  });
+  treema.build();
+  nameTreema = treema.childrenTreemas.name;
+  it('gets immediate values', function() {
+    return expect(treema.get('/name')).toBe('Bob');
+  });
+  it('can search on object keys within an array', function() {
+    return expect(treema.get('/numbers/type=Work').number).toBe('123-456-7890');
+  });
+  it('can start from a child', function() {
+    return expect(nameTreema.get('/')).toBe('Bob');
+  });
+  return it('returns undefined for invalid paths', function() {
+    return expect(treema.get('waffles')).toBeUndefined();
+  });
+});
 ;describe('Initialization', function() {
   var data, el, schema, treema;
   schema = {
@@ -414,13 +507,6 @@ keyDown = function($el, which) {
       schema: schema
     });
     return expect(elTreema.$el).toBe(el);
-  });
-  it('grabs default data from an object schema', function() {
-    var noDataTreema;
-    noDataTreema = TreemaNode.make(null, {
-      schema: schema
-    });
-    return expect(noDataTreema.data.name).toBe('Untitled');
   });
   return it('opens up root collection nodes by default', function() {
     treema.build();
@@ -455,6 +541,55 @@ describe('Schemaless', function() {
   });
   return it('initializes when given data for an empty schema', function() {
     return expect(treema.$el).toBeDefined();
+  });
+});
+;describe('TreemaNode.insert', function() {
+  var data, schema, treema;
+  schema = {
+    type: 'object',
+    properties: {
+      name: {
+        type: 'string'
+      },
+      numbers: {
+        type: 'array',
+        items: {
+          type: 'object'
+        }
+      }
+    }
+  };
+  data = {
+    name: 'Bob',
+    numbers: [
+      {
+        'number': '401-401-1337',
+        'type': 'Home'
+      }, {
+        'number': '123-456-7890',
+        'type': 'Work'
+      }
+    ]
+  };
+  treema = TreemaNode.make(null, {
+    data: data,
+    schema: schema
+  });
+  treema.build();
+  it('appends data to the end of an array', function() {
+    var numbers;
+    expect(treema.insert('/numbers', {
+      'number': '4321'
+    })).toBeTruthy();
+    numbers = treema.get('/numbers');
+    expect(numbers.length).toBe(3);
+    return expect(numbers[2].number).toBe('4321');
+  });
+  it('returns false for paths that are not arrays', function() {
+    return expect(treema.insert('/numbers/0', 'boom')).toBeFalsy();
+  });
+  return it('returns false for paths that do not exist', function() {
+    return expect(treema.insert('/numbahs', 'boom')).toBeFalsy();
   });
 });
 ;describe('Mouse click behavior', function() {
@@ -652,6 +787,64 @@ describe('Schemaless', function() {
     });
   });
 })();
+;describe('TreemaNode.set', function() {
+  var data, nameTreema, schema, treema;
+  schema = {
+    type: 'object',
+    properties: {
+      name: {
+        type: 'string'
+      },
+      numbers: {
+        type: 'array',
+        items: {
+          type: 'object'
+        }
+      }
+    }
+  };
+  data = {
+    name: 'Bob',
+    numbers: [
+      {
+        'number': '401-401-1337',
+        'type': 'Home'
+      }, {
+        'number': '123-456-7890',
+        'type': 'Work'
+      }
+    ]
+  };
+  treema = TreemaNode.make(null, {
+    data: data,
+    schema: schema
+  });
+  treema.build();
+  nameTreema = treema.childrenTreemas.name;
+  it('sets immediate values', function() {
+    expect(treema.set('/name', 'Bobby')).toBeTruthy();
+    return expect(treema.get('/name')).toBe('Bobby');
+  });
+  it('can search an object within an array', function() {
+    expect(treema.set('/numbers/type=Home/number', '1234')).toBeTruthy();
+    return expect(treema.get('/numbers/type=Home/number')).toBe('1234');
+  });
+  it('can set new properties', function() {
+    expect(treema.set('/numbers/0/daytime', true)).toBeTruthy();
+    return expect(treema.get('/numbers/0/daytime')).toBe(true);
+  });
+  it('updates the visuals of the node and all its parents', function() {
+    var t;
+    treema.childrenTreemas.numbers.open();
+    treema.childrenTreemas.numbers.childrenTreemas[0].open();
+    expect(treema.set('/numbers/0/type', 'Cell')).toBeTruthy();
+    t = treema.childrenTreemas.numbers.$el.find('> .treema-row > .treema-value').text();
+    return expect(t.indexOf('Home')).toBe(-1);
+  });
+  return it('affects the base data', function() {
+    return expect(treema.data['numbers'][0]['daytime']).toBe(true);
+  });
+});
 ;describe('Tab key press', function() {
   var addressTreema, data, nameTreema, phoneTreema, schema, tabKeyPress, treema;
   tabKeyPress = function($el) {

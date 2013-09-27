@@ -13,9 +13,9 @@ describe 'Initialization', ->
     elTreema = TreemaNode.make(el, {data: data, schema: schema})
     expect(elTreema.$el).toBe(el)
 
-  it 'grabs default data from an object schema', ->
-    noDataTreema = TreemaNode.make(null, {schema: schema})
-    expect(noDataTreema.data.name).toBe('Untitled')
+#  it 'grabs default data from an object schema', ->
+#    noDataTreema = TreemaNode.make(null, {schema: schema})
+#    expect(noDataTreema.data.name).toBe('Untitled')
 
   it 'opens up root collection nodes by default', ->
     treema.build()
