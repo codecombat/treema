@@ -35,8 +35,8 @@
       type: 'object',
       properties: {
         name: { type: 'string' },
-        numbers: { type: 'array', items: { type: 'object' } },
-        tags: { type: 'array', items: { type: 'string' } }
+        numbers: { type: 'array', items: { type: 'object' }, readOnly: true },
+        tags: { type: 'array', items: { type: 'string', readOnly: true  } }
       }
     }
     data = {
@@ -50,11 +50,6 @@
     
     var el = $('#scratch');
     var options = {schema:schema, data:data};
-    options.callbacks = {
-      change: function (e, treema) {
-        console.log('change?', e, treema.data);
-      }
-    };
     var treema = el.treema(options);
     treema.build();
     window.treema = treema

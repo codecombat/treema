@@ -1223,10 +1223,16 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.remove = function() {
-    var required, root, tempError, _ref;
+    var readOnly, required, root, tempError, _ref, _ref1;
     required = this.parent && (this.parent.schema.required != null) && (_ref = this.keyForParent, __indexOf.call(this.parent.schema.required, _ref) >= 0);
     if (required) {
       tempError = this.createTemporaryError('required');
+      this.$el.prepend(tempError);
+      return false;
+    }
+    readOnly = this.schema.readOnly || ((_ref1 = this.parent) != null ? _ref1.schema.readOnly : void 0);
+    if (readOnly) {
+      tempError = this.createTemporaryError('read only');
       this.$el.prepend(tempError);
       return false;
     }
@@ -2397,7 +2403,7 @@ TreemaNode = (function() {
     };
 
     ArrayNode.prototype.canAddChild = function() {
-      if (this.settings.readOnly) {
+      if (this.settings.readOnly || this.schema.readOnly) {
         return false;
       }
       if (this.schema.additionalItems === false && this.data.length >= this.schema.items.length) {
@@ -2613,7 +2619,7 @@ TreemaNode = (function() {
     };
 
     ObjectNode.prototype.canAddChild = function() {
-      if (this.settings.readOnly) {
+      if (this.settings.readOnly || this.schema.readOnly) {
         return false;
       }
       if ((this.schema.maxProperties != null) && Object.keys(this.data).length >= this.schema.maxProperties) {

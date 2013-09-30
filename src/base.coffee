@@ -579,6 +579,12 @@ class TreemaNode
       tempError = @createTemporaryError('required')
       @$el.prepend(tempError)
       return false
+      
+    readOnly = @schema.readOnly or @parent?.schema.readOnly
+    if readOnly
+      tempError = @createTemporaryError('read only')
+      @$el.prepend(tempError)
+      return false
 
     root = @getRootEl()
     @$el.remove()
