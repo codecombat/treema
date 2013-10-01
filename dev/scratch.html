@@ -34,7 +34,7 @@
     schema = {
       type: 'object',
       properties: {
-        name: { type: 'string', readOnly: true },
+        name: { type: ['number', 'string', 'null', 'boolean', 'integer'] },
         numbers: { type: 'array', items: { type: 'object' }, readOnly: true },
         tags: { type: 'array', items: { type: 'string', readOnly: true  } },
         map: { type: 'object', readOnly: true }

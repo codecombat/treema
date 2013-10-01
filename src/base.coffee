@@ -760,7 +760,9 @@ class TreemaNode
 
   onSelectType: (e) =>
     newType = $(e.target).val()
+    console.log 'new type is', newType
     NodeClass = TreemaNode.getNodeClassForSchema(@workingSchema, newType, @settings.nodeClasses)
+    console.log('what node class?', newType, NodeClass)
     @replaceNode(NodeClass)
     
   replaceNode: (NodeClass) ->
@@ -1031,6 +1033,7 @@ class TreemaNode
     NodeClass = localClasses[schema.format] or @nodeMap[schema.format] if schema.format
     return NodeClass if NodeClass
     type = schema.type or def
+    type = def if $.isArray(type)
     NodeClass = localClasses[type] or @nodeMap[type]
     return NodeClass if NodeClass
     @nodeMap['any']
