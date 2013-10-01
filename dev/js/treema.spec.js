@@ -1005,6 +1005,103 @@ describe('Schemaless', function() {
     return treema.deselectAll();
   });
 });
+;describe('readOnly in schema', function() {
+  var data, schema, treema;
+  schema = {
+    type: 'object',
+    properties: {
+      name: {
+        type: 'string',
+        readOnly: true
+      },
+      numbers: {
+        type: 'array',
+        items: {
+          type: 'object'
+        },
+        readOnly: true
+      },
+      tags: {
+        type: 'array',
+        items: {
+          type: 'string',
+          readOnly: true
+        }
+      },
+      tags2: {
+        type: 'array',
+        items: {
+          type: 'string'
+        },
+        readOnly: true
+      },
+      map: {
+        type: 'object',
+        readOnly: true
+      }
+    }
+  };
+  data = {
+    name: 'Bob',
+    numbers: [
+      {
+        'number': '401-401-1337',
+        'type': 'Home'
+      }, {
+        'number': '123-456-7890',
+        'type': 'Work'
+      }
+    ],
+    tags: ['Friend'],
+    tags2: ['Friend'],
+    map: {
+      'string': 'String',
+      'object': {
+        'key': 'value'
+      }
+    }
+  };
+  treema = TreemaNode.make(null, {
+    data: data,
+    schema: schema
+  });
+  treema.build();
+  it('prevents editing of readOnly non-collection properties', function() {
+    return expect(treema.childrenTreemas.name.canEdit()).toBe(false);
+  });
+  it('prevents removing from readOnly arrays', function() {
+    treema.childrenTreemas.numbers.remove();
+    return expect(treema.data.numbers).not.toBeUndefined();
+  });
+  it('prevents adding items to readOnly arrays', function() {
+    return expect(treema.childrenTreemas.numbers.canAddChild()).toBe(false);
+  });
+  it('prevents removing readOnly items from arrays which are not readOnly', function() {
+    treema.childrenTreemas.tags.open();
+    treema.childrenTreemas.tags.childrenTreemas[0].remove();
+    return expect(treema.data.tags.length).toBe(1);
+  });
+  it('prevents editing non-collection items in readOnly arrays', function() {
+    treema.childrenTreemas.tags2.open();
+    return expect(treema.childrenTreemas.tags2.childrenTreemas[0].canEdit()).toBe(false);
+  });
+  it('prevents removing from readOnly objects', function() {
+    treema.childrenTreemas.map.remove();
+    return expect(treema.data.map).not.toBeUndefined();
+  });
+  it('prevents adding to readOnly objects', function() {
+    return expect(treema.childrenTreemas.map.canAddChild()).toBe(false);
+  });
+  it('prevents removing readOnly properties from objects which are not readOnly', function() {
+    treema.childrenTreemas.name.remove();
+    treema.childrenTreemas.tags.childrenTreemas[0].remove();
+    return expect(treema.data.tags.length).toBe(1);
+  });
+  return it('prevents editing non-collection properties in readOnly objects', function() {
+    treema.childrenTreemas.map.open();
+    return expect(treema.childrenTreemas.map.childrenTreemas.string.canEdit()).toBe(false);
+  });
+});
 ;(function() {
   var data, expectClosed, expectOpen, schema, treema;
   expectOpen = function(t) {

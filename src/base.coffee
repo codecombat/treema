@@ -507,8 +507,8 @@ class TreemaNode
 
   # Editing values ------------------------------------------------------------
   canEdit: ->
-    return false if @schema.readOnly
-    return false if @settings.readOnly  
+    return false if @schema.readOnly or @parent?.schema.readOnly
+    return false if @settings.readOnly
     return false if not @editable
     return false if not @directlyEditable
     return false if @collection and @isOpen()

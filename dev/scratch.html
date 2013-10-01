@@ -34,9 +34,10 @@
     schema = {
       type: 'object',
       properties: {
-        name: { type: 'string' },
+        name: { type: 'string', readOnly: true },
         numbers: { type: 'array', items: { type: 'object' }, readOnly: true },
-        tags: { type: 'array', items: { type: 'string', readOnly: true  } }
+        tags: { type: 'array', items: { type: 'string', readOnly: true  } },
+        map: { type: 'object', readOnly: true }
       }
     }
     data = {
@@ -45,7 +46,11 @@
         {'number':'401-401-1337', 'type':'Home'},
         {'number':'123-456-7890', 'type':'Work'}
       ],
-      tags: ['Friend']
+      tags: ['Friend'],
+      map: {
+        'string': 'String',
+        'object': { 'key': 'value' }
+      }
     }
     
     var el = $('#scratch');

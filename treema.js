@@ -1102,7 +1102,8 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.canEdit = function() {
-    if (this.schema.readOnly) {
+    var _ref;
+    if (this.schema.readOnly || ((_ref = this.parent) != null ? _ref.schema.readOnly : void 0)) {
       return false;
     }
     if (this.settings.readOnly) {
