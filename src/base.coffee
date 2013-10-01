@@ -760,9 +760,7 @@ class TreemaNode
 
   onSelectType: (e) =>
     newType = $(e.target).val()
-    console.log 'new type is', newType
     NodeClass = TreemaNode.getNodeClassForSchema(@workingSchema, newType, @settings.nodeClasses)
-    console.log('what node class?', newType, NodeClass)
     @replaceNode(NodeClass)
     
   replaceNode: (NodeClass) ->
