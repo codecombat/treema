@@ -1310,9 +1310,7 @@ TreemaNode = (function() {
   TreemaNode.prototype.onSelectType = function(e) {
     var NodeClass, newType;
     newType = $(e.target).val();
-    console.log('new type is', newType);
     NodeClass = TreemaNode.getNodeClassForSchema(this.workingSchema, newType, this.settings.nodeClasses);
-    console.log('what node class?', newType, NodeClass);
     return this.replaceNode(NodeClass);
   };
 
