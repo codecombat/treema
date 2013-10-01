@@ -50,7 +50,7 @@ class TreemaNode
     my_path = @getPath()
     errors = (e for e in errors when e.dataPath[..my_path.length] is my_path)
     e.dataPath = e.dataPath[..my_path.length] for e in errors
-    
+
     if @workingSchema
       moreErrors = @tv4.validateMultiple(@data, @workingSchema).errors
       errors = errors.concat(moreErrors)
@@ -179,9 +179,9 @@ class TreemaNode
   populateData: ->
     return unless @data is undefined
     @data = @data or @schema.default or @getDefaultValue()
-    
+
   setWorkingSchema: (@workingSchema, @workingSchemas) ->
-    
+
   createSchemaSelector: ->
     div = $('<div></div>').addClass('treema-schema-select-container')
     select = $('<select></select>').addClass('treema-schema-select')
@@ -194,7 +194,7 @@ class TreemaNode
     div.append(button).append(select)
     select.change(@onSelectSchema)
     @$el.find('> .treema-row').prepend(div)
-    
+
   makeWorkingSchemaLabel: (schema) ->
     return schema.title if schema.title?
     return schema.type if schema.type?
@@ -205,7 +205,7 @@ class TreemaNode
     types = schema.type or [ "string", "number", "integer", "boolean", "null", "array", "object" ]
     types = [types] unless $.isArray(types)
     types
-    
+
   createTypeSelector: ->
     types = @getTypes()
     return unless types.length > 1
@@ -225,7 +225,7 @@ class TreemaNode
     div.append(button).append(select)
     select.change(@onSelectType)
     @$el.find('> .treema-row').prepend(div)
-    
+
   typeToLetter: (type) ->
     return {
       'boolean': 'B'
@@ -332,7 +332,7 @@ class TreemaNode
     return if @inputFocused()
     @navigateSelection(1)
     e.preventDefault()
-  
+
   inputFocused: ->
     return true if document.activeElement.nodeName in ['INPUT', 'TEXTAREA', 'SELECT']
 
@@ -355,7 +355,7 @@ class TreemaNode
     return @remove() if @justCreated
     @display() if @isEditing()
     @select() unless @isRoot()
-    @getRootEl().focus()
+    @keepFocus()
 
   onEnterPressed: (e) ->
     offset = if e.shiftKey then -1 else 1
@@ -579,7 +579,7 @@ class TreemaNode
       tempError = @createTemporaryError('required')
       @$el.prepend(tempError)
       return false
-      
+
     readOnly = @schema.readOnly or @parent?.schema.readOnly
     if readOnly
       tempError = @createTemporaryError('read only')
@@ -589,7 +589,7 @@ class TreemaNode
     root = @getRootEl()
     @$el.remove()
     @removed = true
-    root.focus() if document.activeElement is $('body')[0]
+    @keepFocus() if document.activeElement is $('body')[0]
     return true unless @parent?
     delete @parent.childrenTreemas[@keyForParent]
     delete @parent.data[@keyForParent]
@@ -698,9 +698,9 @@ class TreemaNode
     TreemaNode.didSelect = true
 
   # Working schemas -----------------------------------------------------------
-  
+
   # Schemas can be flexible using combinatorial properties and references.
-  # But it simplifies logic if schema props like $ref, allOf, anyOf, and oneOf 
+  # But it simplifies logic if schema props like $ref, allOf, anyOf, and oneOf
   # are flattened into a list of more straightforward user choices.
   # These simplifications are called working schemas.
 
@@ -762,7 +762,7 @@ class TreemaNode
     newType = $(e.target).val()
     NodeClass = TreemaNode.getNodeClassForSchema(@workingSchema, newType, @settings.nodeClasses)
     @replaceNode(NodeClass)
-    
+
   replaceNode: (NodeClass) ->
     settings = $.extend(true, {}, @settings)
     delete settings.data if settings.data
@@ -852,31 +852,31 @@ class TreemaNode
     return $(@tempErrorTemplate).text(message).delay(3000).fadeOut(1000, -> $(@).remove())
 
   clearTemporaryErrors: -> @getRootEl().find('.treema-temp-error').remove()
-  
+
   # Getting/setting data ------------------------------------------------------
   # The four functions have similar structures:
-  
+
   #   1. normalize path
   #   2. perform action if treema is the end of the line
   #   3. dig deeper if there are deeper treemas
   #   4. perform action if treema path is over but need to dig deeper into data
-  
+
   # Could refactor this into a template method pattern.
-  
+
   get: (path='/') ->
     path = @normalizePath(path)
     return @data if path.length is 0
     return @digDeeper(path, 'get', undefined, []) if @childrenTreemas?
-    
+
     data = @data
     for seg in path
       data = data[@normalizeKey(seg, data)]
       break if data is undefined
     return data
-  
+
   set: (path, newData) ->
     path = @normalizePath(path)
-      
+
     if path.length is 0
       @data = newData
       @refreshDisplay()
@@ -900,7 +900,7 @@ class TreemaNode
       else
         data = data[seg]
         return false if data is undefined
-        
+
   delete: (path) ->
     path = @normalizePath(path)
     return @remove() if path.length is 0
@@ -916,7 +916,7 @@ class TreemaNode
       else
         data = data[seg]
         return false if data is undefined
-        
+
   insert: (path, newData) ->
     # inserts objects at the end of arrays, path is to the array
     # for adding properties to object, use set
@@ -927,7 +927,7 @@ class TreemaNode
       @refreshDisplay()
       @flushChanges()
       return true
-      
+
     return @digDeeper(path, 'insert', false, [newData]) if @childrenTreemas?
 
     data = @data
@@ -952,13 +952,13 @@ class TreemaNode
       else
         return parseInt(key)
     return key
-    
+
   normalizePath: (path) ->
     if $.type(path) is 'string'
       path = path.split('/')
       path = (s for s in path when s.length)
     path
-    
+
   digDeeper: (path, func, def, args) ->
     seg = @normalizeKey(path[0], @data)
     childTreema = @childrenTreemas[seg]
@@ -970,22 +970,22 @@ class TreemaNode
       valEl = @getValEl()
       valEl.empty()
       @buildValueForDisplay(valEl)
-      
+
     else
       @display()
-      
+
     if @collection and @isOpen()
       @close()
       @open()
 
     @flushChanges()
     @broadcastChanges()
-    
+
   # Utilities -----------------------------------------------------------------
 
   getValEl: -> @$el.find('> .treema-row .treema-value')
   getRootEl: -> @$el.closest('.treema-root')
-  getRoot: -> 
+  getRoot: ->
     node = @
     node = node.parent while node.parent?
     node
@@ -1015,7 +1015,11 @@ class TreemaNode
   editingIsHappening: -> @getRootEl().find('.treema-edit').length
   rootSelected: -> $(document.activeElement).hasClass('treema-root')
 
-  keepFocus: -> @getRootEl().focus()
+  keepFocus: ->
+    # We want to keep Treema receiving events, so we focus on the root, but we preserve scroll position to do it invisibly.
+    [x, y] = [window.scrollX, window.scrollY]
+    @getRootEl().focus()
+    window.scrollTo x, y
   copyData: -> $.extend(null, {}, {'d': @data})['d']
   updateMyAddButton: ->
     @$el.removeClass('treema-full')
@@ -1027,14 +1031,14 @@ class TreemaNode
 
   @getNodeClassForSchema: (schema, def='string', localClasses=null) ->
     NodeClass = null
-    localClasses = localClasses or {} 
+    localClasses = localClasses or {}
     NodeClass = localClasses[schema.format] or @nodeMap[schema.format] if schema.format
     return NodeClass if NodeClass
     type = schema.type or def
     NodeClass = localClasses[type] or @nodeMap[type]
     return NodeClass if NodeClass
     @nodeMap['any']
-    
+
   @make: (element, options, parent, keyForParent) ->
     # this is a mess, make a factory which is able to deal with working schemas
     # and setting defaults.
@@ -1077,7 +1081,7 @@ class TreemaNode
     combinedOps = {}
     $.extend(combinedOps, parent.settings) if parent
     $.extend(combinedOps, options)
-    
+
     newNode = new NodeClass(element, combinedOps, parent)
     newNode.tv4 = parent.tv4 if parent?
     newNode.keyForParent = keyForParent if keyForParent?

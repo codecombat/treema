@@ -886,7 +886,7 @@ TreemaNode = (function() {
     if (!this.isRoot()) {
       this.select();
     }
-    return this.getRootEl().focus();
+    return this.keepFocus();
   };
 
   TreemaNode.prototype.onEnterPressed = function(e) {
@@ -1241,7 +1241,7 @@ TreemaNode = (function() {
     this.$el.remove();
     this.removed = true;
     if (document.activeElement === $('body')[0]) {
-      root.focus();
+      this.keepFocus();
     }
     if (this.parent == null) {
       return true;
@@ -1990,7 +1990,10 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.keepFocus = function() {
-    return this.getRootEl().focus();
+    var x, y, _ref;
+    _ref = [window.scrollX, window.scrollY], x = _ref[0], y = _ref[1];
+    this.getRootEl().focus();
+    return window.scrollTo(x, y);
   };
 
   TreemaNode.prototype.copyData = function() {
