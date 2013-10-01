@@ -31,27 +31,52 @@
 
   var jade = {};
   $(document).ready(function () {
-    schema = {
-      type: 'object',
-      properties: {
-        name: { type: ['number', 'string', 'null', 'boolean', 'integer'] },
-        numbers: { type: 'array', items: { type: 'object' }, readOnly: true },
-        tags: { type: 'array', items: { type: 'string', readOnly: true  } },
-        map: { type: 'object', readOnly: true }
+    schema = { type: 'array' }
+    data = [
+      {
+        "channel": "god:new-world-created",
+        "noteChain": [
+          {
+            "sprites": [
+              {
+                "id": "Anya",
+                "say": {
+                  "text": "This Level is complete.",
+                  "mood": "debrief",
+                  "responses": [
+                    {
+                      "text": "Restart",
+                      "channel": "level-restart",
+                      "buttonClass": "btn-primary"
+                    },
+                    {
+                      "text": "Okay",
+                      "channel": "end-current-script"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "eventPrereqs": [
+          {
+            "eventProps": [
+              "world",
+              "victory"
+            ],
+            "equalTo": true
+          },
+          {
+            "eventProps": [
+              "firstWorld"
+            ],
+            "equalTo": true
+          }
+        ],
+        "id": "pointToRestart"
       }
-    }
-    data = {
-      name: 'Bob',
-      numbers: [
-        {'number':'401-401-1337', 'type':'Home'},
-        {'number':'123-456-7890', 'type':'Work'}
-      ],
-      tags: ['Friend'],
-      map: {
-        'string': 'String',
-        'object': { 'key': 'value' }
-      }
-    }
+    ];
     
     var el = $('#scratch');
     var options = {schema:schema, data:data};

@@ -134,6 +134,16 @@ do __init = ->
         @integrateChildTreema(newTreema)
         newTreema.flushChanges()
       true
+      
+    open: ->
+      super()
+      valEl = @getValEl().empty()
+      @buildValueForDisplaySimply(valEl, '[...]')
+      
+    close: ->
+      super()
+      valEl = @getValEl().empty()
+      @buildValueForDisplay(valEl)
 
   window.TreemaArrayNode = ArrayNode  # TODO: how should we be making these available?
 
@@ -210,6 +220,16 @@ do __init = ->
         helperTreema = TreemaNode.make(null, {schema: @getChildSchema(key), data:null}, @)
         helperTreema.populateData()
         @data[key] = helperTreema.data
+
+    open: ->
+      super()
+      valEl = @getValEl().empty()
+      @buildValueForDisplaySimply(valEl, '{...}')
+
+    close: ->
+      super()
+      valEl = @getValEl().empty()
+      @buildValueForDisplay(valEl)
 
     # adding children ---------------------------------------------------------
 

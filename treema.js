@@ -2449,6 +2449,20 @@ TreemaNode = (function() {
       return true;
     };
 
+    ArrayNode.prototype.open = function() {
+      var valEl;
+      ArrayNode.__super__.open.call(this);
+      valEl = this.getValEl().empty();
+      return this.buildValueForDisplaySimply(valEl, '[...]');
+    };
+
+    ArrayNode.prototype.close = function() {
+      var valEl;
+      ArrayNode.__super__.close.call(this);
+      valEl = this.getValEl().empty();
+      return this.buildValueForDisplay(valEl);
+    };
+
     return ArrayNode;
 
   })(TreemaNode));
@@ -2594,6 +2608,20 @@ TreemaNode = (function() {
         _results.push(this.data[key] = helperTreema.data);
       }
       return _results;
+    };
+
+    ObjectNode.prototype.open = function() {
+      var valEl;
+      ObjectNode.__super__.open.call(this);
+      valEl = this.getValEl().empty();
+      return this.buildValueForDisplaySimply(valEl, '{...}');
+    };
+
+    ObjectNode.prototype.close = function() {
+      var valEl;
+      ObjectNode.__super__.close.call(this);
+      valEl = this.getValEl().empty();
+      return this.buildValueForDisplay(valEl);
     };
 
     ObjectNode.prototype.addNewChild = function() {
