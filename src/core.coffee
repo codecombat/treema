@@ -216,7 +216,7 @@ do __init = ->
       super()
       return unless @schema.required
       for key in @schema.required
-        continue if @data[key]
+        continue if @data[key]?
         helperTreema = TreemaNode.make(null, {schema: @getChildSchema(key), data:null}, @)
         helperTreema.populateData()
         @data[key] = helperTreema.data

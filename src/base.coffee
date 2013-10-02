@@ -178,7 +178,9 @@ class TreemaNode
 
   populateData: ->
     return unless @data is undefined
-    @data = @data or @schema.default or @getDefaultValue()
+    @data = @schema.default
+    return unless @data is undefined
+    @data = @getDefaultValue()
 
   setWorkingSchema: (@workingSchema, @workingSchemas) ->
 

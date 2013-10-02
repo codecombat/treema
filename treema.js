@@ -558,7 +558,11 @@ TreemaNode = (function() {
     if (this.data !== void 0) {
       return;
     }
-    return this.data = this.data || this.schema["default"] || this.getDefaultValue();
+    this.data = this.schema["default"];
+    if (this.data !== void 0) {
+      return;
+    }
+    return this.data = this.getDefaultValue();
   };
 
   TreemaNode.prototype.setWorkingSchema = function(workingSchema, workingSchemas) {
@@ -2588,7 +2592,7 @@ TreemaNode = (function() {
       _results = [];
       for (_i = 0, _len = _ref7.length; _i < _len; _i++) {
         key = _ref7[_i];
-        if (this.data[key]) {
+        if (this.data[key] != null) {
           continue;
         }
         helperTreema = TreemaNode.make(null, {
