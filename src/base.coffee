@@ -790,9 +790,8 @@ class TreemaNode
     row = childNode.find('.treema-row')
     if @collection and @keyed
       name = treema.schema.title or treema.keyForParent
-      keyEl = $(@keyTemplate).text(name)
+      keyEl = $(@keyTemplate).text(name + ': ')
       keyEl.attr('title', treema.schema.description) if treema.schema.description
-      row.prepend(' : ')
       required = @schema.required or []
       keyEl.text(keyEl.text()+'*') if treema.keyForParent in required
       row.prepend(keyEl)
