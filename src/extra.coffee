@@ -162,3 +162,25 @@ do ->
   
     onTabPressed: ->
     onEnterPressed: ->
+      
+  TreemaNode.setNodeSubclass 'long-string', class LongStringNode extends TreemaNode
+    valueClass: 'treema-long-string'
+
+    getDefaultValue: -> ''
+  
+    buildValueForDisplay: (valEl) ->
+      text = @data
+      text = text.replace(/\n/g, '<br />')
+      valEl.append($("<div></div>").html(text))
+
+    buildValueForEditing: (valEl) ->
+      input = $('<textarea />')
+      input.val(@data) unless @data is null
+      valEl.append(input)
+      input.focus().select()
+      input.blur @onEditInputBlur
+      input
+  
+    saveChanges: (valEl) ->
+      input = valEl.find('textarea')
+      @data = input.val()

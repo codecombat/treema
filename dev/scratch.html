@@ -31,50 +31,21 @@
 
   var jade = {};
   $(document).ready(function () {
-    schema = { type: 'array' }
+    schema = { 
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: { 
+          name: { type: 'string' },
+          description: { type: 'string', format: 'long-string' } 
+        } 
+      }
+    }
+    
     data = [
       {
-        "channel": "god:new-world-created",
-        "noteChain": [
-          {
-            "sprites": [
-              {
-                "id": "Anya",
-                "say": {
-                  "text": "This Level is complete.",
-                  "mood": "debrief",
-                  "responses": [
-                    {
-                      "text": "Restart",
-                      "channel": "level-restart",
-                      "buttonClass": "btn-primary"
-                    },
-                    {
-                      "text": "Okay",
-                      "channel": "end-current-script"
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        ],
-        "eventPrereqs": [
-          {
-            "eventProps": [
-              "world",
-              "victory"
-            ],
-            "equalTo": true
-          },
-          {
-            "eventProps": [
-              "firstWorld"
-            ],
-            "equalTo": true
-          }
-        ],
-        "id": "pointToRestart"
+        name: 'Whatevs',
+        description: 'Lorem ipsum dolor sit amet\n\nconsectetuer adipiscing elit\n\nsed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam\n\nquis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat\n\nvel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer possim assum. Typi non habent claritatem insitam; est usus legentis in iis qui facit eorum claritatem. Investigationes demonstraverunt lectores legere me lius quod ii legunt saepius. Claritas est etiam processus dynamicus\n\nqui sequitur mutationem consuetudium lectorum. Mirum est notare quam littera gothica\n\nquam nunc putamus parum claram\n\nanteposuerit litterarum formas humanitatis per seacula quarta decima et quinta decima. Eodem modo typi\n\nqui nunc nobis videntur parum clari\n\nfiant sollemnes in futurum.'
       }
     ];
     
@@ -82,6 +53,7 @@
     var options = {schema:schema, data:data};
     var treema = el.treema(options);
     treema.build();
+    treema.childrenTreemas[0].open()
     window.treema = treema
   });
   

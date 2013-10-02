@@ -1571,11 +1571,10 @@ TreemaNode = (function() {
     row = childNode.find('.treema-row');
     if (this.collection && this.keyed) {
       name = treema.schema.title || treema.keyForParent;
-      keyEl = $(this.keyTemplate).text(name);
+      keyEl = $(this.keyTemplate).text(name + ': ');
       if (treema.schema.description) {
         keyEl.attr('title', treema.schema.description);
       }
-      row.prepend(' : ');
       required = this.schema.required || [];
       if (_ref = treema.keyForParent, __indexOf.call(required, _ref) >= 0) {
         keyEl.text(keyEl.text() + '*');
@@ -2946,7 +2945,7 @@ TreemaNode = (function() {
   __slice = [].slice;
 
 (function() {
-  var AceNode, DatabaseSearchTreemaNode, Point2DNode, Point3DNode, debounce, _ref, _ref1, _ref2, _ref3;
+  var AceNode, DatabaseSearchTreemaNode, LongStringNode, Point2DNode, Point3DNode, debounce, _ref, _ref1, _ref2, _ref3, _ref4;
   TreemaNode.setNodeSubclass('point2d', Point2DNode = (function(_super) {
     __extends(Point2DNode, _super);
 
@@ -3198,7 +3197,7 @@ TreemaNode = (function() {
   };
   DatabaseSearchTreemaNode.prototype.search = debounce(DatabaseSearchTreemaNode.prototype.search, 200);
   window.DatabaseSearchTreemaNode = DatabaseSearchTreemaNode;
-  return TreemaNode.setNodeSubclass('ace', AceNode = (function(_super) {
+  TreemaNode.setNodeSubclass('ace', AceNode = (function(_super) {
     __extends(AceNode, _super);
 
     function AceNode() {
@@ -3246,6 +3245,48 @@ TreemaNode = (function() {
     AceNode.prototype.onEnterPressed = function() {};
 
     return AceNode;
+
+  })(TreemaNode));
+  return TreemaNode.setNodeSubclass('long-string', LongStringNode = (function(_super) {
+    __extends(LongStringNode, _super);
+
+    function LongStringNode() {
+      _ref4 = LongStringNode.__super__.constructor.apply(this, arguments);
+      return _ref4;
+    }
+
+    LongStringNode.prototype.valueClass = 'treema-long-string';
+
+    LongStringNode.prototype.getDefaultValue = function() {
+      return '';
+    };
+
+    LongStringNode.prototype.buildValueForDisplay = function(valEl) {
+      var text;
+      text = this.data;
+      text = text.replace(/\n/g, '<br />');
+      return valEl.append($("<div></div>").html(text));
+    };
+
+    LongStringNode.prototype.buildValueForEditing = function(valEl) {
+      var input;
+      input = $('<textarea />');
+      if (this.data !== null) {
+        input.val(this.data);
+      }
+      valEl.append(input);
+      input.focus().select();
+      input.blur(this.onEditInputBlur);
+      return input;
+    };
+
+    LongStringNode.prototype.saveChanges = function(valEl) {
+      var input;
+      input = valEl.find('textarea');
+      return this.data = input.val();
+    };
+
+    return LongStringNode;
 
   })(TreemaNode));
 })();
