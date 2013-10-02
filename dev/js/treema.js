@@ -955,7 +955,6 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.flushChanges = function() {
-    var parent, _results;
     if (this.parent && this.justCreated) {
       this.parent.integrateChildTreema(this);
     }
@@ -966,14 +965,7 @@ TreemaNode = (function() {
       return this.refreshErrors();
     }
     this.parent.data[this.keyForParent] = this.data;
-    this.parent.refreshErrors();
-    parent = this.parent;
-    _results = [];
-    while (parent) {
-      parent.buildValueForDisplay(parent.getValEl().empty());
-      _results.push(parent = parent.parent);
-    }
-    return _results;
+    return this.parent.refreshErrors();
   };
 
   TreemaNode.prototype.focusLastInput = function() {

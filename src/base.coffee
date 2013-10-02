@@ -552,10 +552,6 @@ class TreemaNode
     return @refreshErrors() unless @parent
     @parent.data[@keyForParent] = @data
     @parent.refreshErrors()
-    parent = @parent
-    while parent
-      parent.buildValueForDisplay(parent.getValEl().empty())
-      parent = parent.parent
 
   focusLastInput: ->
     inputs = @getInputs()
