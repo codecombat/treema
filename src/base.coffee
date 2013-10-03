@@ -26,6 +26,7 @@ class TreemaNode
   directlyEditable: true # can be changed at this level directly
   skipTab: false         # is skipped over when tabbing between elements for editing
   valueClass: null
+  removeOnEmptyDelete: true
 
   # dynamically managed properties
   keyForParent: null
@@ -343,12 +344,13 @@ class TreemaNode
   onFPressed: ->
 
   onDeletePressed: (e) ->
-    if @editingIsHappening() and not $(e.target).val()
+    editing = @editingIsHappening()
+    if editing and not $(e.target).val() and @removeOnEmptyDelete
       @display()
       @select()
       @removeSelectedNodes()
       e.preventDefault()
-    return if e.target.nodeName in ['INPUT', 'TEXTAREA']
+    return if editing
     e.preventDefault()
     @removeSelectedNodes()
 

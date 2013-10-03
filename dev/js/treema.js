@@ -46,6 +46,8 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.valueClass = null;
 
+  TreemaNode.prototype.removeOnEmptyDelete = true;
+
   TreemaNode.prototype.keyForParent = null;
 
   TreemaNode.prototype.childrenTreemas = null;
@@ -641,14 +643,15 @@ TreemaNode = (function() {
   TreemaNode.prototype.onFPressed = function() {};
 
   TreemaNode.prototype.onDeletePressed = function(e) {
-    var _ref;
-    if (this.editingIsHappening() && !$(e.target).val()) {
+    var editing;
+    editing = this.editingIsHappening();
+    if (editing && !$(e.target).val() && this.removeOnEmptyDelete) {
       this.display();
       this.select();
       this.removeSelectedNodes();
       e.preventDefault();
     }
-    if ((_ref = e.target.nodeName) === 'INPUT' || _ref === 'TEXTAREA') {
+    if (editing) {
       return;
     }
     e.preventDefault();
