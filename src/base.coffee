@@ -818,7 +818,7 @@ class TreemaNode
         subpath = parseInt(subpath) if deepestTreema.ordered
         deepestTreema = deepestTreema.childrenTreemas[subpath]
         unless deepestTreema
-          console.error('could not find treema down path', path, @)
+          console.error('could not find treema down path', path, @, "so couldn't show error", error)
           return
       deepestTreema._errors = [] unless deepestTreema._errors and deepestTreema in erroredTreemas
       deepestTreema._errors.push(error)

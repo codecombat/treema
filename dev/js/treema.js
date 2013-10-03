@@ -1392,7 +1392,7 @@ TreemaNode = (function() {
         }
         deepestTreema = deepestTreema.childrenTreemas[subpath];
         if (!deepestTreema) {
-          console.error('could not find treema down path', path, this);
+          console.error('could not find treema down path', path, this, "so couldn't show error", error);
           return;
         }
       }
