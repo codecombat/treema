@@ -1268,7 +1268,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.open = function() {
-    var childNode, childrenContainer, key, schema, treema, value, _base, _i, _len, _ref, _ref1;
+    var childNode, childrenContainer, key, schema, treema, value, _i, _len, _ref, _ref1;
     if (!this.isClosed()) {
       return;
     }
@@ -1293,11 +1293,9 @@ TreemaNode = (function() {
     childrenContainer.append($(this.addChildTemplate));
     if (this.ordered && childrenContainer.sortable) {
       if (typeof childrenContainer.sortable === "function") {
-        if (typeof (_base = childrenContainer.sortable({
+        childrenContainer.sortable({
           deactivate: this.orderDataFromUI
-        })).disableSelection === "function") {
-          _base.disableSelection();
-        }
+        });
       }
     }
     return this.refreshErrors();
