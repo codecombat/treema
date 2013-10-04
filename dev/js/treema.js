@@ -1390,7 +1390,7 @@ TreemaNode = (function() {
         }
         deepestTreema = deepestTreema.childrenTreemas[subpath];
         if (!deepestTreema) {
-          console.error('could not find treema down path', path, this);
+          console.error('could not find treema down path', path, this, "so couldn't show error", error);
           return;
         }
       }
@@ -3004,6 +3004,9 @@ TreemaNode = (function() {
       this.editor.setReadOnly(false);
       if (this.schema.aceMode != null) {
         this.editor.getSession().setMode(this.schema.aceMode);
+      }
+      if (this.schema.aceTabSize != null) {
+        this.editor.getSession().setTabSize(this.schema.aceTabSize);
       }
       if (this.schema.aceTheme != null) {
         this.editor.setTheme(this.schema.aceTheme);
