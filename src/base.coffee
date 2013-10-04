@@ -556,7 +556,12 @@ class TreemaNode
     return @refreshErrors() unless @parent
     @parent.data[@keyForParent] = @data
     @parent.refreshErrors()
-
+    parent = @parent
+    while parent
+      unless parent.valueClass in ['treema-array', 'treema-object']
+        parent.buildValueForDisplay(parent.getValEl().empty())
+      parent = parent.parent
+      
   focusLastInput: ->
     inputs = @getInputs()
     last = inputs[inputs.length-1]

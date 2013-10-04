@@ -137,8 +137,10 @@ do __init = ->
       
     open: ->
       super()
-      valEl = @getValEl().empty()
-      @buildValueForDisplaySimply(valEl, '[...]')
+      shouldShorten = @buildValueForDisplay is ArrayNode.buildValueForDisplay
+      if shouldShorten
+        valEl = @getValEl().empty()
+        @buildValueForDisplaySimply(valEl, '[...]') if shouldShorten
       
     close: ->
       super()
@@ -223,8 +225,10 @@ do __init = ->
 
     open: ->
       super()
-      valEl = @getValEl().empty()
-      @buildValueForDisplaySimply(valEl, '{...}')
+      shouldShorten = @buildValueForDisplay is ObjectNode.buildValueForDisplay
+      if shouldShorten
+        valEl = @getValEl().empty()
+        @buildValueForDisplaySimply(valEl, '{...}') if shouldShorten
 
     close: ->
       super()

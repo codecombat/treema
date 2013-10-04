@@ -1184,6 +1184,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.flushChanges = function() {
+    var parent, _ref, _results;
     if (this.parent && this.justCreated) {
       this.parent.integrateChildTreema(this);
     }
@@ -1194,7 +1195,16 @@ TreemaNode = (function() {
       return this.refreshErrors();
     }
     this.parent.data[this.keyForParent] = this.data;
-    return this.parent.refreshErrors();
+    this.parent.refreshErrors();
+    parent = this.parent;
+    _results = [];
+    while (parent) {
+      if ((_ref = parent.valueClass) !== 'treema-array' && _ref !== 'treema-object') {
+        parent.buildValueForDisplay(parent.getValEl().empty());
+      }
+      _results.push(parent = parent.parent);
+    }
+    return _results;
   };
 
   TreemaNode.prototype.focusLastInput = function() {
@@ -2446,10 +2456,15 @@ TreemaNode = (function() {
     };
 
     ArrayNode.prototype.open = function() {
-      var valEl;
+      var shouldShorten, valEl;
       ArrayNode.__super__.open.call(this);
-      valEl = this.getValEl().empty();
-      return this.buildValueForDisplaySimply(valEl, '[...]');
+      shouldShorten = this.buildValueForDisplay === ArrayNode.buildValueForDisplay;
+      if (shouldShorten) {
+        valEl = this.getValEl().empty();
+        if (shouldShorten) {
+          return this.buildValueForDisplaySimply(valEl, '[...]');
+        }
+      }
     };
 
     ArrayNode.prototype.close = function() {
@@ -2607,10 +2622,15 @@ TreemaNode = (function() {
     };
 
     ObjectNode.prototype.open = function() {
-      var valEl;
+      var shouldShorten, valEl;
       ObjectNode.__super__.open.call(this);
-      valEl = this.getValEl().empty();
-      return this.buildValueForDisplaySimply(valEl, '{...}');
+      shouldShorten = this.buildValueForDisplay === ObjectNode.buildValueForDisplay;
+      if (shouldShorten) {
+        valEl = this.getValEl().empty();
+        if (shouldShorten) {
+          return this.buildValueForDisplaySimply(valEl, '{...}');
+        }
+      }
     };
 
     ObjectNode.prototype.close = function() {
