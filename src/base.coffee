@@ -1053,7 +1053,7 @@ class TreemaNode
     type = $.type(options.data) if options.data?
     type = 'integer' if type == 'number' and options.data % 1
     type = 'string' unless type?
-    localClasses = if parent then parent.settings.nodeClasses else {}
+    localClasses = if parent then parent.settings.nodeClasses else options.nodeClasses
     if parent
       workingSchemas = parent.buildWorkingSchemas(options.schema)
       data = options.data

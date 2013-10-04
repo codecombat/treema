@@ -1839,7 +1839,7 @@ TreemaNode = (function() {
     if (type == null) {
       type = 'string';
     }
-    localClasses = parent ? parent.settings.nodeClasses : {};
+    localClasses = parent ? parent.settings.nodeClasses : options.nodeClasses;
     if (parent) {
       workingSchemas = parent.buildWorkingSchemas(options.schema);
       data = options.data;
