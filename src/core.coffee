@@ -85,7 +85,8 @@ do __init = ->
     collection: true
     ordered: true
     directlyEditable: false
-
+    sort: false
+    
     getChildren: ->
       ([key, value, @getChildSchema(key)] for value, key in @data)
 
@@ -136,6 +137,7 @@ do __init = ->
       true
       
     open: ->
+      @data.sort(@sortFunction) if @sort
       super()
       shouldShorten = @buildValueForDisplay is ArrayNode.buildValueForDisplay
       if shouldShorten
@@ -146,6 +148,13 @@ do __init = ->
       super()
       valEl = @getValEl().empty()
       @buildValueForDisplay(valEl)
+      
+    # auto sorting methods
+      
+    sortFunction: (a, b) ->
+      return 1 if a > b
+      return -1 if a < b
+      return 0
 
   window.TreemaArrayNode = ArrayNode  # TODO: how should we be making these available?
 

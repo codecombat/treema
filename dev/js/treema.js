@@ -2137,6 +2137,8 @@ TreemaNode = (function() {
 
     ArrayNode.prototype.directlyEditable = false;
 
+    ArrayNode.prototype.sort = false;
+
     ArrayNode.prototype.getChildren = function() {
       var key, value, _i, _len, _ref6, _results;
       _ref6 = this.data;
@@ -2235,6 +2237,9 @@ TreemaNode = (function() {
 
     ArrayNode.prototype.open = function() {
       var shouldShorten, valEl;
+      if (this.sort) {
+        this.data.sort(this.sortFunction);
+      }
       ArrayNode.__super__.open.call(this);
       shouldShorten = this.buildValueForDisplay === ArrayNode.buildValueForDisplay;
       if (shouldShorten) {
@@ -2250,6 +2255,16 @@ TreemaNode = (function() {
       ArrayNode.__super__.close.call(this);
       valEl = this.getValEl().empty();
       return this.buildValueForDisplay(valEl);
+    };
+
+    ArrayNode.prototype.sortFunction = function(a, b) {
+      if (a > b) {
+        return 1;
+      }
+      if (a < b) {
+        return -1;
+      }
+      return 0;
     };
 
     return ArrayNode;
