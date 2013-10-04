@@ -9,7 +9,7 @@ class TreemaNode
   parent: null
 
   # templates
-  nodeTemplate: '<div class="treema-row"><div class="treema-value"></div></div>'
+  nodeTemplate: '<div class="treema-row treema-clearfix"><div class="treema-value"></div></div>'
   childrenTemplate: '<div class="treema-children"></div>'
   addChildTemplate: '<div class="treema-add-child" tabindex="9009">+</div>'
   tempErrorTemplate: '<span class="treema-temp-error"></span>'

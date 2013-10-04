@@ -238,7 +238,7 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.parent = null;
 
-  TreemaNode.prototype.nodeTemplate = '<div class="treema-row"><div class="treema-value"></div></div>';
+  TreemaNode.prototype.nodeTemplate = '<div class="treema-row treema-clearfix"><div class="treema-value"></div></div>';
 
   TreemaNode.prototype.childrenTemplate = '<div class="treema-children"></div>';
 
