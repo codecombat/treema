@@ -139,7 +139,7 @@ do __init = ->
     open: ->
       @data.sort(@sortFunction) if @sort
       super()
-      shouldShorten = @buildValueForDisplay is ArrayNode.buildValueForDisplay
+      shouldShorten = @buildValueForDisplay is ArrayNode.prototype.buildValueForDisplay
       if shouldShorten
         valEl = @getValEl().empty()
         @buildValueForDisplaySimply(valEl, '[...]') if shouldShorten
@@ -234,7 +234,7 @@ do __init = ->
 
     open: ->
       super()
-      shouldShorten = @buildValueForDisplay is ObjectNode.buildValueForDisplay
+      shouldShorten = @buildValueForDisplay is ObjectNode.prototype.buildValueForDisplay
       if shouldShorten
         valEl = @getValEl().empty()
         @buildValueForDisplaySimply(valEl, '{...}') if shouldShorten

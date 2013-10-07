@@ -6,6 +6,32 @@ keyDown = function($el, which) {
   event.which = which;
   return $el.trigger(event);
 };
+;describe('Schemas with multiple types', function() {
+  var data, schema, tabKeyPress, treema;
+  tabKeyPress = function($el) {
+    return keyDown($el, 9);
+  };
+  schema = {
+    type: 'array',
+    items: {
+      "type": ["boolean", "integer", "number", "null", "string"]
+    }
+  };
+  data = [];
+  treema = TreemaNode.make(null, {
+    data: data,
+    schema: schema
+  });
+  treema.build();
+  return it('chooses the first one in the type list', function() {
+    var newChild;
+    treema.addNewChild();
+    newChild = treema.$el.find('.treema-node').data('instance');
+    newChild.endExistingEdits();
+    newChild.flushChanges();
+    return expect(treema.data[0]).toBe(false);
+  });
+});
 ;describe('Change callback', function() {
   var data, deleteKeyPress, fired, nameTreema, numbersTreema, schema, tabKeyPress, tagsTreema, treema;
   tabKeyPress = function($el) {

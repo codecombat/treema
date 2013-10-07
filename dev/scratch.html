@@ -33,13 +33,19 @@
   $(document).ready(function () {
     schema = { 
       type: 'array',
-      items: { type: 'number' }
+      items: {
+        "type": [
+          "boolean",
+          "integer",
+          "number",
+          "null",
+          "string"
+        ]
+      }
     }
     
-    data = [1,3,6,2,4,7,9,3];
-    
     var el = $('#scratch');
-    var options = {schema:schema, data:data};
+    var options = {schema:schema, data:[]};
     var treema = el.treema(options);
     treema.build();
     window.treema = treema

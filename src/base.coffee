@@ -1057,7 +1057,11 @@ class TreemaNode
     type = $.type(options.schema.default) unless options.schema.default is undefined
     type = $.type(options.data) if options.data?
     type = 'integer' if type == 'number' and options.data % 1
-    type = 'string' unless type?
+    unless type?
+      schemaTypes = options.schema.type
+      schemaTypes = schemaTypes[0] if $.isArray(schemaTypes)
+      schemaTypes = 'string' unless schemaTypes?
+      type = schemaTypes
     localClasses = if parent then parent.settings.nodeClasses else options.nodeClasses
     if parent
       workingSchemas = parent.buildWorkingSchemas(options.schema)

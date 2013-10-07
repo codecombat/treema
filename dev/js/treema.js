@@ -1827,7 +1827,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.make = function(element, options, parent, keyForParent) {
-    var NodeClass, combinedOps, d, data, localClasses, newNode, type, workingSchema, workingSchemas;
+    var NodeClass, combinedOps, d, data, localClasses, newNode, schemaTypes, type, workingSchema, workingSchemas;
     if (options.data === void 0 && (options.schema["default"] != null)) {
       d = options.schema["default"];
       options.data = $.extend(true, {}, {
@@ -1847,7 +1847,14 @@ TreemaNode = (function() {
       type = 'integer';
     }
     if (type == null) {
-      type = 'string';
+      schemaTypes = options.schema.type;
+      if ($.isArray(schemaTypes)) {
+        schemaTypes = schemaTypes[0];
+      }
+      if (schemaTypes == null) {
+        schemaTypes = 'string';
+      }
+      type = schemaTypes;
     }
     localClasses = parent ? parent.settings.nodeClasses : options.nodeClasses;
     if (parent) {
@@ -2241,7 +2248,7 @@ TreemaNode = (function() {
         this.data.sort(this.sortFunction);
       }
       ArrayNode.__super__.open.call(this);
-      shouldShorten = this.buildValueForDisplay === ArrayNode.buildValueForDisplay;
+      shouldShorten = this.buildValueForDisplay === ArrayNode.prototype.buildValueForDisplay;
       if (shouldShorten) {
         valEl = this.getValEl().empty();
         if (shouldShorten) {
@@ -2417,7 +2424,7 @@ TreemaNode = (function() {
     ObjectNode.prototype.open = function() {
       var shouldShorten, valEl;
       ObjectNode.__super__.open.call(this);
-      shouldShorten = this.buildValueForDisplay === ObjectNode.buildValueForDisplay;
+      shouldShorten = this.buildValueForDisplay === ObjectNode.prototype.buildValueForDisplay;
       if (shouldShorten) {
         valEl = this.getValEl().empty();
         if (shouldShorten) {
