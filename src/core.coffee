@@ -228,7 +228,7 @@ do __init = ->
       return unless @schema.required
       for key in @schema.required
         continue if @data[key]?
-        helperTreema = TreemaNode.make(null, {schema: @getChildSchema(key), data:null}, @)
+        helperTreema = TreemaNode.make(null, {schema: @getChildSchema(key)}, @)
         helperTreema.populateData()
         @data[key] = helperTreema.data
 

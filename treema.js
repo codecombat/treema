@@ -432,6 +432,7 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.shouldTryToRemoveFromParent = function() {
     var input, inputs, val, _i, _len;
+    return false;
     val = this.getValEl();
     if (val.find('select').length) {
       return;
@@ -1237,6 +1238,7 @@ TreemaNode = (function() {
     var readOnly, required, root, tempError, _ref, _ref1;
     required = this.parent && (this.parent.schema.required != null) && (_ref = this.keyForParent, __indexOf.call(this.parent.schema.required, _ref) >= 0);
     if (required) {
+      console.log('d o not remove....', alskdjfkdal);
       tempError = this.createTemporaryError('required');
       this.$el.prepend(tempError);
       return false;
@@ -2635,8 +2637,7 @@ TreemaNode = (function() {
           continue;
         }
         helperTreema = TreemaNode.make(null, {
-          schema: this.getChildSchema(key),
-          data: null
+          schema: this.getChildSchema(key)
         }, this);
         helperTreema.populateData();
         _results.push(this.data[key] = helperTreema.data);

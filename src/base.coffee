@@ -109,6 +109,8 @@ class TreemaNode
     @broadcastChanges()
 
   shouldTryToRemoveFromParent: ->
+    return false # trying out disabling this feature,
+    # because it's annoying trying to remove empty strings
     val = @getValEl()
     return if val.find('select').length
     inputs = val.find('input, textarea')

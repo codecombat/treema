@@ -33,24 +33,27 @@
 
   var jade = {};    
   $(document).ready(function () {
-    schema = { 
-      type: 'array',
-      items: {
-        "type": [
-          "boolean",
-          "integer",
-          "number",
-          "null",
-          "string"
-        ]
-      }
-    }
-    
+    schema = {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "0": { type: "integer" },
+              "1": { type: "string" },
+              "2": { type: "number" },
+              "3": { type: "null" },
+              "4": { type: "boolean" },
+              "5": { type: "array", items: { type: 'number', default: 42 } },
+              "6": { type: "object" },
+              "7": { 'default': 1337 }
+            },
+            "required": ['0', '1', '2', '3','4','5','6','7']
+          }
+
     var el = $('#scratch');
-    var options = {schema:schema, data:[1,2,3,4]};
+    var options = {schema:schema, data:{}};
     var treema = el.treema(options);
     treema.build();
-    treema.build();
+    treema.addNewChild();
     window.treema = treema
   });
   
