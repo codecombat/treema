@@ -25,11 +25,13 @@
   
   <button onclick="treema.childrenTreemas[0].select();">TEST</button>
   
+  <textarea></textarea>
+  
 </div>
 
 <script type="text/javascript">
 
-  var jade = {};
+  var jade = {};    
   $(document).ready(function () {
     schema = { 
       type: 'array',
@@ -45,8 +47,9 @@
     }
     
     var el = $('#scratch');
-    var options = {schema:schema, data:[]};
+    var options = {schema:schema, data:[1,2,3,4]};
     var treema = el.treema(options);
+    treema.build();
     treema.build();
     window.treema = treema
   });

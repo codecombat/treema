@@ -657,6 +657,7 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.setUpGlobalEvents = function() {
     var _this = this;
+    this.$el.unbind();
     this.$el.dblclick(function(e) {
       var _ref;
       return (_ref = $(e.target).closest('.treema-node').data('instance')) != null ? _ref.onDoubleClick(e) : void 0;
