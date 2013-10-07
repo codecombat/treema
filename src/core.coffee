@@ -201,10 +201,9 @@ do __init = ->
       return unless @data
       skipped = []
       i = 0
-      overallSize = 0
       schema = @workingSchema or @schema
       for key, value of @data
-        if i is 3 # or overallSize > 200
+        if i is 3
           text.push('...')
           break
         if schema.displayProperty? and key isnt schema.displayProperty
@@ -212,14 +211,17 @@ do __init = ->
           continue
         i += 1
 
-        helperTreema = TreemaNode.make(null, {schema: @getChildSchema(key), data:value}, @)
-        val = $('<div></div>')
-        helperTreema.buildValueForDisplay(val)
-        t = val.text()
-        text.push(t)
-        overallSize += t.length
+        name = @getChildSchema(key).title or key
+        if $.isPlainObject(value) or $.isArray(value)
+          text.push "#{name}"
+          continue
 
-      @buildValueForDisplaySimply(valEl, '{' + text.join(', ') + '}')
+        valueString = value
+        valueString = JSON.stringify(value) unless $.type(value) is 'string'
+        valueString = valueString[..20] + ' ...' if valueString.length > 20
+        text.push "#{name}=#{valueString}"
+
+      @buildValueForDisplaySimply(valEl, text.join(', '))
 
     buildValueForEditing: (valEl) -> @buildValueForEditingSimply(valEl, JSON.stringify(@data))
 

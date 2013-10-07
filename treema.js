@@ -1238,7 +1238,6 @@ TreemaNode = (function() {
     var readOnly, required, root, tempError, _ref, _ref1;
     required = this.parent && (this.parent.schema.required != null) && (_ref = this.keyForParent, __indexOf.call(this.parent.schema.required, _ref) >= 0);
     if (required) {
-      console.log('d o not remove....', alskdjfkdal);
       tempError = this.createTemporaryError('required');
       this.$el.prepend(tempError);
       return false;
@@ -2585,14 +2584,13 @@ TreemaNode = (function() {
     };
 
     ObjectNode.prototype.buildValueForDisplay = function(valEl) {
-      var helperTreema, i, key, overallSize, schema, skipped, t, text, val, value, _ref7;
+      var i, key, name, schema, skipped, text, value, valueString, _ref7;
       text = [];
       if (!this.data) {
         return;
       }
       skipped = [];
       i = 0;
-      overallSize = 0;
       schema = this.workingSchema || this.schema;
       _ref7 = this.data;
       for (key in _ref7) {
@@ -2606,17 +2604,21 @@ TreemaNode = (function() {
           continue;
         }
         i += 1;
-        helperTreema = TreemaNode.make(null, {
-          schema: this.getChildSchema(key),
-          data: value
-        }, this);
-        val = $('<div></div>');
-        helperTreema.buildValueForDisplay(val);
-        t = val.text();
-        text.push(t);
-        overallSize += t.length;
+        name = this.getChildSchema(key).title || key;
+        if ($.isPlainObject(value) || $.isArray(value)) {
+          text.push("" + name);
+          continue;
+        }
+        valueString = value;
+        if ($.type(value) !== 'string') {
+          valueString = JSON.stringify(value);
+        }
+        if (valueString.length > 20) {
+          valueString = valueString.slice(0, 21) + ' ...';
+        }
+        text.push("" + name + "=" + valueString);
       }
-      return this.buildValueForDisplaySimply(valEl, '{' + text.join(', ') + '}');
+      return this.buildValueForDisplaySimply(valEl, text.join(', '));
     };
 
     ObjectNode.prototype.buildValueForEditing = function(valEl) {
