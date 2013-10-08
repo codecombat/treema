@@ -2197,7 +2197,8 @@ TreemaNode = (function() {
       if (this.data.length > 3) {
         text.push('...');
       }
-      return this.buildValueForDisplaySimply(valEl, text.join(', '));
+      text = text.length ? text.join(' | ') : '(empty)';
+      return this.buildValueForDisplaySimply(valEl, text);
     };
 
     ArrayNode.prototype.buildValueForEditing = function(valEl) {
@@ -2396,7 +2397,8 @@ TreemaNode = (function() {
         }
         text.push("" + name + "=" + valueString);
       }
-      return this.buildValueForDisplaySimply(valEl, text.join(', '));
+      text = text.length ? text.join(', ') : '(empty)';
+      return this.buildValueForDisplaySimply(valEl, text);
     };
 
     ObjectNode.prototype.buildValueForEditing = function(valEl) {

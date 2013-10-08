@@ -108,7 +108,8 @@ do __init = ->
         text.push(val.text())
       text.push('...') if @data.length > 3
 
-      @buildValueForDisplaySimply(valEl, text.join(', '))
+      text = if text.length then text.join(' | ') else '(empty)'
+      @buildValueForDisplaySimply(valEl, text)
 
     buildValueForEditing: (valEl) -> @buildValueForEditingSimply(valEl, JSON.stringify(@data))
 
@@ -221,7 +222,8 @@ do __init = ->
         valueString = valueString[..20] + ' ...' if valueString.length > 20
         text.push "#{name}=#{valueString}"
 
-      @buildValueForDisplaySimply(valEl, text.join(', '))
+      text = if text.length then text.join(', ') else '(empty)'
+      @buildValueForDisplaySimply(valEl, text)
 
     buildValueForEditing: (valEl) -> @buildValueForEditingSimply(valEl, JSON.stringify(@data))
 
