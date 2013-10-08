@@ -627,7 +627,7 @@ TreemaNode = (function() {
     select = $('<select></select>').addClass('treema-type-select');
     button = $('<button></button>').addClass('treema-type-select-button');
     currentType = $.type(this.data);
-    if (currentType === 'number' && this.data % 1 === 0) {
+    if (this.valueClass === 'treema-integer') {
       currentType = 'integer';
     }
     for (_i = 0, _len = types.length; _i < _len; _i++) {
@@ -1535,12 +1535,14 @@ TreemaNode = (function() {
     var NodeClass, newType;
     newType = $(e.target).val();
     NodeClass = TreemaNode.getNodeClassForSchema(this.workingSchema, newType, this.settings.nodeClasses);
+    console.log('select type', NodeClass);
     return this.replaceNode(NodeClass);
   };
 
   TreemaNode.prototype.replaceNode = function(NodeClass) {
-    var newNode, settings;
+    var newNode, oldData, settings;
     settings = $.extend(true, {}, this.settings);
+    oldData = this.data;
     if (settings.data) {
       delete settings.data;
     }
@@ -1548,6 +1550,18 @@ TreemaNode = (function() {
     newNode.data = newNode.getDefaultValue();
     if (this.workingSchema["default"] != null) {
       newNode.data = this.workingSchema["default"];
+    }
+    if ($.type(oldData) === 'string' && $.type(newNode.data) === 'number') {
+      newNode.data = parseFloat(oldData) || 0;
+    }
+    if ($.type(oldData) === 'number' && $.type(newNode.data) === 'string') {
+      newNode.data = oldData.toString();
+    }
+    if ($.type(oldData) === 'number' && $.type(newNode.data) === 'number') {
+      newNode.data = oldData;
+      if (newNode.valueClass === 'treema-integer') {
+        newNode.data = parseInt(newNode.data);
+      }
     }
     newNode.tv4 = this.tv4;
     if (this.keyForParent != null) {

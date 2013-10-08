@@ -220,7 +220,7 @@ class TreemaNode
     select = $('<select></select>').addClass('treema-type-select')
     button = $('<button></button>').addClass('treema-type-select-button')
     currentType = $.type(@data)
-    currentType = 'integer' if currentType == 'number' and @data % 1 is 0
+    currentType = 'integer' if @valueClass is 'treema-integer'
     for type in types
       option = $('<option></option>').attr('value', type).text(type)
       if type is currentType
@@ -770,14 +770,24 @@ class TreemaNode
   onSelectType: (e) =>
     newType = $(e.target).val()
     NodeClass = TreemaNode.getNodeClassForSchema(@workingSchema, newType, @settings.nodeClasses)
+    console.log 'select type', NodeClass
     @replaceNode(NodeClass)
 
   replaceNode: (NodeClass) ->
     settings = $.extend(true, {}, @settings)
+    oldData = @data
     delete settings.data if settings.data
     newNode = new NodeClass(null, settings, @parent)
     newNode.data = newNode.getDefaultValue()
     newNode.data = @workingSchema.default if @workingSchema.default?
+    if $.type(oldData) is 'string' and $.type(newNode.data) is 'number'
+      newNode.data = parseFloat(oldData) or 0
+    if $.type(oldData) is 'number' and $.type(newNode.data) is 'string'
+      newNode.data = oldData.toString()
+    if $.type(oldData) is 'number' and $.type(newNode.data) is 'number'
+      newNode.data = oldData
+      if newNode.valueClass is 'treema-integer'
+        newNode.data = parseInt(newNode.data)
     newNode.tv4 = @tv4
     newNode.keyForParent = @keyForParent if @keyForParent?
     newNode.setWorkingSchema(@workingSchema, @workingSchemas)
