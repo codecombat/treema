@@ -2448,6 +2448,7 @@ TreemaNode = (function() {
       if (!this.isRoot()) {
         this.open();
       }
+      this.deselectAll();
       properties = this.childPropertiesAvailable();
       keyInput = $(this.newPropertyTemplate);
       keyInput.blur(this.cleanupAddNewChild);

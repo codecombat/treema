@@ -253,6 +253,7 @@ do __init = ->
     addNewChild: ->
       return unless @canAddChild()
       @open() unless @isRoot()
+      @deselectAll()
       properties = @childPropertiesAvailable()
       keyInput = $(@newPropertyTemplate)
       keyInput.blur @cleanupAddNewChild
