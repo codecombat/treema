@@ -1303,13 +1303,6 @@ TreemaNode = (function() {
     }
     this.$el.append(childrenContainer).removeClass('treema-closed').addClass('treema-open');
     childrenContainer.append($(this.addChildTemplate));
-    if (this.ordered && childrenContainer.sortable) {
-      if (typeof childrenContainer.sortable === "function") {
-        childrenContainer.sortable({
-          deactivate: this.orderDataFromUI
-        });
-      }
-    }
     return this.refreshErrors();
   };
 
@@ -3261,8 +3254,7 @@ TreemaNode = (function() {
       if ((_ref4 = this.editor) != null) {
         _ref4.destroy();
       }
-      pre = $('<pre></pre>');
-      this.buildValueForDisplaySimply(pre, ("" + this.data) || "-empty-");
+      pre = $('<pre></pre>').text(this.data);
       return valEl.append(pre);
     };
 

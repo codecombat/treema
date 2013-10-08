@@ -144,8 +144,7 @@ do ->
 
     buildValueForDisplay: (valEl) ->
       @editor?.destroy()
-      pre = $('<pre></pre>')
-      @buildValueForDisplaySimply(pre, "#{@data}" or "-empty-")
+      pre = $('<pre></pre>').text(@data)
       valEl.append(pre)
 
     buildValueForEditing: (valEl) ->

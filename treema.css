@@ -241,12 +241,12 @@
 
 @media -sass-debug-info{filename{}line{font-family:\0000321}}
 .treema-ace.treema-edit {
-  border: 1px solid gray;
   margin: 2px 5px; }
-@media -sass-debug-info{filename{}line{font-family:\0000325}}
-  .treema-ace.treema-edit, .treema-ace.treema-edit > div {
+@media -sass-debug-info{filename{}line{font-family:\0000324}}
+  .treema-ace.treema-edit > div {
     width: 500px;
-    height: 300px; }
+    height: 300px;
+    border: 1px solid gray; }
 
 @media -sass-debug-info{filename{}line{font-family:\0000329}}
 .treema-long-string {
