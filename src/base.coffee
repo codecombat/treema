@@ -627,8 +627,9 @@ class TreemaNode
       childrenContainer.append(childNode)
     @$el.append(childrenContainer).removeClass('treema-closed').addClass('treema-open')
     childrenContainer.append($(@addChildTemplate))
-    if @ordered and childrenContainer.sortable
-      childrenContainer.sortable?(deactivate: @orderDataFromUI)
+    # this tends to break ACE editors within
+#    if @ordered and childrenContainer.sortable
+#      childrenContainer.sortable?(deactivate: @orderDataFromUI)
     @refreshErrors()
 
   openDeep: (n) ->
