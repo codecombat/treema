@@ -251,11 +251,17 @@ class TreemaNode
       $(e.target).closest('.treema-node').data('instance')?.onClick(e)
       @broadcastChanges(e)
 
+    @keysPreviouslyDown = {}
     @$el.keydown (e) =>
+      e.heldDown = @keysPreviouslyDown[e.which] or false
       closest = $(e.target).closest('.treema-node').data('instance')
       lastSelected = @getLastSelectedTreema()
       (lastSelected or closest)?.onKeyDown(e)
       @broadcastChanges(e)
+      @keysPreviouslyDown[e.which] = true
+      
+    @$el.keyup (e) =>
+      delete @keysPreviouslyDown[e.which]
 
   broadcastChanges: (e) ->
     if @callbacks.select and TreemaNode.didSelect
@@ -315,7 +321,7 @@ class TreemaNode
     @onSpacePressed(e) if e.which is 32
     @onTPressed(e) if e.which is 84
     @onFPressed(e) if e.which is 70
-    @onDeletePressed(e) if e.which is 8
+    @onDeletePressed(e) if e.which is 8 and not e.heldDown
 
   # Default keyboard behaviors ------------------------------------------------
 
@@ -347,6 +353,7 @@ class TreemaNode
   onFPressed: ->
 
   onDeletePressed: (e) ->
+    console.log 'delete', e
     editing = @editingIsHappening()
     if editing and not $(e.target).val() and @removeOnEmptyDelete
       @display()

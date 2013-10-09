@@ -670,14 +670,20 @@ TreemaNode = (function() {
       }
       return _this.broadcastChanges(e);
     });
-    return this.$el.keydown(function(e) {
+    this.keysPreviouslyDown = {};
+    this.$el.keydown(function(e) {
       var closest, lastSelected, _ref;
+      e.heldDown = _this.keysPreviouslyDown[e.which] || false;
       closest = $(e.target).closest('.treema-node').data('instance');
       lastSelected = _this.getLastSelectedTreema();
       if ((_ref = lastSelected || closest) != null) {
         _ref.onKeyDown(e);
       }
-      return _this.broadcastChanges(e);
+      _this.broadcastChanges(e);
+      return _this.keysPreviouslyDown[e.which] = true;
+    });
+    return this.$el.keyup(function(e) {
+      return delete _this.keysPreviouslyDown[e.which];
     });
   };
 
@@ -816,7 +822,7 @@ TreemaNode = (function() {
     if (e.which === 70) {
       this.onFPressed(e);
     }
-    if (e.which === 8) {
+    if (e.which === 8 && !e.heldDown) {
       return this.onDeletePressed(e);
     }
   };
@@ -868,6 +874,7 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.onDeletePressed = function(e) {
     var editing;
+    console.log('delete', e);
     editing = this.editingIsHappening();
     if (editing && !$(e.target).val() && this.removeOnEmptyDelete) {
       this.display();
