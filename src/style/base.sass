@@ -107,6 +107,22 @@
   width: 100%
   cursor: pointer
   
+.treema-description
+  float: right
+  opacity: 0.8
+  font-size: $fontSize - 2
+  line-height: $fontSize
+  width: 35%
+  min-width: 200px
+  text-align: right
+  display: none
+  
+.treema-selected > .treema-row > .treema-description
+  display: inline
+  
+.treema-edit + .treema-description
+  display: inline
+  
 .treema-selected > .treema-row
   background-color: $selectedColor
   
@@ -177,6 +193,3 @@
   overflow: hidden
   text-overflow: ellipsis
   white-space: nowrap
-
-
- 

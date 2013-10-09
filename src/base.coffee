@@ -820,6 +820,8 @@ class TreemaNode
       required = @schema.required or []
       keyEl.text(keyEl.text()+'*') if treema.keyForParent in required
       row.prepend(keyEl)
+      defnEl = $('<span></span>').addClass('treema-description').text(treema.schema.description or '')
+      row.append(defnEl)
     childNode.prepend($(@toggleTemplate)) if treema.collection
     childNode
 

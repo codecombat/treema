@@ -1364,7 +1364,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.createChildNode = function(treema) {
-    var childNode, keyEl, name, required, row, _ref;
+    var childNode, defnEl, keyEl, name, required, row, _ref;
     childNode = treema.build();
     row = childNode.find('.treema-row');
     if (this.collection && this.keyed) {
@@ -1378,6 +1378,8 @@ TreemaNode = (function() {
         keyEl.text(keyEl.text() + '*');
       }
       row.prepend(keyEl);
+      defnEl = $('<span></span>').addClass('treema-description').text(treema.schema.description || '');
+      row.append(defnEl);
     }
     if (treema.collection) {
       childNode.prepend($(this.toggleTemplate));
