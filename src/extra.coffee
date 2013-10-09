@@ -138,7 +138,7 @@ do ->
 
 
   TreemaNode.setNodeSubclass 'ace', class AceNode extends TreemaNode
-    valueClass: 'treema-ace'
+    valueClass: 'treema-ace treema-multiline'
 
     getDefaultValue: -> ''
 
@@ -164,7 +164,7 @@ do ->
     onEnterPressed: ->
 
   TreemaNode.setNodeSubclass 'long-string', class LongStringNode extends TreemaNode
-    valueClass: 'treema-long-string'
+    valueClass: 'treema-long-string treema-multiline'
 
     getDefaultValue: -> ''
 

@@ -3053,7 +3053,7 @@ TreemaNode = (function() {
       return _ref3;
     }
 
-    AceNode.prototype.valueClass = 'treema-ace';
+    AceNode.prototype.valueClass = 'treema-ace treema-multiline';
 
     AceNode.prototype.getDefaultValue = function() {
       return '';
@@ -3105,7 +3105,7 @@ TreemaNode = (function() {
       return _ref4;
     }
 
-    LongStringNode.prototype.valueClass = 'treema-long-string';
+    LongStringNode.prototype.valueClass = 'treema-long-string treema-multiline';
 
     LongStringNode.prototype.getDefaultValue = function() {
       return '';

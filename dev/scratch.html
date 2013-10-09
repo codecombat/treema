@@ -36,18 +36,18 @@
     schema = {
       "type": "object",
       "additionalProperties": {
-        "type": "boolean"
+        "type": "string",
+        "format": "long-string"
       }
     }
 
     var el = $('#scratch');
     var options = {
       schema:schema,
-      data:{}
+      data:{'code':'line 1\nline 2'}
     };
     var treema = el.treema(options);
     treema.build();
-//    treema.addNewChild();
     window.treema = treema
   });
   
