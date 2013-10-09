@@ -568,8 +568,8 @@ class TreemaNode
     @parent.refreshErrors()
     parent = @parent
     while parent
-      unless parent.valueClass in ['treema-array', 'treema-object']
-        parent.buildValueForDisplay(parent.getValEl().empty())
+#      unless parent.valueClass in ['treema-array', 'treema-object']
+      parent.buildValueForDisplay(parent.getValEl().empty())
       parent = parent.parent
       
   focusLastInput: ->

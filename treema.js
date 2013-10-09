@@ -1193,7 +1193,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.flushChanges = function() {
-    var parent, _ref, _results;
+    var parent, _results;
     if (this.parent && this.justCreated) {
       this.parent.integrateChildTreema(this);
     }
@@ -1208,9 +1208,7 @@ TreemaNode = (function() {
     parent = this.parent;
     _results = [];
     while (parent) {
-      if ((_ref = parent.valueClass) !== 'treema-array' && _ref !== 'treema-object') {
-        parent.buildValueForDisplay(parent.getValEl().empty());
-      }
+      parent.buildValueForDisplay(parent.getValEl().empty());
       _results.push(parent = parent.parent);
     }
     return _results;
@@ -2414,7 +2412,7 @@ TreemaNode = (function() {
     };
 
     ArrayNode.prototype.buildValueForDisplay = function(valEl) {
-      var child, helperTreema, index, text, val, _i, _len, _ref6;
+      var child, empty, helperTreema, index, text, val, _i, _len, _ref6;
       text = [];
       if (!this.data) {
         return;
@@ -2433,7 +2431,8 @@ TreemaNode = (function() {
       if (this.data.length > 3) {
         text.push('...');
       }
-      text = text.length ? text.join(' | ') : '(empty)';
+      empty = this.schema.title != null ? "(empty " + this.schema.title + ")" : '(empty)';
+      text = text.length ? text.join(' | ') : empty;
       return this.buildValueForDisplaySimply(valEl, text);
     };
 
@@ -2488,6 +2487,7 @@ TreemaNode = (function() {
       }
       ArrayNode.__super__.open.call(this);
       shouldShorten = this.buildValueForDisplay === ArrayNode.prototype.buildValueForDisplay;
+      shouldShorten = false;
       if (shouldShorten) {
         valEl = this.getValEl().empty();
         if (shouldShorten) {
@@ -2599,12 +2599,16 @@ TreemaNode = (function() {
     };
 
     ObjectNode.prototype.buildValueForDisplay = function(valEl) {
-      var i, key, name, schema, skipped, text, value, valueString, _ref7;
+      var displayValue, empty, i, key, name, schema, text, value, valueString, _ref7;
       text = [];
       if (!this.data) {
         return;
       }
-      skipped = [];
+      displayValue = this.data[this.schema.displayProperty];
+      if (displayValue) {
+        text = displayValue;
+        return this.buildValueForDisplaySimply(valEl, text);
+      }
       i = 0;
       schema = this.workingSchema || this.schema;
       _ref7 = this.data;
@@ -2613,10 +2617,6 @@ TreemaNode = (function() {
         if (i === 3) {
           text.push('...');
           break;
-        }
-        if ((schema.displayProperty != null) && key !== schema.displayProperty) {
-          skipped.push(key);
-          continue;
         }
         i += 1;
         name = this.getChildSchema(key).title || key;
@@ -2633,7 +2633,8 @@ TreemaNode = (function() {
         }
         text.push("" + name + "=" + valueString);
       }
-      text = text.length ? text.join(', ') : '(empty)';
+      empty = this.schema.title != null ? "(empty " + this.schema.title + ")" : '(empty)';
+      text = text.length ? text.join(', ') : empty;
       return this.buildValueForDisplaySimply(valEl, text);
     };
 
@@ -2667,6 +2668,7 @@ TreemaNode = (function() {
       var shouldShorten, valEl;
       ObjectNode.__super__.open.call(this);
       shouldShorten = this.buildValueForDisplay === ObjectNode.prototype.buildValueForDisplay;
+      shouldShorten = false;
       if (shouldShorten) {
         valEl = this.getValEl().empty();
         if (shouldShorten) {

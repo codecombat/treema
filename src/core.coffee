@@ -108,7 +108,8 @@ do __init = ->
         text.push(val.text())
       text.push('...') if @data.length > 3
 
-      text = if text.length then text.join(' | ') else '(empty)'
+      empty = if @schema.title? then "(empty #{@schema.title})" else '(empty)'
+      text = if text.length then text.join(' | ') else empty
       @buildValueForDisplaySimply(valEl, text)
 
     buildValueForEditing: (valEl) -> @buildValueForEditingSimply(valEl, JSON.stringify(@data))
@@ -141,6 +142,7 @@ do __init = ->
       @data.sort(@sortFunction) if @sort
       super()
       shouldShorten = @buildValueForDisplay is ArrayNode.prototype.buildValueForDisplay
+      shouldShorten = false
       if shouldShorten
         valEl = @getValEl().empty()
         @buildValueForDisplaySimply(valEl, '[...]') if shouldShorten
@@ -200,16 +202,18 @@ do __init = ->
     buildValueForDisplay: (valEl) ->
       text = []
       return unless @data
-      skipped = []
+
+      displayValue = @data[@schema.displayProperty]
+      if displayValue
+        text = displayValue
+        return @buildValueForDisplaySimply(valEl, text)
+
       i = 0
       schema = @workingSchema or @schema
       for key, value of @data
         if i is 3
           text.push('...')
           break
-        if schema.displayProperty? and key isnt schema.displayProperty
-          skipped.push(key)
-          continue
         i += 1
 
         name = @getChildSchema(key).title or key
@@ -222,7 +226,8 @@ do __init = ->
         valueString = valueString[..20] + ' ...' if valueString.length > 20
         text.push "#{name}=#{valueString}"
 
-      text = if text.length then text.join(', ') else '(empty)'
+      empty = if @schema.title? then "(empty #{@schema.title})" else '(empty)'
+      text = if text.length then text.join(', ') else empty
       @buildValueForDisplaySimply(valEl, text)
 
     buildValueForEditing: (valEl) -> @buildValueForEditingSimply(valEl, JSON.stringify(@data))
@@ -239,6 +244,7 @@ do __init = ->
     open: ->
       super()
       shouldShorten = @buildValueForDisplay is ObjectNode.prototype.buildValueForDisplay
+      shouldShorten = false
       if shouldShorten
         valEl = @getValEl().empty()
         @buildValueForDisplaySimply(valEl, '{...}') if shouldShorten
