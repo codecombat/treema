@@ -815,10 +815,10 @@ class TreemaNode
     row = childNode.find('.treema-row')
     if @collection and @keyed
       name = treema.schema.title or treema.keyForParent
-      keyEl = $(@keyTemplate).text(name + ': ')
-      keyEl.attr('title', treema.schema.description) if treema.schema.description
       required = @schema.required or []
-      keyEl.text(keyEl.text()+'*') if treema.keyForParent in required
+      suffix = ': '
+      suffix = '*'+suffix if treema.keyForParent in required
+      keyEl = $(@keyTemplate).text(name + suffix)
       row.prepend(keyEl)
       defnEl = $('<span></span>').addClass('treema-description').text(treema.schema.description or '')
       row.append(defnEl)

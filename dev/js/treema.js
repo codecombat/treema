@@ -1364,19 +1364,17 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.createChildNode = function(treema) {
-    var childNode, defnEl, keyEl, name, required, row, _ref;
+    var childNode, defnEl, keyEl, name, required, row, suffix, _ref;
     childNode = treema.build();
     row = childNode.find('.treema-row');
     if (this.collection && this.keyed) {
       name = treema.schema.title || treema.keyForParent;
-      keyEl = $(this.keyTemplate).text(name + ': ');
-      if (treema.schema.description) {
-        keyEl.attr('title', treema.schema.description);
-      }
       required = this.schema.required || [];
+      suffix = ': ';
       if (_ref = treema.keyForParent, __indexOf.call(required, _ref) >= 0) {
-        keyEl.text(keyEl.text() + '*');
+        suffix = '*' + suffix;
       }
+      keyEl = $(this.keyTemplate).text(name + suffix);
       row.prepend(keyEl);
       defnEl = $('<span></span>').addClass('treema-description').text(treema.schema.description || '');
       row.append(defnEl);
