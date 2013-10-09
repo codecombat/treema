@@ -76,6 +76,10 @@ do __init = ->
     onFPressed: -> @toggleValue(false)
     onTPressed: -> @toggleValue(true)
     saveChanges: ->
+    onClick: (e) ->
+      value = $(e.target).closest('.treema-value')
+      return super(e) unless value.length
+      @toggleValue()
 
 
 

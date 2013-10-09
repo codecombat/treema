@@ -353,7 +353,6 @@ class TreemaNode
   onFPressed: ->
 
   onDeletePressed: (e) ->
-    console.log 'delete', e
     editing = @editingIsHappening()
     if editing and not $(e.target).val() and @removeOnEmptyDelete
       @display()

@@ -652,7 +652,6 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.onDeletePressed = function(e) {
     var editing;
-    console.log('delete', e);
     editing = this.editingIsHappening();
     if (editing && !$(e.target).val() && this.removeOnEmptyDelete) {
       this.display();
@@ -2134,6 +2133,15 @@ TreemaNode = (function() {
     };
 
     BooleanNode.prototype.saveChanges = function() {};
+
+    BooleanNode.prototype.onClick = function(e) {
+      var value;
+      value = $(e.target).closest('.treema-value');
+      if (!value.length) {
+        return BooleanNode.__super__.onClick.call(this, e);
+      }
+      return this.toggleValue();
+    };
 
     return BooleanNode;
 

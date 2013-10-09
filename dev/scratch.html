@@ -34,18 +34,16 @@
   var jade = {};    
   $(document).ready(function () {
     schema = {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "title": 'Thangy',
-        displayProperty: 'name'
+      "type": "object",
+      "additionalProperties": {
+        "type": "boolean"
       }
     }
 
     var el = $('#scratch');
     var options = {
       schema:schema,
-      data:[]
+      data:{}
     };
     var treema = el.treema(options);
     treema.build();
