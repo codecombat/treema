@@ -2817,8 +2817,8 @@ TreemaNode = (function() {
 
     Point2DNode.prototype.buildValueForEditing = function(valEl) {
       var xInput, yInput;
-      xInput = $('<input />').val(this.data.x);
-      yInput = $('<input />').val(this.data.y);
+      xInput = $('<input />').val(this.data.x).attr('placeholder', 'x');
+      yInput = $('<input />').val(this.data.y).attr('placeholder', 'y');
       valEl.append('(').append(xInput).append(', ').append(yInput).append(')');
       return valEl.find('input:first').focus().select();
     };
@@ -2855,9 +2855,9 @@ TreemaNode = (function() {
 
     Point3DNode.prototype.buildValueForEditing = function(valEl) {
       var xInput, yInput, zInput;
-      xInput = $('<input />').val(this.data.x);
-      yInput = $('<input />').val(this.data.y);
-      zInput = $('<input />').val(this.data.z);
+      xInput = $('<input />').val(this.data.x).attr('placeholder', 'x');
+      yInput = $('<input />').val(this.data.y).attr('placeholder', 'y');
+      zInput = $('<input />').val(this.data.z).attr('placeholder', 'z');
       valEl.append('(').append(xInput).append(', ').append(yInput).append(', ').append(zInput).append(')');
       return valEl.find('input:first').focus().select();
     };

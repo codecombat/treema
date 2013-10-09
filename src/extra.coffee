@@ -6,8 +6,8 @@ do ->
     buildValueForDisplay: (valEl) -> @buildValueForDisplaySimply(valEl, "(#{@data.x}, #{@data.y})")
 
     buildValueForEditing: (valEl) ->
-      xInput = $('<input />').val(@data.x)
-      yInput = $('<input />').val(@data.y)
+      xInput = $('<input />').val(@data.x).attr('placeholder', 'x')
+      yInput = $('<input />').val(@data.y).attr('placeholder', 'y')
       valEl.append('(').append(xInput).append(', ').append(yInput).append(')')
       valEl.find('input:first').focus().select()
 
@@ -23,9 +23,9 @@ do ->
       @buildValueForDisplaySimply(valEl, "(#{@data.x}, #{@data.y}, #{@data.z})")
 
     buildValueForEditing: (valEl) ->
-      xInput = $('<input />').val(@data.x)
-      yInput = $('<input />').val(@data.y)
-      zInput = $('<input />').val(@data.z)
+      xInput = $('<input />').val(@data.x).attr('placeholder', 'x')
+      yInput = $('<input />').val(@data.y).attr('placeholder', 'y')
+      zInput = $('<input />').val(@data.z).attr('placeholder', 'z')
       valEl.append('(').append(xInput).append(', ').append(yInput).append(', ').append(zInput).append(')')
       valEl.find('input:first').focus().select()
 
