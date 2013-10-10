@@ -620,28 +620,26 @@ class TreemaNode
     if @isClosed() then @open() else @close()
     @
 
-  open: ->
-    return unless @isClosed()
-    childrenContainer = @$el.find('.treema-children').detach()
-    childrenContainer.empty()
-    @childrenTreemas = {}
-    for [key, value, schema] in @getChildren()
-      continue if schema.format is 'hidden'
-      treema = TreemaNode.make(null, {schema: schema, data:value}, @, key)
-      @integrateChildTreema(treema)
-      childNode = @createChildNode(treema)
-      childrenContainer.append(childNode)
-    @$el.append(childrenContainer).removeClass('treema-closed').addClass('treema-open')
-    childrenContainer.append($(@addChildTemplate))
-    # this tends to break ACE editors within
-    if @ordered and childrenContainer.sortable and not @settings.noSortable
-      childrenContainer.sortable?(deactivate: @orderDataFromUI)
-    @refreshErrors()
-
-  openDeep: (n) ->
-    return unless (n ?= 9001)
-    @open()
-    child.openDeep(n - 1) for childIndex, child of @childrenTreemas ? {}
+  open: (depth=1) ->
+    if @isClosed()
+      childrenContainer = @$el.find('.treema-children').detach()
+      childrenContainer.empty()
+      @childrenTreemas = {}
+      for [key, value, schema] in @getChildren()
+        continue if schema.format is 'hidden'
+        treema = TreemaNode.make(null, {schema: schema, data:value}, @, key)
+        @integrateChildTreema(treema)
+        childNode = @createChildNode(treema)
+        childrenContainer.append(childNode)
+      @$el.append(childrenContainer).removeClass('treema-closed').addClass('treema-open')
+      childrenContainer.append($(@addChildTemplate))
+      # this tends to break ACE editors within
+      if @ordered and childrenContainer.sortable and not @settings.noSortable
+        childrenContainer.sortable?(deactivate: @orderDataFromUI)
+      @refreshErrors()
+    depth -= 1
+    if depth
+      child.open(depth) for childIndex, child of @childrenTreemas ? {}
 
   orderDataFromUI: =>
     children = @$el.find('> .treema-children > .treema-node')

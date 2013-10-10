@@ -144,7 +144,7 @@ do __init = ->
       
     open: ->
       @data.sort(@sortFunction) if @sort
-      super()
+      super(arguments...)
       shouldShorten = @buildValueForDisplay is ArrayNode.prototype.buildValueForDisplay
       shouldShorten = false
       if shouldShorten
@@ -246,7 +246,7 @@ do __init = ->
         @data[key] = helperTreema.data
 
     open: ->
-      super()
+      super(arguments...)
       shouldShorten = @buildValueForDisplay is ObjectNode.prototype.buildValueForDisplay
       shouldShorten = false
       if shouldShorten

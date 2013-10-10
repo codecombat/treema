@@ -1283,53 +1283,50 @@ TreemaNode = (function() {
     return this;
   };
 
-  TreemaNode.prototype.open = function() {
-    var childNode, childrenContainer, key, schema, treema, value, _i, _len, _ref, _ref1;
-    if (!this.isClosed()) {
-      return;
+  TreemaNode.prototype.open = function(depth) {
+    var child, childIndex, childNode, childrenContainer, key, schema, treema, value, _i, _len, _ref, _ref1, _ref2, _ref3, _results;
+    if (depth == null) {
+      depth = 1;
     }
-    childrenContainer = this.$el.find('.treema-children').detach();
-    childrenContainer.empty();
-    this.childrenTreemas = {};
-    _ref = this.getChildren();
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      _ref1 = _ref[_i], key = _ref1[0], value = _ref1[1], schema = _ref1[2];
-      if (schema.format === 'hidden') {
-        continue;
+    if (this.isClosed()) {
+      childrenContainer = this.$el.find('.treema-children').detach();
+      childrenContainer.empty();
+      this.childrenTreemas = {};
+      _ref = this.getChildren();
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        _ref1 = _ref[_i], key = _ref1[0], value = _ref1[1], schema = _ref1[2];
+        if (schema.format === 'hidden') {
+          continue;
+        }
+        treema = TreemaNode.make(null, {
+          schema: schema,
+          data: value
+        }, this, key);
+        this.integrateChildTreema(treema);
+        childNode = this.createChildNode(treema);
+        childrenContainer.append(childNode);
       }
-      treema = TreemaNode.make(null, {
-        schema: schema,
-        data: value
-      }, this, key);
-      this.integrateChildTreema(treema);
-      childNode = this.createChildNode(treema);
-      childrenContainer.append(childNode);
-    }
-    this.$el.append(childrenContainer).removeClass('treema-closed').addClass('treema-open');
-    childrenContainer.append($(this.addChildTemplate));
-    if (this.ordered && childrenContainer.sortable && !this.settings.noSortable) {
-      if (typeof childrenContainer.sortable === "function") {
-        childrenContainer.sortable({
-          deactivate: this.orderDataFromUI
-        });
+      this.$el.append(childrenContainer).removeClass('treema-closed').addClass('treema-open');
+      childrenContainer.append($(this.addChildTemplate));
+      if (this.ordered && childrenContainer.sortable && !this.settings.noSortable) {
+        if (typeof childrenContainer.sortable === "function") {
+          childrenContainer.sortable({
+            deactivate: this.orderDataFromUI
+          });
+        }
       }
+      this.refreshErrors();
     }
-    return this.refreshErrors();
-  };
-
-  TreemaNode.prototype.openDeep = function(n) {
-    var child, childIndex, _ref, _ref1, _results;
-    if (!(n != null ? n : n = 9001)) {
-      return;
+    depth -= 1;
+    if (depth) {
+      _ref3 = (_ref2 = this.childrenTreemas) != null ? _ref2 : {};
+      _results = [];
+      for (childIndex in _ref3) {
+        child = _ref3[childIndex];
+        _results.push(child.open(depth));
+      }
+      return _results;
     }
-    this.open();
-    _ref1 = (_ref = this.childrenTreemas) != null ? _ref : {};
-    _results = [];
-    for (childIndex in _ref1) {
-      child = _ref1[childIndex];
-      _results.push(child.openDeep(n - 1));
-    }
-    return _results;
   };
 
   TreemaNode.prototype.orderDataFromUI = function() {
@@ -2500,7 +2497,7 @@ TreemaNode = (function() {
       if (this.sort) {
         this.data.sort(this.sortFunction);
       }
-      ArrayNode.__super__.open.call(this);
+      ArrayNode.__super__.open.apply(this, arguments);
       shouldShorten = this.buildValueForDisplay === ArrayNode.prototype.buildValueForDisplay;
       shouldShorten = false;
       if (shouldShorten) {
@@ -2681,7 +2678,7 @@ TreemaNode = (function() {
 
     ObjectNode.prototype.open = function() {
       var shouldShorten, valEl;
-      ObjectNode.__super__.open.call(this);
+      ObjectNode.__super__.open.apply(this, arguments);
       shouldShorten = this.buildValueForDisplay === ObjectNode.prototype.buildValueForDisplay;
       shouldShorten = false;
       if (shouldShorten) {
