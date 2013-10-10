@@ -1085,6 +1085,13 @@ TreemaNode = (function() {
     }
     this.$el.append(childrenContainer).removeClass('treema-closed').addClass('treema-open');
     childrenContainer.append($(this.addChildTemplate));
+    if (this.ordered && childrenContainer.sortable && !this.settings.noSortable) {
+      if (typeof childrenContainer.sortable === "function") {
+        childrenContainer.sortable({
+          deactivate: this.orderDataFromUI
+        });
+      }
+    }
     return this.refreshErrors();
   };
 
