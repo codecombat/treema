@@ -18,7 +18,7 @@ class TreemaNode
   errorTemplate: '<div class="treema-error"></div>'
   newPropertyTemplate: '<input class="treema-new-prop" />'
 
-# behavior settings (overridden by subclasses)
+  # behavior settings (overridden by subclasses)
   collection: false      # acts like an array or object
   ordered: false         # acts like an array
   keyed: false           # acts like an object
@@ -259,7 +259,42 @@ class TreemaNode
       (lastSelected or closest)?.onKeyDown(e)
       @broadcastChanges(e)
       @keysPreviouslyDown[e.which] = true
-      
+      @manageCopyAndPaste e if e.ctrlKey or e.metaKey
+
+  manageCopyAndPaste: (e) ->
+    # http://stackoverflow.com/questions/17527870/how-does-trello-access-the-users-clipboard
+    target = @getLastSelectedTreema() ? @  # You can get the parent treema by somehow giving it focus but without selecting it; hacky
+    if e.which is 86 and $(e.target).hasClass 'treema-clipboard'
+      # Ctrl+V -- we might want the paste data
+      if e.shiftKey and $(e.target).hasClass 'treema-clipboard'
+        [x, y] = [window.scrollX, window.scrollY]
+        setTimeout (=>
+          @keepFocus x, y
+          return unless newData = @$clipboard.val()
+          try
+            newData = JSON.parse newData
+          catch e
+            return
+          result = target.tv4.validateMultiple(newData, target.schema)
+          if result.valid
+            target.set('/', newData)
+          else
+            console.log "not pasting", newData, "because it's not valid:", result
+        ), 10  # This doesn't always preserve scroll; TODO
+      else
+        # We don't want the paste data to our clipboard textarea, so let's not even let it happen so we don't scroll
+        e.preventDefault()
+    else if e.shiftKey
+      # Get ready for a possible Shift+Ctrl+V paste (hacky, I know)
+      @$clipboardContainer.find('.treema-clipboard').focus().select()
+    else unless window.getSelection()?.toString() or document.selection?.createRange().text
+      # Get ready for a possible Ctrl+C copy
+      setTimeout (=>
+        @$clipboardContainer ?= $('<div class="treema-clipboard-container"></div>').appendTo(@$el)
+        @$clipboardContainer.empty().show()
+        @$clipboard = $('<textarea class="treema-clipboard"></textarea>').val(JSON.stringify(target.data)).appendTo(@$clipboardContainer).focus().select()
+      ), 0
+
     @$el.keyup (e) =>
       delete @keysPreviouslyDown[e.which]
 
@@ -570,7 +605,7 @@ class TreemaNode
 #      unless parent.valueClass in ['treema-array', 'treema-object']
       parent.buildValueForDisplay(parent.getValEl().empty())
       parent = parent.parent
-      
+
   focusLastInput: ->
     inputs = @getInputs()
     last = inputs[inputs.length-1]
@@ -1039,9 +1074,9 @@ class TreemaNode
   editingIsHappening: -> @getRootEl().find('.treema-edit').length
   rootSelected: -> $(document.activeElement).hasClass('treema-root')
 
-  keepFocus: ->
+  keepFocus: (x, y) ->
     # We want to keep Treema receiving events, so we focus on the root, but we preserve scroll position to do it invisibly.
-    [x, y] = [window.scrollX, window.scrollY]
+    [x, y] = [window.scrollX, window.scrollY] unless x? and y?
     @getRootEl().focus()
     window.scrollTo x, y
   copyData: -> $.extend(null, {}, {'d': @data})['d']
