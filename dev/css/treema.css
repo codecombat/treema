@@ -209,6 +209,22 @@
   margin-top: 20px;
   float: none !important; }
 
+@media -sass-debug-info{filename{}line{font-family:\00003201}}
+.treema-clipboard-container {
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  width: 0px;
+  height: 0px;
+  z-index: 100;
+  display: none;
+  opacity: 0; }
+@media -sass-debug-info{filename{}line{font-family:\00003211}}
+  .treema-clipboard-container .treema-clipboard {
+    width: 1px;
+    height: 1px;
+    padding: 0px; }
+
 @media -sass-debug-info{filename{}line{font-family:\000033}}
 .treema-string {
   color: #998500; }
@@ -280,4 +296,4 @@
   height: 300px; }
 
 
-/*@ sourceMappingURL=treema.css.map*/
+/*# sourceMappingURL=treema.css.map*/

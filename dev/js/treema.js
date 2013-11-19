@@ -449,7 +449,7 @@ TreemaNode = (function() {
       return _this.broadcastChanges(e);
     });
     this.keysPreviouslyDown = {};
-    this.$el.keydown(function(e) {
+    return this.$el.keydown(function(e) {
       var closest, lastSelected, _ref;
       e.heldDown = _this.keysPreviouslyDown[e.which] || false;
       closest = $(e.target).closest('.treema-node').data('instance');
@@ -458,8 +458,53 @@ TreemaNode = (function() {
         _ref.onKeyDown(e);
       }
       _this.broadcastChanges(e);
-      return _this.keysPreviouslyDown[e.which] = true;
+      _this.keysPreviouslyDown[e.which] = true;
+      if (e.ctrlKey || e.metaKey) {
+        return _this.manageCopyAndPaste(e);
+      }
     });
+  };
+
+  TreemaNode.prototype.manageCopyAndPaste = function(e) {
+    var target, x, y, _ref, _ref1, _ref2, _ref3,
+      _this = this;
+    target = (_ref = this.getLastSelectedTreema()) != null ? _ref : this;
+    if (e.which === 86 && $(e.target).hasClass('treema-clipboard')) {
+      if (e.shiftKey && $(e.target).hasClass('treema-clipboard')) {
+        _ref1 = [window.scrollX, window.scrollY], x = _ref1[0], y = _ref1[1];
+        setTimeout((function() {
+          var newData, result;
+          _this.keepFocus(x, y);
+          if (!(newData = _this.$clipboard.val())) {
+            return;
+          }
+          try {
+            newData = JSON.parse(newData);
+          } catch (_error) {
+            e = _error;
+            return;
+          }
+          result = target.tv4.validateMultiple(newData, target.schema);
+          if (result.valid) {
+            return target.set('/', newData);
+          } else {
+            return console.log("not pasting", newData, "because it's not valid:", result);
+          }
+        }), 10);
+      } else {
+        e.preventDefault();
+      }
+    } else if (e.shiftKey) {
+      this.$clipboardContainer.find('.treema-clipboard').focus().select();
+    } else if (!(((_ref2 = window.getSelection()) != null ? _ref2.toString() : void 0) || ((_ref3 = document.selection) != null ? _ref3.createRange().text : void 0))) {
+      setTimeout((function() {
+        if (_this.$clipboardContainer == null) {
+          _this.$clipboardContainer = $('<div class="treema-clipboard-container"></div>').appendTo(_this.$el);
+        }
+        _this.$clipboardContainer.empty().show();
+        return _this.$clipboard = $('<textarea class="treema-clipboard"></textarea>').val(JSON.stringify(target.data)).appendTo(_this.$clipboardContainer).focus().select();
+      }), 0);
+    }
     return this.$el.keyup(function(e) {
       return delete _this.keysPreviouslyDown[e.which];
     });
@@ -1790,9 +1835,11 @@ TreemaNode = (function() {
     return $(document.activeElement).hasClass('treema-root');
   };
 
-  TreemaNode.prototype.keepFocus = function() {
-    var x, y, _ref;
-    _ref = [window.scrollX, window.scrollY], x = _ref[0], y = _ref[1];
+  TreemaNode.prototype.keepFocus = function(x, y) {
+    var _ref;
+    if (!((x != null) && (y != null))) {
+      _ref = [window.scrollX, window.scrollY], x = _ref[0], y = _ref[1];
+    }
     this.getRootEl().focus();
     return window.scrollTo(x, y);
   };
@@ -3155,4 +3202,4 @@ TreemaNode = (function() {
   };
 })(jQuery);
 ;
-//@ sourceMappingURL=treema.js.map
+//# sourceMappingURL=treema.js.map

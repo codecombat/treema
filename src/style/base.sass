@@ -196,3 +196,19 @@
   width: inherit
   margin-top: 20px
   float: none !important
+
+// Amazing invisible clipboard magic http://stackoverflow.com/questions/17527870/how-does-trello-access-the-users-clipboard
+.treema-clipboard-container
+  position: fixed
+  left: 0px
+  top: 0px
+  width: 0px
+  height: 0px
+  z-index: 100
+  display: none
+  opacity: 0
+
+  .treema-clipboard
+    width: 1px
+    height: 1px       
+    padding: 0px
