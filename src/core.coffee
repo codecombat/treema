@@ -140,7 +140,7 @@ do __init = ->
         newTreema.select()
         @integrateChildTreema(newTreema)
         newTreema.flushChanges()
-      true
+      newTreema
       
     open: ->
       @data.sort(@sortFunction) if @sort
@@ -266,7 +266,7 @@ do __init = ->
       @deselectAll()
       properties = @childPropertiesAvailable()
       keyInput = $(@newPropertyTemplate)
-      keyInput.blur @cleanupAddNewChild
+#      keyInput.blur @cleanupAddNewChild
       keyInput.keydown (e) =>
         @originalTargetValue = $(e.target).val()
       keyInput.autocomplete?(source: properties, minLength: 0, delay: 0, autoFocus: true)
