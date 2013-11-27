@@ -449,7 +449,7 @@ TreemaNode = (function() {
       return _this.broadcastChanges(e);
     });
     this.keysPreviouslyDown = {};
-    return this.$el.keydown(function(e) {
+    this.$el.keydown(function(e) {
       var closest, lastSelected, _ref;
       e.heldDown = _this.keysPreviouslyDown[e.which] || false;
       closest = $(e.target).closest('.treema-node').data('instance');
@@ -463,6 +463,11 @@ TreemaNode = (function() {
         return _this.manageCopyAndPaste(e);
       }
     });
+    console.log('set up global event!');
+    return this.$el.keyup(function(e) {
+      console.log('key up go?');
+      return delete _this.keysPreviouslyDown[e.which];
+    });
   };
 
   TreemaNode.prototype.manageCopyAndPaste = function(e) {
@@ -472,7 +477,7 @@ TreemaNode = (function() {
     if (e.which === 86 && $(e.target).hasClass('treema-clipboard')) {
       if (e.shiftKey && $(e.target).hasClass('treema-clipboard')) {
         _ref1 = [window.scrollX, window.scrollY], x = _ref1[0], y = _ref1[1];
-        setTimeout((function() {
+        return setTimeout((function() {
           var newData, result;
           _this.keepFocus(x, y);
           if (!(newData = _this.$clipboard.val())) {
@@ -492,12 +497,12 @@ TreemaNode = (function() {
           }
         }), 10);
       } else {
-        e.preventDefault();
+        return e.preventDefault();
       }
     } else if (e.shiftKey) {
-      this.$clipboardContainer.find('.treema-clipboard').focus().select();
+      return this.$clipboardContainer.find('.treema-clipboard').focus().select();
     } else if (!(((_ref2 = window.getSelection()) != null ? _ref2.toString() : void 0) || ((_ref3 = document.selection) != null ? _ref3.createRange().text : void 0))) {
-      setTimeout((function() {
+      return setTimeout((function() {
         if (_this.$clipboardContainer == null) {
           _this.$clipboardContainer = $('<div class="treema-clipboard-container"></div>').appendTo(_this.$el);
         }
@@ -505,9 +510,6 @@ TreemaNode = (function() {
         return _this.$clipboard = $('<textarea class="treema-clipboard"></textarea>').val(JSON.stringify(target.data)).appendTo(_this.$clipboardContainer).focus().select();
       }), 0);
     }
-    return this.$el.keyup(function(e) {
-      return delete _this.keysPreviouslyDown[e.which];
-    });
   };
 
   TreemaNode.prototype.broadcastChanges = function(e) {
@@ -2314,7 +2316,7 @@ TreemaNode = (function() {
         this.integrateChildTreema(newTreema);
         newTreema.flushChanges();
       }
-      return true;
+      return newTreema;
     };
 
     ArrayNode.prototype.open = function() {
@@ -2533,7 +2535,6 @@ TreemaNode = (function() {
       this.deselectAll();
       properties = this.childPropertiesAvailable();
       keyInput = $(this.newPropertyTemplate);
-      keyInput.blur(this.cleanupAddNewChild);
       keyInput.keydown(function(e) {
         return _this.originalTargetValue = $(e.target).val();
       });
@@ -3202,4 +3203,4 @@ TreemaNode = (function() {
   };
 })(jQuery);
 ;
-//# sourceMappingURL=treema.js.map
+//@ sourceMappingURL=treema.js.map

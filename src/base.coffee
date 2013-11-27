@@ -261,6 +261,9 @@ class TreemaNode
       @keysPreviouslyDown[e.which] = true
       @manageCopyAndPaste e if e.ctrlKey or e.metaKey
 
+    @$el.keyup (e) =>
+      delete @keysPreviouslyDown[e.which]
+
   manageCopyAndPaste: (e) ->
     # http://stackoverflow.com/questions/17527870/how-does-trello-access-the-users-clipboard
     target = @getLastSelectedTreema() ? @  # You can get the parent treema by somehow giving it focus but without selecting it; hacky
@@ -294,9 +297,6 @@ class TreemaNode
         @$clipboardContainer.empty().show()
         @$clipboard = $('<textarea class="treema-clipboard"></textarea>').val(JSON.stringify(target.data)).appendTo(@$clipboardContainer).focus().select()
       ), 0
-
-    @$el.keyup (e) =>
-      delete @keysPreviouslyDown[e.which]
 
   broadcastChanges: (e) ->
     if @callbacks.select and TreemaNode.didSelect
