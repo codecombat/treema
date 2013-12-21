@@ -690,9 +690,10 @@ class TreemaNode
       index += 1
     @flushChanges()
 
-  close: ->
+  close: (saveChildData=true) ->
     return unless @isOpen()
-    @data[key] = treema.data for key, treema of @childrenTreemas
+    if saveChildData
+      @data[key] = treema.data for key, treema of @childrenTreemas
     @$el.find('.treema-children').empty()
     @$el.addClass('treema-closed').removeClass('treema-open')
     @childrenTreemas = null
@@ -809,7 +810,6 @@ class TreemaNode
   onSelectType: (e) =>
     newType = $(e.target).val()
     NodeClass = TreemaNode.getNodeClassForSchema(@workingSchema, newType, @settings.nodeClasses)
-    console.log 'select type', NodeClass
     @replaceNode(NodeClass)
 
   replaceNode: (NodeClass) ->
@@ -1034,7 +1034,7 @@ class TreemaNode
       @display()
 
     if @collection and @isOpen()
-      @close()
+      @close(false)
       @open()
 
     @flushChanges()

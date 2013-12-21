@@ -4,6 +4,9 @@ keyDown = function($el, which) {
   var event;
   event = jQuery.Event("keydown");
   event.which = which;
+  $el.trigger(event);
+  event = jQuery.Event('keyup');
+  event.which = which;
   return $el.trigger(event);
 };
 ;describe('Schemas with multiple types', function() {
@@ -1230,21 +1233,11 @@ describe('Schemaless', function() {
     treema.deselectAll();
     return treema.close();
   });
-  return describe('openDeep', function() {
-    it('opens everything by default', function() {
-      var infoTreema, phoneTreema;
-      expectClosed(treema);
-      treema.openDeep();
-      expectOpen(treema);
-      infoTreema = treema.childrenTreemas.info;
-      expectOpen(infoTreema);
-      phoneTreema = infoTreema.childrenTreemas.numbers;
-      return expectOpen(phoneTreema);
-    });
+  return describe('open', function() {
     return it('can open n levels deep', function() {
       var infoTreema, phoneTreema;
       expectClosed(treema);
-      treema.openDeep(2);
+      treema.open(2);
       expectOpen(treema);
       infoTreema = treema.childrenTreemas.info;
       expectOpen(infoTreema);
@@ -1271,4 +1264,4 @@ describe('Schemaless', function() {
   });
 });
 ;
-//# sourceMappingURL=treema.spec.js.map
+//@ sourceMappingURL=treema.spec.js.map

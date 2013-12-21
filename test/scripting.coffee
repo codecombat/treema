@@ -27,19 +27,10 @@ do ->
     treema.deselectAll()
     treema.close()
 
-  describe 'openDeep', ->
-    it 'opens everything by default', ->
-      expectClosed(treema)
-      treema.openDeep()
-      expectOpen(treema)
-      infoTreema = treema.childrenTreemas.info
-      expectOpen(infoTreema)
-      phoneTreema = infoTreema.childrenTreemas.numbers
-      expectOpen(phoneTreema)
-
+  describe 'open', ->
     it 'can open n levels deep', ->
       expectClosed(treema)
-      treema.openDeep(2)
+      treema.open(2)
       expectOpen(treema)
       infoTreema = treema.childrenTreemas.info
       expectOpen(infoTreema)

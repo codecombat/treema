@@ -685,9 +685,7 @@ TreemaNode = (function() {
         return _this.manageCopyAndPaste(e);
       }
     });
-    console.log('set up global event!');
     return this.$el.keyup(function(e) {
-      console.log('key up go?');
       return delete _this.keysPreviouslyDown[e.which];
     });
   };
@@ -1396,15 +1394,20 @@ TreemaNode = (function() {
     return this.flushChanges();
   };
 
-  TreemaNode.prototype.close = function() {
+  TreemaNode.prototype.close = function(saveChildData) {
     var key, treema, _ref;
+    if (saveChildData == null) {
+      saveChildData = true;
+    }
     if (!this.isOpen()) {
       return;
     }
-    _ref = this.childrenTreemas;
-    for (key in _ref) {
-      treema = _ref[key];
-      this.data[key] = treema.data;
+    if (saveChildData) {
+      _ref = this.childrenTreemas;
+      for (key in _ref) {
+        treema = _ref[key];
+        this.data[key] = treema.data;
+      }
     }
     this.$el.find('.treema-children').empty();
     this.$el.addClass('treema-closed').removeClass('treema-open');
@@ -1590,7 +1593,6 @@ TreemaNode = (function() {
     var NodeClass, newType;
     newType = $(e.target).val();
     NodeClass = TreemaNode.getNodeClassForSchema(this.workingSchema, newType, this.settings.nodeClasses);
-    console.log('select type', NodeClass);
     return this.replaceNode(NodeClass);
   };
 
@@ -1949,7 +1951,7 @@ TreemaNode = (function() {
       this.display();
     }
     if (this.collection && this.isOpen()) {
-      this.close();
+      this.close(false);
       this.open();
     }
     this.flushChanges();
@@ -2559,7 +2561,7 @@ TreemaNode = (function() {
 
     ArrayNode.prototype.close = function() {
       var valEl;
-      ArrayNode.__super__.close.call(this);
+      ArrayNode.__super__.close.apply(this, arguments);
       valEl = this.getValEl().empty();
       return this.buildValueForDisplay(valEl);
     };
@@ -2740,7 +2742,7 @@ TreemaNode = (function() {
 
     ObjectNode.prototype.close = function() {
       var valEl;
-      ObjectNode.__super__.close.call(this);
+      ObjectNode.__super__.close.apply(this, arguments);
       valEl = this.getValEl().empty();
       return this.buildValueForDisplay(valEl);
     };

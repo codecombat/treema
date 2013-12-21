@@ -152,7 +152,7 @@ do __init = ->
         @buildValueForDisplaySimply(valEl, '[...]') if shouldShorten
       
     close: ->
-      super()
+      super(arguments...)
       valEl = @getValEl().empty()
       @buildValueForDisplay(valEl)
       
@@ -254,7 +254,7 @@ do __init = ->
         @buildValueForDisplaySimply(valEl, '{...}') if shouldShorten
 
     close: ->
-      super()
+      super(arguments...)
       valEl = @getValEl().empty()
       @buildValueForDisplay(valEl)
 
