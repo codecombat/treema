@@ -90,7 +90,7 @@ do __init = ->
     ordered: true
     directlyEditable: false
     sort: false
-    
+
     getChildren: ->
       ([key, value, @getChildSchema(key)] for value, key in @data)
 
@@ -136,12 +136,12 @@ do __init = ->
       @getAddButtonEl().before(childNode)
       if newTreema.canEdit()
         newTreema.edit()
-      else 
+      else
         newTreema.select()
         @integrateChildTreema(newTreema)
         newTreema.flushChanges()
       newTreema
-      
+
     open: ->
       @data.sort(@sortFunction) if @sort
       super(arguments...)
@@ -150,14 +150,14 @@ do __init = ->
       if shouldShorten
         valEl = @getValEl().empty()
         @buildValueForDisplaySimply(valEl, '[...]') if shouldShorten
-      
+
     close: ->
       super(arguments...)
       valEl = @getValEl().empty()
       @buildValueForDisplay(valEl)
-      
+
     # auto sorting methods
-      
+
     sortFunction: (a, b) ->
       return 1 if a > b
       return -1 if a < b
@@ -227,6 +227,7 @@ do __init = ->
 
         valueString = value
         valueString = JSON.stringify(value) unless $.type(value) is 'string'
+        valueString = 'undefined' if typeof value is 'undefined'
         valueString = valueString[..20] + ' ...' if valueString.length > 20
         text.push "#{name}=#{valueString}"
 
