@@ -35,6 +35,12 @@
   $(document).ready(function () {
     schema = {
       "type": "object",
+      properties: {
+        tester: {
+          type:'boolean',
+          name: 'Tester'
+        }
+      },
       "additionalProperties": {
         "type": "string",
         "format": "long-string"

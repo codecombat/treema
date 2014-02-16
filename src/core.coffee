@@ -71,6 +71,7 @@ do __init = ->
       @data = newValue if newValue?
       valEl = @getValEl().empty()
       if @isDisplaying() then @buildValueForDisplay(valEl) else @buildValueForEditing(valEl)
+      @flushChanges()
 
     onSpacePressed: -> @toggleValue()
     onFPressed: -> @toggleValue(false)

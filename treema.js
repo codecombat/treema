@@ -2391,10 +2391,11 @@ TreemaNode = (function() {
       }
       valEl = this.getValEl().empty();
       if (this.isDisplaying()) {
-        return this.buildValueForDisplay(valEl);
+        this.buildValueForDisplay(valEl);
       } else {
-        return this.buildValueForEditing(valEl);
+        this.buildValueForEditing(valEl);
       }
+      return this.flushChanges();
     };
 
     BooleanNode.prototype.onSpacePressed = function() {
