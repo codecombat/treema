@@ -26,22 +26,32 @@
         });
     }
   };
-  var port = ar.port || 9485;
+  var port = ar.port || 9486;
   var host = (!br['server']) ? window.location.hostname : br['server'];
-  var connection = new WebSocket('ws://' + host + ':' + port);
-  connection.onmessage = function(event) {
-    var message = event.data;
-    if (ar.disabled) return;
-    if (reloaders[message] != null) {
-      reloaders[message]();
-    } else {
-      reloaders.page();
-    }
+  var connect = function(){
+    var connection = new WebSocket('ws://' + host + ':' + port);
+    connection.onmessage = function(event){
+      var message = event.data;
+      if (ar.disabled) return;
+      if (reloaders[message] != null) {
+        reloaders[message]();
+      } else {
+        reloaders.page();
+      }
+    };
+    connection.onerror = function(){
+      if (connection.readyState) connection.close();
+    };
+    connection.onclose = function(){
+      window.setTimeout(connect, 1000);
+    };
   };
+  connect();
 })();
 
-;
-jade = (function(exports){
+;(function(e){if("function"==typeof bootstrap)bootstrap("jade",e);else if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else if("undefined"!=typeof ses){if(!ses.ok())return;ses.makeJade=e}else"undefined"!=typeof window?window.jade=e():global.jade=e()})(function(){var define,ses,bootstrap,module,exports;
+return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+
 /*!
  * Jade - runtime
  * Copyright(c) 2010 TJ Holowaychuk <tj@vision-media.ca>
@@ -95,9 +105,7 @@ exports.merge = function merge(a, b) {
     bc = bc || [];
     if (!Array.isArray(ac)) ac = [ac];
     if (!Array.isArray(bc)) bc = [bc];
-    ac = ac.filter(nulls);
-    bc = bc.filter(nulls);
-    a['class'] = ac.concat(bc).join(' ');
+    a['class'] = ac.concat(bc).filter(nulls);
   }
 
   for (var key in b) {
@@ -112,13 +120,25 @@ exports.merge = function merge(a, b) {
 /**
  * Filter null `val`s.
  *
- * @param {Mixed} val
- * @return {Mixed}
+ * @param {*} val
+ * @return {Boolean}
  * @api private
  */
 
 function nulls(val) {
-  return val != null;
+  return val != null && val !== '';
+}
+
+/**
+ * join array as classes.
+ *
+ * @param {*} val
+ * @return {String}
+ * @api private
+ */
+
+function joinClasses(val) {
+  return Array.isArray(val) ? val.map(joinClasses).filter(nulls).join(' ') : val;
 }
 
 /**
@@ -152,8 +172,16 @@ exports.attrs = function attrs(obj, escaped){
         }
       } else if (0 == key.indexOf('data') && 'string' != typeof val) {
         buf.push(key + "='" + JSON.stringify(val) + "'");
-      } else if ('class' == key && Array.isArray(val)) {
-        buf.push(key + '="' + exports.escape(val.join(' ')) + '"');
+      } else if ('class' == key) {
+        if (escaped && escaped[key]){
+          if (val = exports.escape(joinClasses(val))) {
+            buf.push(key + '="' + val + '"');
+          }
+        } else {
+          if (val = joinClasses(val)) {
+            buf.push(key + '="' + val + '"');
+          }
+        }
       } else if (escaped && escaped[key]) {
         buf.push(key + '="' + exports.escape(val) + '"');
       } else {
@@ -175,7 +203,7 @@ exports.attrs = function attrs(obj, escaped){
 
 exports.escape = function escape(html){
   return String(html)
-    .replace(/&(?!(\w+|\#\d+);)/g, '&amp;')
+    .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
@@ -191,11 +219,18 @@ exports.escape = function escape(html){
  * @api private
  */
 
-exports.rethrow = function rethrow(err, filename, lineno){
-  if (!filename) throw err;
-
+exports.rethrow = function rethrow(err, filename, lineno, str){
+  if (!(err instanceof Error)) throw err;
+  if ((typeof window != 'undefined' || !filename) && !str) {
+    err.message += ' on line ' + lineno;
+    throw err;
+  }
+  try {
+    str =  str || require('fs').readFileSync(filename, 'utf8')
+  } catch (ex) {
+    rethrow(err, null, lineno)
+  }
   var context = 3
-    , str = require('fs').readFileSync(filename, 'utf8')
     , lines = str.split('\n')
     , start = Math.max(lineno - context, 0)
     , end = Math.min(lines.length, lineno + context);
@@ -216,9 +251,12 @@ exports.rethrow = function rethrow(err, filename, lineno){
   throw err;
 };
 
-  return exports;
+},{"fs":2}],2:[function(require,module,exports){
+// nothing to see here... no file methods for the browser
 
-})({});
+},{}]},{},[1])(1)
+});
+;
 
 ;var TreemaNode,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -2692,6 +2730,9 @@ TreemaNode = (function() {
         if ($.type(value) !== 'string') {
           valueString = JSON.stringify(value);
         }
+        if (typeof value === 'undefined') {
+          valueString = 'undefined';
+        }
         if (valueString.length > 20) {
           valueString = valueString.slice(0, 21) + ' ...';
         }
@@ -3346,17 +3387,20 @@ TreemaNode = (function() {
     };
 
     AceNode.prototype.buildValueForEditing = function(valEl) {
-      var d;
+      var d, session;
       d = $('<div></div>').text(this.data);
       valEl.append(d);
       this.editor = ace.edit(d[0]);
       this.editor.setReadOnly(false);
+      session = this.editor.getSession();
       if (this.schema.aceMode != null) {
-        this.editor.getSession().setMode(this.schema.aceMode);
+        session.setMode(this.schema.aceMode);
       }
       if (this.schema.aceTabSize != null) {
-        this.editor.getSession().setTabSize(this.schema.aceTabSize);
+        session.setTabSize(this.schema.aceTabSize);
       }
+      session.setNewLineMode("unix");
+      session.setUseSoftTabs(true);
       if (this.schema.aceTheme != null) {
         this.editor.setTheme(this.schema.aceTheme);
       }
@@ -3428,4 +3472,4 @@ TreemaNode = (function() {
   };
 })(jQuery);
 ;
-//@ sourceMappingURL=treema.js.map
+//# sourceMappingURL=treema.js.map

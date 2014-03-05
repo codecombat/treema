@@ -19,4 +19,4 @@ Everything's over on the [Github Page!](http://codecombat.github.io/treema/).
 ## License
 [The MIT License (MIT)](https://github.com/codecombat/treema/blob/master/LICENSE)
 
-We'll probably also have a simple [CLA](http://en.wikipedia.org/wiki/Contributor_License_Agreement) soon.
+Please also [sign the CodeCombat contributor license agreement](http://codecombat.com/cla) so we can accept your pull requests. It is easy.

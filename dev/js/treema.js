@@ -2470,6 +2470,9 @@ TreemaNode = (function() {
         if ($.type(value) !== 'string') {
           valueString = JSON.stringify(value);
         }
+        if (typeof value === 'undefined') {
+          valueString = 'undefined';
+        }
         if (valueString.length > 20) {
           valueString = valueString.slice(0, 21) + ' ...';
         }
@@ -3124,17 +3127,20 @@ TreemaNode = (function() {
     };
 
     AceNode.prototype.buildValueForEditing = function(valEl) {
-      var d;
+      var d, session;
       d = $('<div></div>').text(this.data);
       valEl.append(d);
       this.editor = ace.edit(d[0]);
       this.editor.setReadOnly(false);
+      session = this.editor.getSession();
       if (this.schema.aceMode != null) {
-        this.editor.getSession().setMode(this.schema.aceMode);
+        session.setMode(this.schema.aceMode);
       }
       if (this.schema.aceTabSize != null) {
-        this.editor.getSession().setTabSize(this.schema.aceTabSize);
+        session.setTabSize(this.schema.aceTabSize);
       }
+      session.setNewLineMode("unix");
+      session.setUseSoftTabs(true);
       if (this.schema.aceTheme != null) {
         this.editor.setTheme(this.schema.aceTheme);
       }
@@ -3206,4 +3212,4 @@ TreemaNode = (function() {
   };
 })(jQuery);
 ;
-//@ sourceMappingURL=treema.js.map
+//# sourceMappingURL=treema.js.map

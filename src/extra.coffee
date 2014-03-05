@@ -152,8 +152,11 @@ do ->
       valEl.append(d)
       @editor = ace.edit(d[0])
       @editor.setReadOnly(false)
-      @editor.getSession().setMode(@schema.aceMode) if @schema.aceMode?
-      @editor.getSession().setTabSize(@schema.aceTabSize) if @schema.aceTabSize?
+      session = @editor.getSession()
+      session.setMode(@schema.aceMode) if @schema.aceMode?
+      session.setTabSize(@schema.aceTabSize) if @schema.aceTabSize?
+      session.setNewLineMode "unix"
+      session.setUseSoftTabs true
       @editor.setTheme(@schema.aceTheme) if @schema.aceTheme?
       valEl.find('textarea').focus()
 

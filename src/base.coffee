@@ -245,7 +245,7 @@ class TreemaNode
   # Event handling ------------------------------------------------------------
   setUpGlobalEvents: ->
     @$el.unbind()
-    @$el.dblclick (e) => $(e.target).closest('.treema-node').data('instance')?.onDoubleClick(e)
+    @$el.dblclick (e) -> $(e.target).closest('.treema-node').data('instance')?.onDoubleClick(e)
 
     @$el.click (e) =>
       $(e.target).closest('.treema-node').data('instance')?.onClick(e)
