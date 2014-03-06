@@ -7,7 +7,7 @@ ulimit -n 10000
 
 cd $DIR/..
 
-until brunch w -c brunch_config.coffee -s; do
+until ./node_modules/brunch/bin/brunch w -c brunch_config.coffee -s; do
     echo "Brunch Crashed. Recompiling entire project. Press Ctrl-C quickly to quit." >&2
     sleep 1
 done
