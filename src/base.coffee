@@ -35,8 +35,6 @@ class TreemaNode
   removed: false
   workingSchema: null
 
-
-
   # Thin interface for tv4 ----------------------------------------------------
   isValid: ->
     errors = @getErrors()
@@ -1170,23 +1168,11 @@ class TreemaNode
   @didSelect = false
   @changedTreemas = []
 
-  $filterEl = null
-  
-  bindFilter: ($inputEl)->
-    me = @
-    if $filterEl 
-      @unbindFilter()
-    $filterEl = $inputEl
-    $($filterEl).on keyup: ->
-      me.filterTreemaNodes $($filterEl).val()
-
-  unbindFilter: ()->
-    $($filterEl).off('change')
-    $filterEl = null
-
   filterTreemaNodes: (value)->
     $(@$el).find('.treema-node').each (idx, node)->
-      if value?.trim() != '' and $(node).find('.treema-value').text().indexOf(value) < 0
+      nodeTitle = $(node).find('.treema-value').text().toLowerCase()
+      value = value?.toLowerCase()
+      if value.trim() != '' and nodeTitle.indexOf(value) < 0
         $(node).hide()
       else
         $(node).show()
