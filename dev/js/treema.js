@@ -2196,7 +2196,9 @@ TreemaNode = (function() {
       if (!value.length) {
         return BooleanNode.__super__.onClick.call(this, e);
       }
-      return this.toggleValue();
+      if (this.canEdit()) {
+        return this.toggleValue();
+      }
     };
 
     return BooleanNode;
