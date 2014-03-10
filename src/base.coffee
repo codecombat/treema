@@ -356,7 +356,7 @@ class TreemaNode
     @onSpacePressed(e) if e.which is 32
     @onTPressed(e) if e.which is 84
     @onFPressed(e) if e.which is 70
-    @onDeletePressed(e) if e.which is 8 and not e.heldDown
+    @onDeletePressed(e) if e.which is 8 or 46 and not e.heldDown
 
   # Default keyboard behaviors ------------------------------------------------
 

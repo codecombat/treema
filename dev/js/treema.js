@@ -645,7 +645,7 @@ TreemaNode = (function() {
     if (e.which === 70) {
       this.onFPressed(e);
     }
-    if (e.which === 8 && !e.heldDown) {
+    if (e.which === 8 || 46 && !e.heldDown) {
       return this.onDeletePressed(e);
     }
   };
