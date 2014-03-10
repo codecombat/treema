@@ -1,0 +1,39 @@
+{
+  "name": "treema",
+  "main": [
+    "treema.js",
+    "treema.css"
+  ],
+  "version": "0.0.1",
+  "authors": [
+    "CodeCombat <team@codecombat.com>"
+  ],
+  "description": "Treema is a jQuery plugin that builds interfaces for editing large, complex, well-defined JSON data. It runs on tv4, which implements JSON-Schema validation.",
+  "keywords": [
+    "JSON",
+    "jQuery",
+    "Plugin",
+    "JSON-Schema",
+    "tv4",
+    "CodeCombat",
+    "Treema"
+  ],
+  "license": "MIT",
+  "homepage": "http://codecombat.github.io/treema/",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "/dev",
+    "/src",
+    "/bin",
+    "brunch_config.coffee"
+  ],
+  "dependencies": {
+    "tv4": "~1.0.15",
+    "jquery": "~1.8.1",
+    "jquery-ui": "~1.10.4"
+  }
+}

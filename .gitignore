@@ -1,4 +1,5 @@
 .idea/
 node_modules/
+bower_components/
 treema.css.map
 treema.js.map

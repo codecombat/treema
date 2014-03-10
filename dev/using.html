@@ -32,40 +32,59 @@
   
   <p>Everything you need to know to get started.</p>
   
+  <h3>Dependencies</h3>
+  <p>
+    Treema has the following 3rd party dependencies:
+  </p>
+  <ul>
+    <li>
+      <a href="https://jquery.com/">JQuery <i>(1.8.1)</i></a>
+    </li>
+    <li>
+      <a href="https://geraintluff.github.io/tv4/">TV4 <i>(1.0.15)</i></a>
+      For validating the data. This is pretty required.
+    </li>
+    <li>
+      <a href="https://jqueryui.com/">JQuery UI <i>(1.10.3)</i></a>
+      This is used for dragging and dropping elements in an Array (sortable)
+      and when typing in new properties of objects (autocomplete).
+      Make sure if you roll your own that you include those two components.
+      Treema will not break without these, but these features will not work.
+    </li>
+  </ul>
+
   <h3>Install</h3>
   
   <p>
-    Download and embed the following files:
+    Treema can be easily installed using the <a href="http://bower.io/">Bower Package Manager</a>:
   </p>
   
-  <ol>
-    <li>
-      <strong>Treema</strong>
-      <a href="https://raw.github.com/codecombat/treema/master/treema.js">JS</a>,
-      <a href="https://github.com/codecombat/treema/blob/master/treema.css">CSS</a>
-    </li>
-    <li>
-      <strong>3rd Party</strong>
-      <br />Note that these are the versions used in development of Treema.
-      Go to their sites/github pages for other versions or packages.
-      <ul>
-        <li>
-          <a href="https://raw.github.com/codecombat/treema/master/dev/js/vendor/jquery-1.8.1.js">JQuery</a>
-        </li>
-        <li>
-          <a href="https://raw.github.com/codecombat/treema/master/dev/js/vendor/tv4.js">TV4</a>
-          For validating the data. This is pretty required.
-        </li>
-        <li>
-          <a href="https://raw.github.com/codecombat/treema/master/dev/js/vendor/jquery-ui-1.10.3.custom.js">JQuery UI</a>
-          This is used for dragging and dropping elements in an Array (sortable)
-          and when typing in new properties of objects (autocomplete).
-          Make sure if you roll your own that you include those two components.
-          Treema will not break without these, but these features will not work.
-        </li>
-      </ul>
-    </li>
-  </ol>
+  <pre>
+bower install treema --save
+  </pre>
+
+  <p>
+    Afterwards simply include the necessary files into your file:
+  </p> 
+
+  <pre>
+&lt;!-- Stylesheets --&gt;
+&lt;link rel="stylesheet" href="/bower_components/jquery-ui/themes/base/jquery-ui.css"&gt;
+&lt;link rel="stylesheet" href="/bower_components/treema/treema.css"&gt;
+
+&lt;!-- JavaScripts --&gt;
+&lt;script src="/bower_components/jquery/jquery.js"&gt;&lt;/script&gt;
+&lt;script src="/bower_components/jquery-ui/ui/jquery-ui.js"&gt;&lt;/script&gt;
+&lt;script src="/bower_components/tv4/tv4.js"&gt;&lt;/script&gt;
+&lt;script src="/bower_components/treema/treema.js"&gt;&lt;/script&gt;
+  </pre>
+
+  <p>
+    <strong>Note:</strong><br/>
+    The paths might vary depending on 
+    if you changed the default path of your <code>bower_components</code> folder. The correct paths can be
+    found running: 
+  </p>
   
   <h3>Setup</h3>
   
