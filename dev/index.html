@@ -4,16 +4,16 @@
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
 
-    <script src="js/vendor/jquery-1.8.1.js"></script>
-    <script src="js/vendor/jquery-ui-1.10.3.custom.js"></script>
-    <script src="js/vendor/tv4.js"></script>
-    <script src="js/vendor/ace.js"></script>
-    <script src="js/vendor/bootstrap.min.js"></script>
+    <script src="bower_components/jquery/dist/jquery.js"></script>
+    <script src="bower_components/jquery-ui/ui/jquery-ui.js"></script>
+    <script src="bower_components/tv4/tv4.js"></script>
+    <script src="bower_components/ace-builds/src/ace.js"></script>
+    <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
     <script src="js/treema.js"></script>
     <script src="js/base.js"></script>
 
-    <link rel="stylesheet" href="css/vendor/jquery-ui-1.10.3.custom.css">
-    <link rel="stylesheet" href="css/vendor/bootstrap.min.css" media="screen">
+    <link rel="stylesheet" href="bower_components/jquery-ui/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" media="screen">
     <link rel="stylesheet" href="css/treema.css">
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/index.css">
@@ -22,8 +22,8 @@
 
   <body>
 
-  
-  
+
+
 <div id="content">
   <a href="https://github.com/codecombat/treema">
     <img style="position: absolute; top: 0; left: 0; border: 0;"
@@ -40,7 +40,7 @@
     <li id="tests-link"><a href="test.html">Run Tests</a></li>
     <li id="github-link"><a href="https://github.com/codecombat/treema">Treema on Github</a></li>
   </ul>
-  
+
   <hr />
   <p class="lead">
     <strong>Treema</strong> is a
@@ -58,14 +58,14 @@
   <p>
     Originally built for the <a href="http://codecombat.com/">Code Combat</a> level editor.
   </p>
-  
+
   <h3>Here's what it looks like:</h3>
-  
+
   <div id="demo"></div>
 
   <script>
     // Got data at http://adobe.github.io/Spry/samples/data_region/JSONDataSetSample.html
-    
+
     var products = [
       {
         "id": "0001",
@@ -208,11 +208,11 @@
     TreemaNode.nodeMap['number'].extend(DollarPriceTreemaNode);
     DollarPriceTreemaNode.prototype.buildValueForDisplay = function (valEl) { valEl.text("$" + this.data.toFixed(2));};
     TreemaNode.setNodeSubclass('price', DollarPriceTreemaNode);
-    
+
     buildTreemaExample($('#demo'), product_schema, products);
 
   </script>
-  
+
   <p>
     For more examples, check out the
     <a href="demo.html">Demos</a>.
@@ -243,7 +243,7 @@
     And yet! This problem has already been solved elsewhere.
     In software like:
   </p>
-  
+
   <div id="tree-interfaces" class="row">
     <div class="col-md-4">
       <h5>Starcraft II Galaxy Editor</h5>
@@ -267,7 +267,7 @@
       </div>
     </div>
   </div>
-  
+
   <script>
     var showImage = function (name) {
       var modal = $('#image-modal');
@@ -275,14 +275,14 @@
       modal.find('.modal-body').empty().append(fullImage);
       modal.modal();
     };
-    
+
     $('#tree-interfaces').find('img').click(function(e) {
       var name = $(e.target).attr('id');
       console.log('click', name);
       showImage(name);
     });
   </script>
-  
+
   <p>
     That's the stuff right there.
     That collapsible tree thing.
@@ -292,19 +292,19 @@
     And the interfaces seamlessly communicate the actions that are available to the user.
     You want <em>that</em>.
   </p>
-  
+
   <hr />
-  
+
   <p class="lead">
     Treema is <em>that</em> for sites. It creates tree based interfaces based
     on JSON-Schemas that define how your data is structured, guiding and limiting
     based on those constraints.
   </p>
-  
+
   <hr />
 
   <h3>What else are JSON-Schemas good for?</h3>
-  
+
   <h4>Lots of stuff!</h4>
 
   <ul>
@@ -316,7 +316,7 @@
     </li>
     <li>
       Generate interfaces and forms with countless other libraries like
-      <a href="http://www.alpacajs.org/">Alpaca</a>, 
+      <a href="http://www.alpacajs.org/">Alpaca</a>,
       <a href="https://github.com/josdejong/jsoneditor/">JSON Editor Online</a>, or
       <a href="https://github.com/kevinburke/hulk">Hulk</a>.
     </li>
@@ -333,9 +333,9 @@
     <li><a href="using.html">Using Treema</a></li>
     <li><a href="develop.html">Developing</a></li>
   </ul>
-  
+
   <h3>Getting in Touch</h3>
-  
+
   <ul>
     <li><a href="https://github.com/codecombat/treema/issues">Treema GitHub Issues</a></li>
     <li><a href="http://discourse.codecombat.com/">CodeCombat Discourse Forum</a></li>
@@ -345,6 +345,6 @@
 
   <footer><div></div><div></div></footer>
 </div>
-  
+
   </body>
 </html>

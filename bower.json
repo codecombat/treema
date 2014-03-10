@@ -33,7 +33,11 @@
   ],
   "dependencies": {
     "tv4": "~1.0.15",
-    "jquery": "~1.8.1",
+    "jquery": "~2.1.0",
     "jquery-ui": "~1.10.4"
+  },
+  "devDependencies": {
+    "bootstrap": "~3.1.1",
+    "ace-builds": "~1.1.3"
   }
 }
