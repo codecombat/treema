@@ -23,7 +23,11 @@
     "node_modules",
     "bower_components",
     "test",
-    "tests"
+    "tests",
+    "/dev",
+    "/src",
+    "/bin",
+    "brunch_config.coffee"
   ],
   "dependencies": {
     "tv4": "~1.0.15",
