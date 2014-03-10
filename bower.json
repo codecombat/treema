@@ -34,6 +34,6 @@
   "dependencies": {
     "tv4": "~1.0.15",
     "jquery": "~1.8.1",
-    "jquery.ui": "~1.10.3"
+    "jquery-ui": "~1.10.4"
   }
 }
