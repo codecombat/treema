@@ -1,6 +1,9 @@
 {
   "name": "treema",
-  "main": "treema.js",
+  "main": [
+    "treema.js",
+    "treema.css"
+  ],
   "version": "0.0.1",
   "authors": [
     "CodeCombat <team@codecombat.com>"
@@ -9,8 +12,7 @@
   "keywords": [
     "JSON",
     "jQuery",
-    "jQuery",
-    "UI",
+    "Plugin",
     "JSON-Schema",
     "tv4",
     "CodeCombat",
