@@ -8,6 +8,9 @@ class TreemaNode
   options: null
   parent: null
 
+  # properties related to filter
+  treemaFilterHiddenClass: 'treema-filter-hidden'
+
   # templates
   nodeTemplate: '<div class="treema-row treema-clearfix"><div class="treema-value"></div></div>'
   childrenTemplate: '<div class="treema-children"></div>'
@@ -516,7 +519,7 @@ class TreemaNode
     @wrapContext(list, origin, offset)
 
   navigationContext: ->
-    list = @getVisibleTreemas()
+    list = @getFilterVisibleTreemas()
     origin = @getLastSelectedTreema()
     @wrapContext(list, origin)
 
@@ -1042,6 +1045,7 @@ class TreemaNode
 
   # Utilities -----------------------------------------------------------------
 
+  getNodeEl: -> @$el
   getValEl: -> @$el.find('> .treema-row .treema-value')
   getRootEl: -> @$el.closest('.treema-root')
   getRoot: ->
@@ -1063,6 +1067,7 @@ class TreemaNode
       pointer = pointer.parent
     pathPieces.reverse()
     return '/' + pathPieces.join('/')
+  getData: -> @data
 
   isRoot: -> not @parent
   isEditing: -> @getValEl().hasClass('treema-edit')
@@ -1073,6 +1078,17 @@ class TreemaNode
   wasSelectedLast: -> @$el.hasClass('treema-last-selected')
   editingIsHappening: -> @getRootEl().find('.treema-edit').length
   rootSelected: -> $(document.activeElement).hasClass('treema-root')
+
+  # to avoid naming conflict with "visible", "displaying". Visibility related to filter is denoted to "filterVisible"
+  setFilterVisible: (isFilterVisible)->    
+    if isFilterVisible 
+      @$el.find('.treema-node').andSelf().removeClass(@treemaFilterHiddenClass) 
+    else 
+      @$el.find('.treema-node').andSelf().addClass(@treemaFilterHiddenClass)
+
+  getFilterVisibleTreemas: -> 
+    ($(el).data('instance') for el in @getRootEl().find('.treema-node').not('.' + @treemaFilterHiddenClass))
+  isFilterVisible: -> !@$el.hasClass(@treemaFilterHiddenClass)
 
   keepFocus: (x, y) ->
     # We want to keep Treema receiving events, so we focus on the root, but we preserve scroll position to do it invisibly.
@@ -1167,3 +1183,11 @@ class TreemaNode
 
   @didSelect = false
   @changedTreemas = []
+
+  filterChildren: (filter)->
+    for keyForParent, treemaNode of @childrenTreemas
+      treemaNode.setFilterVisible(!filter || filter(treemaNode, keyForParent))
+
+  clearFilter: ->
+    for keyForParent, treemaNode of @childrenTreemas
+      treemaNode.setFilterVisible true
