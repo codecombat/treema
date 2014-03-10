@@ -80,7 +80,7 @@ do __init = ->
     onClick: (e) ->
       value = $(e.target).closest('.treema-value')
       return super(e) unless value.length
-      @toggleValue()
+      @toggleValue() if @canEdit()
 
 
 
