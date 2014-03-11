@@ -1,19 +1,19 @@
 <html>
 <head>
-  <script type="text/javascript" src="js/vendor/jquery-1.8.1.js"></script>
-  <script type="text/javascript" src="js/vendor/jquery-ui-1.10.3.custom.js"></script>
-  <script type="text/javascript" src="js/vendor/tv4.js"></script>
-  <script type="text/javascript" src="js/vendor/ace.js"></script>
-  <script type="text/javascript" src="js/vendor/bootstrap.min.js"></script>
+  <script src="bower_components/jquery/dist/jquery.js"></script>
+  <script src="bower_components/jquery-ui/ui/jquery-ui.js"></script>
+  <script src="bower_components/tv4/tv4.js"></script>
+  <script src="bower_components/ace-builds/src/ace.js"></script>
+  <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
 
   <script type="text/javascript" src="js/treema.js"></script>
 
-  <link rel="stylesheet" href="css/vendor/jquery-ui-1.10.3.custom.css">
-  <link rel="stylesheet" href="css/vendor/bootstrap.min.css" media="screen">
+  <link rel="stylesheet" href="bower_components/jquery-ui/themes/base/jquery-ui.css">
+  <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" media="screen">
 
   <link rel="stylesheet" href="css/treema.css">
   <link rel="stylesheet" href="css/base.css">
-  
+
 </head>
 <body>
 
@@ -22,16 +22,16 @@
   <h1>Try Things Out Here</h1>
 
   <div id="scratch"></div>
-  
+
   <button onclick="treema.childrenTreemas[0].select();">TEST</button>
-  
+
   <textarea></textarea>
-  
+
 </div>
 
 <script type="text/javascript">
 
-  var jade = {};    
+  var jade = {};
   $(document).ready(function () {
     schema = {
       "type": "object",
@@ -56,7 +56,7 @@
     treema.build();
     window.treema = treema
   });
-  
+
 </script>
 
 </body>

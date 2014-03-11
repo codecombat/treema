@@ -4,7 +4,7 @@
   <meta charset='utf-8'>
   <meta http-equiv="X-UA-Compatible" content="chrome=1">
 
-  <link rel="stylesheet" href="css/vendor/bootstrap.min.css" media="screen">
+  <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" media="screen">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/develop.css">
   <title>Treema by sderickson</title>
@@ -30,21 +30,21 @@
     <li id="tests-link"><a href="test.html">Run Tests</a></li>
     <li id="github-link"><a href="https://github.com/codecombat/treema">Treema on Github</a></li>
   </ul>
-  
+
   <p>
     So, you want to work on this open source project?
     Awesome! Here's what you need to know.
   </p>
-  
+
   <h3>Setting Up Your Environment</h3>
-  
+
   <p>
     The <a href="https://github.com/codecombat/treema">Github Repository</a>
     has <strong>everything</strong> you need to work on Treema.
     You'll need <a href="http://www.joyent.com/blog/installing-node-and-npm">Node, NPM</a>
     and <a href="http://git-scm.com/">Git</a> installed.
   </p>
-  
+
   <ol>
     <li>
       <strong>Clone the repository</strong>
@@ -55,35 +55,35 @@
       <pre>npm install</pre>
     </li>
   </ol>
-  
+
   <p>
     <strong>Bam</strong>. You're done.
   </p>
-  
+
   <h3>Running The Environment</h3>
-  
+
   <p>
     From the treema directory, run:
   </p>
-  
+
   <pre>bin/treema-brunch</pre>
-  
+
   <div class="panel panel-success">
     <div class="panel-heading">Convenience Tip</div>
     <div class="panel-body">
-      
+
       <p>
         To make starting the dev environment easier, put the bin folder in your PATH.
-        Do that by putting in a line like this in your .profile file: 
+        Do that by putting in a line like this in your .profile file:
       </p>
-      
+
       <pre>PATH=$PATH:~/path/to/treema/bin</pre>
-      
+
       <p>
         I also like to set up Mac OS X Window Groups to really make it easy.
         To do that:
       </p>
-      
+
       <ol>
         <li>
           Go to Terminal preferences and add a Treema profile under the Settings tab,
@@ -130,22 +130,22 @@
       Whatever else you might like!
     </li>
   </ul>
-  
+
   <p>
     Brunch both runs this server, and also handles trans-compiling from Sass and CoffeeScript to CSS and JavaScript.
     Assuming you've started brunch, you should be able to access the
     test page at
   </p>
-  
+
   <pre class="shortened"><a href="http://localhost:9090/test.html">http://localhost:9090/test.html</a></pre>
-  
+
   <p>
     If that worked, you can edit the CoffeeScript files and view changes in
     scratch.html or any of the html files in /dev.
   </p>
-  
+
   <h3>Things to keep in mind</h3>
-  
+
   <ul>
     <li>
       Keep everything in CoffeeScript and Sass.
@@ -165,11 +165,11 @@
   </ul>
 
   <h3>What to work on?</h3>
-  
+
   <p>
     We have a handful of advanced features we, ourselves, want next:
   </p>
-  
+
   <ul>
     <li>
       <strong>Undo/redo functionality</strong>.
@@ -194,12 +194,12 @@
       <strong>Make errors more human friendly</strong>.
     </li>
   </ul>
-  
+
   <p>
     You could always also add more tests, add more nodes for common cases, or handle
     <a href="https://github.com/codecombat/treema/issues">reported issues</a>.
   </p>
-  
+
   <footer><div></div><div></div></footer>
 </div>
 
