@@ -1,17 +1,17 @@
 <html>
 <head>
-  <script src="js/vendor/jquery-1.8.1.js"></script>
-  <script src="js/vendor/jquery-ui-1.10.3.custom.js"></script>
-  <script src="js/vendor/tv4.js"></script>
-  <script src="js/vendor/ace.js"></script>
-  <script src="js/vendor/bootstrap.min.js"></script>
+  <script src="bower_components/jquery/dist/jquery.js"></script>
+  <script src="bower_components/jquery-ui/ui/jquery-ui.js"></script>
+  <script src="bower_components/tv4/tv4.js"></script>
+  <script src="bower_components/ace-builds/src/ace.js"></script>
+  <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
   <script src="js/vendor/metaschema.js"></script>
   <script src="js/vendor/metahyperschema.js"></script>
   <script src="js/treema.js"></script>
   <script src="js/base.js"></script>
-  
-  <link rel="stylesheet" href="css/vendor/jquery-ui-1.10.3.custom.css">
-  <link rel="stylesheet" href="css/vendor/bootstrap.min.css" media="screen">
+
+  <link rel="stylesheet" href="bower_components/jquery-ui/themes/base/jquery-ui.css">
+  <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" media="screen">
   <link rel="stylesheet" href="css/treema.css">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/demo.css">
@@ -24,7 +24,7 @@
     <img style="position: absolute; top: 0; left: 0; border: 0;"
          src="https://s3.amazonaws.com/github/ribbons/forkme_left_green_007200.png" alt="Fork me on GitHub">
   </a>
-  
+
   <h1>Treema</h1>
 
   <ul class="nav nav-pills navbar navbar-default">
@@ -37,18 +37,18 @@
   </ul>
 
   <p>Let's see this library in action.</p>
-  
+
   <h3>Basics: A Contact Book</h3>
-  
+
   <div id="addresses"></div>
-  
+
   <script>
     var contacts = [
       { 'street-address': '10 Downing Street', 'country-name': 'UK', 'locality': 'London', 'name': 'Prime Minister' },
       { 'street-address': '1600 Amphitheatre Pkwy', 'phone-number': '(650) 253-0000', 'name': 'Google'},
       { 'street-address': '45 Rockefeller Plaza', 'region': 'NY', 'locality': 'New York', 'name': 'Rockefeller Center'},
     ];
-    
+
     var contact_book_schema = {
       type: 'array',
       items: {
@@ -68,30 +68,30 @@
     };
 
     buildTreemaExample($('#addresses'), contact_book_schema, contacts);
-    
+
   </script>
-  
+
   <p>
     Try it! See how easy it is to add and remove contacts and properties
     (<strong>Hint</strong>: use keyboard keys like arrows, enter, tab, and escape).
     Check out the schema and data tabs to see what goes in to make this interface
     (and what comes out, the data tab updates based on your changes).
   </p>
-  
+
   <p>
     Data comes in all shapes and sizes, though, much more than just whether it's a string or a number.
     Treema is built to allow all sorts of ways to set up the interface just the way you like it.
   </p>
 
-  
+
   <h2>Custom Nodes</h2>
-  
+
   <h3>Objects As Single Nodes</h3>
-  
+
   <p>
     Say your data object has a 2d position in there.
   </p>
-  
+
   <div id="shapeA"></div>
 
   <script>
@@ -126,14 +126,14 @@
 
     treema = buildTreemaExample($('#shapeA'), shape_schema, shape);
     treema.childrenTreemas.origin.open()
-    
-    
+
+
   </script>
 
   <p>
     Even with Treema's compact format, three lines for an object that will only ever have two properties
     just seems like overkill.
-    So, define a Treema node that instead treats that object as a single entity, rather than a collection. 
+    So, define a Treema node that instead treats that object as a single entity, rather than a collection.
   </p>
 
   <div id="shapeB"></div>
@@ -170,9 +170,9 @@
     Use this technique to compress several related properties into single rows,
     like names, addresses and version numbers.
   </p>
-  
+
   <h3>Embedding Plugins</h3>
-  
+
   <p>
     <a href="http://ace.c9.io/#nav=about">ACE</a>
     is a great library for creating text editors for all sorts of formats on the web.
@@ -188,7 +188,7 @@
       lang: "JavaScript",
       code: "function Apple (type) {\n  this.type = type;\n  this.color = 'red';\n}\n\nApple.prototype.getInfo = function() {\n  return this.color + ' ' + this.type + ' apple';\n};"
     }
-    
+
     var component_schema = {
       "additionalProperties": false,
       "type": "object",
@@ -218,7 +218,7 @@
     treema = buildTreemaExample($('#component'), component_schema, component);
     treema.childrenTreemas.code.edit();
   </script>
-  
+
   <p>
     With custom nodes, you can weave in whatever elements or specialized plugins you like.
     Have an image URL property use the
@@ -226,7 +226,7 @@
     Pick date properties with the
     <a href="http://jqueryui.com/datepicker/">JQuery UI Datepicker</a>.
   </p>
-  
+
   <a id="dbsearch"><h3>References to Other Database Records/Documents</h3></a>
 
   <p>
@@ -272,31 +272,31 @@
     treema = buildTreemaExample($('#lookup'), lookup_schema, lookup);
     treema.childrenTreemas.restaurants.open();
   </script>
-  
+
   <p>
     This is one of the coolest features in Treema.
     Making a simple, consistent pattern for working with denormalized references.
   </p>
-  
+
   <hr />
-  
+
   <h3>Implementation</h3>
-  
+
   <p>
     To see how these and more advanced nodes are implemented, check out
     <a href="https://github.com/codecombat/treema/blob/master/src/extra.coffee" target="_blank">/src/extra.coffee</a>.
   </p>
-  
+
   <h2>Other Features</h2>
-  
+
   <h3>Keyboard Shortcuts</h3>
-  
+
   <p>
     Treema aims to make manipulating these complex data structures as natural and quick as possible.
     To that end, Treema features plenty of keyboard shortcuts so you can stay as far away from your mouse as you like.
     Here's a brief overview:
   </p>
-  
+
   <ul>
     <li>
       <strong>Arrow keys</strong>: Navigates the selection, opening and closing collections.
@@ -311,7 +311,7 @@
         Enter will open selected collections, tab will not.
       </li>
     </ul>
-      
+
     </li><li>
       <strong>Escape</strong>: Discards changes on the input currently being edited.
     </li><li>
@@ -319,25 +319,25 @@
     </li>
     <li><strong>Shift and Ctrl-Click</strong>: Selects multiple rows.</li>
   </ul>
-  
+
   <p>
     The <a href="test.html">tests</a> double as specifications for how shortcuts work, also.
   </p>
-  
+
   <h3>Structural Restrictions</h3>
   <h4>Schema-Defined, Interface Enforced</h4>
-  
+
   <p>
     Whenever possible, the interface reflects the limits the schema imposes on the data, including:
   </p>
-  
+
   <ul>
     <li>
       Preventing adding more elements to arrays and objects when the maximum number
       has been reached, or there are no more properties available to add.
     </li>
     <li>
-      Using HTML input types and attributes to enforce rules such as 
+      Using HTML input types and attributes to enforce rules such as
       length and value minimums and maximums.
     </li>
     <li>
@@ -374,22 +374,22 @@
     };
     treema = buildTreemaExample($('#contactsB'), contact_book_schemaB, contactsB);
   </script>
-  
+
   <h3>Callbacks</h3>
-  
+
   <p>
     You can register callbacks for when:
   </p>
-  
+
   <ul>
     <li>Rows are hovered onto and off of</li>
     <li>Selection changes</li>
     <li>Data changes</li>
   </ul>
-  
+
   <p>
     Say the user selects a contact on a contact list.
-    Use the callbacks to know when to update another part of the page, showing details about that contact. 
+    Use the callbacks to know when to update another part of the page, showing details about that contact.
   </p>
 
   <h3>Meta! Create and Edit JSON Schemas</h3>
@@ -562,19 +562,19 @@
       },
       "default": {}
     };
-    
+
     buildTreemaExample($('#meta-core'), schema_schema, contact_book_schemaB.items);
   </script>
-  
+
   <h3>Want More?</h3>
-  
+
   <p>
     It's open source!
     <a href="https://github.com/codecombat/treema">Join the project</a> and make Treema even more awesome.
   </p>
 
   <footer><div></div><div></div></footer>
-  
+
 </div>
 
 </body>

@@ -4,7 +4,7 @@
   <meta charset='utf-8'>
   <meta http-equiv="X-UA-Compatible" content="chrome=1">
 
-  <link rel="stylesheet" href="css/vendor/bootstrap.min.css" media="screen">
+  <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" media="screen">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/using.css">
   <title>Treema by sderickson</title>
@@ -29,9 +29,9 @@
     <li id="tests-link"><a href="test.html">Run Tests</a></li>
     <li id="github-link"><a href="https://github.com/codecombat/treema">Treema on Github</a></li>
   </ul>
-  
+
   <p>Everything you need to know to get started.</p>
-  
+
   <h3>Dependencies</h3>
   <p>
     Treema has the following 3rd party dependencies:
@@ -54,18 +54,18 @@
   </ul>
 
   <h3>Install</h3>
-  
+
   <p>
     Treema can be easily installed using the <a href="http://bower.io/">Bower Package Manager</a>:
   </p>
-  
+
   <pre>
 bower install treema --save
   </pre>
 
   <p>
     Afterwards simply include the necessary files into your file:
-  </p> 
+  </p>
 
   <pre>
 &lt;!-- Stylesheets --&gt;
@@ -81,166 +81,166 @@ bower install treema --save
 
   <p>
     <strong>Note:</strong><br/>
-    The paths might vary depending on 
+    The paths might vary depending on
     if you changed the default path of your <code>bower_components</code> folder. The correct paths can be
-    found running: 
+    found running:
   </p>
-  
+
   <h3>Setup</h3>
-  
+
   <p>
     Once you have the above files all set up, you should have <code>TreemaNode</code> in the global namespace.
     This is the superclass which all specialized nodes subclass from (StringTreemaNode, NumberTreemaNode, etc)
     and contains class methods for general use.
   </p>
-  
+
   <p>
     To make a Treema, you've got two options, either call the jQuery function <code>treema</code>:
   </p>
-  
+
   <pre>
 var options = { schema:your_schema, data:your_data };
 var el = $("&lt;div&gt;&lt;/div&gt;"); // or fetch an existing block element
 var treema = el.treema(options); // hold onto this treema object for later
 treema.build();
 // el now has the treema interface, append it where you will</pre>
-  
+
   <p>
     Or call the function directly through <code>TreemaNode</code>:
   </p>
-  
+
   <pre>
 var el = $("&lt;div&gt;&lt;/div&gt;");
 var treema = TreemaNode.make(el, options);
 treema.build();</pre>
-  
+
   <p>
-    If the first argument of <code>make()</code> is null, then Treema makes its own empty div element. 
+    If the first argument of <code>make()</code> is null, then Treema makes its own empty div element.
   </p>
-  
+
   <h3>Getting the Data</h3>
-  
+
   <p>
     That object that <code>make()</code> and <code>treema()</code> return?
     Its <code>data</code> property has the latest version of the data.
     Note that it's not necessarily <em>valid</em> data.
     Use the same object's <code>isValid()</code> to check for validity.
   </p>
-  
+
   <h3>Making Custom Nodes</h3>
-  
+
   <h4>Subclassing</h4>
-  
+
   <p>
-    To make a subclass, use the convenience method <code>extend</code>. 
+    To make a subclass, use the convenience method <code>extend</code>.
     Don't forget to include a constructor that calls the superclass's <code>constructor</code> method.
   </p>
-  
+
   <pre>
     MyTreemaNode = function () {
       this['super']('constructor').apply(this, arguments);
     };
     TreemaNode.extend(MyTreemaNode);</pre>
-  
+
   <p>
     There are several properties and functions you should overwrite at the very least.
     To start, define a CSS class so you can hook unique styling to the node.
   </p>
-  
+
   <pre>
     MyTreemaNode.prototype.valueClass = 'treema-my';</pre>
-  
+
   <p>
     Add a <code>getDefaultValue()</code> function which will be used when the property is first added.
   </p>
-    
+
   <pre>
     MyTreemaNode.prototype.getDefaultValue = function () { return 'No name'; }</pre>
-  
+
   <p>
     Add <code>buildValueForDisplay</code> and <code>buildValueForEditing</code> functions which define what the
     row is when displaying and editing.
     Both receive an empty jQuery element that you can set up as you wish.
     Use <code>this.data</code> to access the current value of the node.
   </p>
-  
+
   <pre>
     MyTreemaNode.prototype.buildValueForDisplay = function (valEl) {
       valEl.text('"'+this.data+'"');
     }
-    
+
     MyTreemaNode.prototype.buildValueForEditing = function (valEl) {
       valEl.append($('&lt;input&gt;&lt;/input&gt;').val(this.data));
     }</pre>
-  
+
   <p>
     And finally, add a <code>saveChanges</code> function which takes the same jQuery-wrapped value element
     that you built in <code>buildValueForEditing</code>, and saves the new values to <code>this.data</code>.
   </p>
-  
+
   <pre>
     MyTreemaNode.prototype.saveChanges = function (valEl) {
       this.data = valEl.find('input').val();
     }</pre>
-  
+
   <h4>Registering Subclasses</h4>
-  
+
   <p>
     Now that you have a proper subclass, register it for a type or format.
     For this you need to decide which type, or format string you want your custom node to get used for.
     When deciding what Node class to use, Treema checks the following equalities in this order:
   </p>
-  
+
   <ul>
     <li>schema.format</li>
     <li>schema.type</li>
   </ul>
-  
+
   <p>
     If the schema includes neither, or neither is a match,
     it uses a special 'any' node which can handle any form of JSON data.
   </p>
-  
+
   <p>
     If, for example, you wanted to add a node for 'simple' strings,
     you would do:
   </p>
-  
+
   <pre>
     TreemaNode.setNodeSubclass('simple', MyTreemaNode);</pre>
-  
+
   <p>
     Now whenever an entity has the schema format set to 'simple',
     your Treema will use this custom node.
   </p>
-  
+
   <p>
     For more examples about how to build TreemaNode subclasses, take a look at the
     <a href="https://github.com/codecombat/treema/blob/master/src/core.coffee">core.coffee</a> and
     <a href="https://github.com/codecombat/treema/blob/master/src/extra.coffee">extra.coffee</a> files.
   </p>
-  
+
   <h4>Database Search Nodes</h4>
-  
+
   <p>
     Treema comes bundled with one node which implements most of the logic for searching and choosing references
     to other entities in your database: DatabaseSearchTreemaNode.
     This is in the global namespace, so just subclass it like so:
   </p>
-  
+
   <pre>
     MyTreemaNode = function () {
       this['super']('constructor').apply(this, arguments);
     };
     DatabaseSearchTreemaNode.extend(MyTreemaNode);</pre>
-  
+
   <p>
     And override the <code>url</code> property:
   </p>
-  
+
   <pre>
     MyTreemaNode.prototype.url = '/db/things/search'</pre>
-  
+
   <p>
     And the <code>formatDocument(doc)</code> function,
     which takes a single entity (which was fetched from the search url)
@@ -251,22 +251,22 @@ treema.build();</pre>
     MyTreemaNode.prototype.formatDocument = function (doc) {
       return doc.name;
     }</pre>
-  
+
   <p>
     Then all you have to do is implement the handler for that url.
     It should search your database using the GET parameter <code>term</code>,
     which is what the user typed into the search field.
     That handler returns a JSON array of results.
   </p>
-  
+
   <p>
     Check out the
     <a href="demo.html#dbsearch">demo</a>
     to see how it works in action.
   </p>
-  
+
   <h4>Tips and Tricks</h4>
-  
+
   <ul>
     <li>
       At this point all functions and properties in TreemaNode are fair game for changing,
@@ -290,11 +290,11 @@ treema.build();</pre>
   </ul>
 
   <h3>Custom Styling</h3>
-  
+
   <p>
     A single node in a treema looks something like this:
   </p>
-  
+
   <pre><code class="bash">div.treema-node(.treema-root.treema-open.treema-closed.treema-selected.treema-last-selected)
  |
  ├-- span.treema-toggle-hit-area
@@ -315,26 +315,26 @@ treema.build();</pre>
  ├-- div.treema-error
  |
  |-- span.treema-temp-error</code></pre>
-  
+
   <p>
     Many of those elements do not exist in cases where they are not needed,
     such as <code>div.treema-children</code>, which is only part of the node for arrays and objects.
     There are also some state classes:
   </p>
-  
+
   <table class="table table-condensed table-striped">
     <tr>
       <th>State class</th>
       <th>Applied to</th>
       <th>Means</th>
     </tr>
-    
+
     <tr>
       <td>treema-root</td>
       <td>treema-node</td>
       <td>This is the origin node.</td>
     </tr>
-    
+
     <tr>
       <td>treema-open</td>
       <td>treema-node</td>
@@ -384,7 +384,7 @@ treema.build();</pre>
     </tr>
 
   </table>
-  
+
   <p>
     And finally, each Node object puts another class on <code>div.treema-value</code> to denote its type.
     So a standard string property will have <code>treema-string</code>.
@@ -392,13 +392,13 @@ treema.build();</pre>
     <code>div.treema-value</code> of instances of that node.
     Use all of these classes to apply your own custom styling.
   </p>
-  
+
   <p>
     See the
     <a href="https://github.com/codecombat/treema/tree/master/src/style">/src/style directory</a>
     to see how we do it by default.
   </p>
-  
+
   <footer><div></div><div></div></footer>
 </div>
 
