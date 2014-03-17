@@ -269,6 +269,10 @@ class TreemaNode
 
   manageCopyAndPaste: (e) ->
     # http://stackoverflow.com/questions/17527870/how-does-trello-access-the-users-clipboard
+    #if user is using text field
+    el = document.activeElement
+    return if (el? and (el.tagName.toLowerCase() == 'input' and el.type == 'text') or el.tagName.toLowerCase() == 'textarea')
+
     target = @getLastSelectedTreema() ? @  # You can get the parent treema by somehow giving it focus but without selecting it; hacky
     if e.which is 86 and $(e.target).hasClass 'treema-clipboard'
       # Ctrl+V -- we might want the paste data
