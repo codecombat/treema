@@ -7,6 +7,7 @@ class TreemaNode
   data: null
   options: null
   parent: null
+  lastSelectedTreema: null # only root node uses this property.
 
   # properties related to filter
   treemaFilterHiddenClass: 'treema-filter-hidden'
@@ -723,11 +724,12 @@ class TreemaNode
   toggleSelect: ->
     @clearLastSelected()
     @$el.toggleClass('treema-selected') unless @isRoot()
-    @$el.addClass('treema-last-selected') if @isSelected()
+    @setLastSelectedTreema(@) if @isSelected()
     TreemaNode.didSelect = true
 
   clearLastSelected: ->
-    @getRootEl().find('.treema-last-selected').removeClass('treema-last-selected')
+    @getLastSelectedTreema()?.$el.removeClass('treema-last-selected')
+    @setLastSelectedTreema(null)
 
   shiftSelect: ->
     lastSelected = @getRootEl().find('.treema-last-selected')
@@ -1054,7 +1056,13 @@ class TreemaNode
     node
   getInputs: -> @getValEl().find('input, textarea')
   getSelectedTreemas: -> ($(el).data('instance') for el in @getRootEl().find('.treema-selected'))
-  getLastSelectedTreema: -> @getRootEl().find('.treema-last-selected').data('instance')
+  getLastSelectedTreema: -> 
+    @getRoot().lastSelectedTreema
+
+  setLastSelectedTreema: (node) -> 
+    @getRoot().lastSelectedTreema = node
+    node?.$el.addClass('treema-last-selected')
+
   getAddButtonEl: -> @$el.find('> .treema-children > .treema-add-child')
   getVisibleTreemas: -> ($(el).data('instance') for el in @getRootEl().find('.treema-node'))
   getNavigableElements: ->
