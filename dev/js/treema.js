@@ -16,6 +16,8 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.parent = null;
 
+  TreemaNode.prototype.lastSelectedTreema = null;
+
   TreemaNode.prototype.treemaFilterHiddenClass = 'treema-filter-hidden';
 
   TreemaNode.prototype.nodeTemplate = '<div class="treema-row treema-clearfix"><div class="treema-value"></div></div>';
@@ -471,8 +473,12 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.manageCopyAndPaste = function(e) {
-    var target, x, y, _ref, _ref1, _ref2, _ref3,
+    var el, target, x, y, _ref, _ref1, _ref2, _ref3,
       _this = this;
+    el = document.activeElement;
+    if ((el != null) && (el.tagName.toLowerCase() === 'input' && el.type === 'text') || el.tagName.toLowerCase() === 'textarea') {
+      return;
+    }
     target = (_ref = this.getLastSelectedTreema()) != null ? _ref : this;
     if (e.which === 86 && $(e.target).hasClass('treema-clipboard')) {
       if (e.shiftKey && $(e.target).hasClass('treema-clipboard')) {
@@ -1230,13 +1236,17 @@ TreemaNode = (function() {
       this.$el.toggleClass('treema-selected');
     }
     if (this.isSelected()) {
-      this.$el.addClass('treema-last-selected');
+      this.setLastSelectedTreema(this);
     }
     return TreemaNode.didSelect = true;
   };
 
   TreemaNode.prototype.clearLastSelected = function() {
-    return this.getRootEl().find('.treema-last-selected').removeClass('treema-last-selected');
+    var _ref;
+    if ((_ref = this.getLastSelectedTreema()) != null) {
+      _ref.$el.removeClass('treema-last-selected');
+    }
+    return this.setLastSelectedTreema(null);
   };
 
   TreemaNode.prototype.shiftSelect = function() {
@@ -1776,7 +1786,12 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.getLastSelectedTreema = function() {
-    return this.getRootEl().find('.treema-last-selected').data('instance');
+    return this.getRoot().lastSelectedTreema;
+  };
+
+  TreemaNode.prototype.setLastSelectedTreema = function(node) {
+    this.getRoot().lastSelectedTreema = node;
+    return node != null ? node.$el.addClass('treema-last-selected') : void 0;
   };
 
   TreemaNode.prototype.getAddButtonEl = function() {

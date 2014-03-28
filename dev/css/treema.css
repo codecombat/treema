@@ -188,6 +188,9 @@
     height: 1px;
     padding: 0px; }
 
+.treema-filter-hidden {
+  display: none; }
+
 .treema-string {
   color: #998500; }
 
