@@ -4,7 +4,7 @@
     "treema.js",
     "treema.css"
   ],
-  "version": "0.0.1",
+  "version": "0.0.3",
   "authors": [
     "CodeCombat <team@codecombat.com>"
   ],
@@ -32,9 +32,9 @@
     "brunch_config.coffee"
   ],
   "dependencies": {
-    "tv4": "~1.0.15",
-    "jquery": "~2.1.0",
-    "jquery-ui": "~1.10.4"
+    "tv4": ">=1.0.15",
+    "jquery": ">=2.1.0",
+    "jquery-ui": ">=1.10.4"
   },
   "devDependencies": {
     "bootstrap": "~3.1.1",
