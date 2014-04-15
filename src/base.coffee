@@ -113,14 +113,13 @@ class TreemaNode
     @broadcastChanges()
 
   shouldTryToRemoveFromParent: ->
-    return false # trying out disabling this feature,
-    # because it's annoying trying to remove empty strings
     val = @getValEl()
     return if val.find('select').length
     inputs = val.find('input, textarea')
     for input in inputs
       input = $(input)
       return false if input.attr('type') is 'checkbox' or input.val()
+    return false unless @getErrors().length
     return true
 
   limitChoices: (options) ->

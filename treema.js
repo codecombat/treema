@@ -472,7 +472,6 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.shouldTryToRemoveFromParent = function() {
     var input, inputs, val, _i, _len;
-    return false;
     val = this.getValEl();
     if (val.find('select').length) {
       return;
@@ -484,6 +483,9 @@ TreemaNode = (function() {
       if (input.attr('type') === 'checkbox' || input.val()) {
         return false;
       }
+    }
+    if (!this.getErrors().length) {
+      return false;
     }
     return true;
   };
