@@ -2614,6 +2614,7 @@ TreemaNode = (function() {
       this.deselectAll();
       properties = this.childPropertiesAvailable();
       keyInput = $(this.newPropertyTemplate);
+      keyInput.blur(this.cleanupAddNewChild);
       keyInput.keydown(function(e) {
         return _this.originalTargetValue = $(e.target).val();
       });

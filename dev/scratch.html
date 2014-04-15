@@ -33,24 +33,12 @@
 
   var jade = {};
   $(document).ready(function () {
-    schema = {
-      "type": "object",
-      properties: {
-        tester: {
-          type:'boolean',
-          name: 'Tester'
-        }
-      },
-      "additionalProperties": {
-        "type": "string",
-        "format": "long-string"
-      }
-    }
 
     var el = $('#scratch');
+    var schema = {type:'object'}
     var options = {
       schema:schema,
-      data:{'code':'line 1\nline 2'}
+      data:{}
     };
     var treema = el.treema(options);
     treema.build();
