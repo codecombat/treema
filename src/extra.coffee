@@ -155,6 +155,7 @@ do ->
       session = @editor.getSession()
       session.setMode(@schema.aceMode) if @schema.aceMode?
       session.setTabSize(@schema.aceTabSize) if @schema.aceTabSize?
+      session.setUseWrapMode(@schema.aceUseWrapMode) if @schema.aceUseWrapMode?
       session.setNewLineMode "unix"
       session.setUseSoftTabs true
       @editor.setTheme(@schema.aceTheme) if @schema.aceTheme?

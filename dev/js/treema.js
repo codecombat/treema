@@ -3208,6 +3208,9 @@ TreemaNode = (function() {
       if (this.schema.aceTabSize != null) {
         session.setTabSize(this.schema.aceTabSize);
       }
+      if (this.schema.aceUseWrapMode != null) {
+        session.setUseWrapMode(this.schema.aceUseWrapMode);
+      }
       session.setNewLineMode("unix");
       session.setUseSoftTabs(true);
       if (this.schema.aceTheme != null) {
