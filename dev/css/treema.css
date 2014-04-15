@@ -8,7 +8,7 @@
   border-bottom: 1px solid #cccccc;
   font-size: 13px;
   cursor: pointer; }
-  .treema-node.treema-root > .treema-row .treema-value {
+  .treema-node.treema-root > .treema-row .treema-value, .treema-node.treema-root > .treema-row .treema-type-select {
     display: none; }
   .treema-node.treema-open > .treema-children {
     padding-top: 1px; }
@@ -20,29 +20,10 @@
   .treema-node input {
     margin: -3px 0;
     width: 200px; }
-  .treema-node select {
-    height: inherit;
-    margin: 0;
-    width: inherit; }
 
-.treema-type-select-container, .treema-schema-select-container {
-  display: block;
-  position: relative;
+.treema-type-select, .treema-schema-select {
   margin-right: 5px;
-  top: 1px;
   float: left; }
-  .treema-type-select-container select, .treema-schema-select-container select {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    opacity: 0.01;
-    width: inherit !important; }
-  .treema-type-select-container button, .treema-schema-select-container button {
-    font-size: 10px;
-    padding: 0 3px;
-    width: 19px; }
 
 .treema-children {
   margin-left: 15px;

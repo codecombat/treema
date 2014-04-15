@@ -358,10 +358,8 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.createSchemaSelector = function() {
-    var button, div, i, label, option, schema, select, _i, _len, _ref;
-    div = $('<div></div>').addClass('treema-schema-select-container');
+    var i, label, option, schema, select, _i, _len, _ref;
     select = $('<select></select>').addClass('treema-schema-select');
-    button = $('<button></button>').addClass('treema-schema-select-button').text('...');
     _ref = this.workingSchemas;
     for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
       schema = _ref[i];
@@ -372,9 +370,8 @@ TreemaNode = (function() {
       }
       select.append(option);
     }
-    div.append(button).append(select);
     select.change(this.onSelectSchema);
-    return this.$el.find('> .treema-row').prepend(div);
+    return this.$el.find('> .treema-row').prepend(select);
   };
 
   TreemaNode.prototype.makeWorkingSchemaLabel = function(schema) {
@@ -398,7 +395,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.createTypeSelector = function() {
-    var button, currentType, div, option, schema, select, type, types, _i, _len;
+    var currentType, option, schema, select, type, types, _i, _len;
     types = this.getTypes();
     if (!(types.length > 1)) {
       return;
@@ -407,36 +404,32 @@ TreemaNode = (function() {
     if (schema["enum"]) {
       return;
     }
-    div = $('<div></div>').addClass('treema-type-select-container');
     select = $('<select></select>').addClass('treema-type-select');
-    button = $('<button></button>').addClass('treema-type-select-button');
     currentType = $.type(this.data);
     if (this.valueClass === 'treema-integer') {
       currentType = 'integer';
     }
     for (_i = 0, _len = types.length; _i < _len; _i++) {
       type = types[_i];
-      option = $('<option></option>').attr('value', type).text(type);
+      option = $('<option></option>').attr('value', type).text(this.getTypeName(type));
       if (type === currentType) {
         option.attr('selected', true);
-        button.text(this.typeToLetter(type));
       }
       select.append(option);
     }
-    div.append(button).append(select);
     select.change(this.onSelectType);
-    return this.$el.find('> .treema-row').prepend(div);
+    return this.$el.find('> .treema-row').prepend(select);
   };
 
-  TreemaNode.prototype.typeToLetter = function(type) {
+  TreemaNode.prototype.getTypeName = function(type) {
     return {
-      'boolean': 'B',
-      'array': 'A',
-      'object': 'O',
-      'string': 'S',
-      'number': 'F',
-      'integer': 'I',
-      'null': 'N'
+      "null": 'null',
+      array: 'arr',
+      number: 'num',
+      string: 'str',
+      integer: 'int',
+      boolean: 'bool',
+      object: 'obj'
     }[type];
   };
 
@@ -571,7 +564,7 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.onClick = function(e) {
     var clickedToggle, clickedValue, usedModKey, _ref;
-    if ((_ref = e.target.nodeName) === 'INPUT' || _ref === 'TEXTAREA') {
+    if ((_ref = e.target.nodeName) === 'INPUT' || _ref === 'TEXTAREA' || _ref === 'SELECT') {
       return;
     }
     clickedValue = $(e.target).closest('.treema-value').length;

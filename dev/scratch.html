@@ -23,10 +23,6 @@
 
   <div id="scratch"></div>
 
-  <button onclick="treema.childrenTreemas[0].select();">TEST</button>
-
-  <textarea></textarea>
-
 </div>
 
 <script type="text/javascript">
@@ -35,10 +31,10 @@
   $(document).ready(function () {
 
     var el = $('#scratch');
-    var schema = {type:'object'}
+    var schema = {};
     var options = {
       schema:schema,
-      data:{}
+      data:[]
     };
     var treema = el.treema(options);
     treema.build();

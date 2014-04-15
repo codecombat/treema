@@ -191,17 +191,14 @@ class TreemaNode
   setWorkingSchema: (@workingSchema, @workingSchemas) ->
 
   createSchemaSelector: ->
-    div = $('<div></div>').addClass('treema-schema-select-container')
     select = $('<select></select>').addClass('treema-schema-select')
-    button = $('<button></button>').addClass('treema-schema-select-button').text('...')
     for schema, i in @workingSchemas
       label = @makeWorkingSchemaLabel(schema)
       option = $('<option></option>').attr('value', i).text(label)
       option.attr('selected', true) if schema is @workingSchema
       select.append(option)
-    div.append(button).append(select)
     select.change(@onSelectSchema)
-    @$el.find('> .treema-row').prepend(div)
+    @$el.find('> .treema-row').prepend(select)
 
   makeWorkingSchemaLabel: (schema) ->
     return schema.title if schema.title?
@@ -219,30 +216,25 @@ class TreemaNode
     return unless types.length > 1
     schema = @workingSchema or @schema
     return if schema.enum
-    div = $('<div></div>').addClass('treema-type-select-container')
     select = $('<select></select>').addClass('treema-type-select')
-    button = $('<button></button>').addClass('treema-type-select-button')
     currentType = $.type(@data)
     currentType = 'integer' if @valueClass is 'treema-integer'
     for type in types
-      option = $('<option></option>').attr('value', type).text(type)
-      if type is currentType
-        option.attr('selected', true)
-        button.text(@typeToLetter(type))
+      option = $('<option></option>').attr('value', type).text(@getTypeName(type))
+      option.attr('selected', true) if type is currentType
       select.append(option)
-    div.append(button).append(select)
     select.change(@onSelectType)
-    @$el.find('> .treema-row').prepend(div)
-
-  typeToLetter: (type) ->
-    return {
-      'boolean': 'B'
-      'array': 'A'
-      'object': 'O'
-      'string': 'S'
-      'number': 'F'
-      'integer': 'I'
-      'null': 'N'
+    @$el.find('> .treema-row').prepend(select)
+    
+  getTypeName: (type) ->
+    {
+      null: 'null',
+      array: 'arr',
+      number: 'num',
+      string: 'str',
+      integer: 'int',
+      boolean: 'bool',
+      object: 'obj'
     }[type]
 
   # Event handling ------------------------------------------------------------
@@ -326,7 +318,7 @@ class TreemaNode
   onMouseLeave: (e) => @callbacks.mouseleave(e, @)
 
   onClick: (e) ->
-    return if e.target.nodeName in ['INPUT', 'TEXTAREA']
+    return if e.target.nodeName in ['INPUT', 'TEXTAREA', 'SELECT']
     clickedValue = $(e.target).closest('.treema-value').length  # Clicks are in children of .treema-value nodes
     clickedToggle = $(e.target).hasClass('treema-toggle') or $(e.target).hasClass('treema-toggle-hit-area')
     usedModKey = e.shiftKey or e.ctrlKey or e.metaKey

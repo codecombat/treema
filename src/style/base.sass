@@ -12,7 +12,7 @@
   cursor: pointer
   
   // hide collection short strings when open
-  &.treema-root > .treema-row .treema-value
+  &.treema-root > .treema-row .treema-value, &.treema-root > .treema-row .treema-type-select
     display: none
     
   &.treema-open > .treema-children
@@ -28,33 +28,10 @@
   input
     margin: -3px 0
     width: 200px
-  select
-    height: inherit
-    margin: 0
-    width: inherit
 
-.treema-type-select-container, .treema-schema-select-container
-  display: block
-  position: relative
+.treema-type-select, .treema-schema-select
   margin-right: 5px
-  top: 1px
   float: left
-  
-  select
-    position: absolute
-    left: 0
-    right: 0
-    top: 0
-    bottom: 0
-    opacity: 0.01
-
-    // make sure other systems don't change this
-    width: inherit !important
-  
-  button
-    font-size: 10px
-    padding: 0 3px
-    width: 19px
   
 .treema-children
   margin-left: 15px
