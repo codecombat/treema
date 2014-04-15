@@ -74,7 +74,8 @@
   cursor: text;
   display: block;
   float: left;
-  max-width: 100%; }
+  max-width: 100%;
+  min-width: 50px; }
 
 .treema-key {
   color: #5353ac;
