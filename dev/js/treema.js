@@ -471,7 +471,7 @@ TreemaNode = (function() {
     var el, target, x, y, _ref, _ref1, _ref2, _ref3,
       _this = this;
     el = document.activeElement;
-    if ((el != null) && (el.tagName.toLowerCase() === 'input' && el.type === 'text') || el.tagName.toLowerCase() === 'textarea') {
+    if ((el != null) && (el.tagName.toLowerCase() === 'input' && el.type === 'text') || (el.tagName.toLowerCase() === 'textarea' && !$(el).hasClass('treema-clipboard'))) {
       return;
     }
     target = (_ref = this.getLastSelectedTreema()) != null ? _ref : this;
@@ -1912,23 +1912,33 @@ TreemaNode = (function() {
   };
 
   TreemaNode.getNodeClassForSchema = function(schema, def, localClasses) {
-    var NodeClass, type;
+    var NodeClass, type, typeMismatch, _ref;
     if (def == null) {
       def = 'string';
     }
     if (localClasses == null) {
       localClasses = null;
     }
+    typeMismatch = false;
+    if (schema.type) {
+      if ($.isArray(schema.type)) {
+        if (_ref = !def, __indexOf.call(schema.type, _ref) >= 0) {
+          typeMismatch = true;
+        }
+      } else {
+        typeMismatch = def !== schema.type;
+      }
+    }
     NodeClass = null;
     localClasses = localClasses || {};
     if (schema.format) {
       NodeClass = localClasses[schema.format] || this.nodeMap[schema.format];
     }
-    if (NodeClass) {
+    if (NodeClass && !typeMismatch) {
       return NodeClass;
     }
     type = schema.type || def;
-    if ($.isArray(type)) {
+    if ($.isArray(type) || typeMismatch) {
       type = def;
     }
     NodeClass = localClasses[type] || this.nodeMap[type];
@@ -1952,7 +1962,7 @@ TreemaNode = (function() {
     if (options.schema["default"] !== void 0) {
       type = $.type(options.schema["default"]);
     }
-    if (options.data != null) {
+    if (options.data !== void 0) {
       type = $.type(options.data);
     }
     if (type === 'number' && options.data % 1) {

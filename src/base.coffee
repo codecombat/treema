@@ -263,7 +263,7 @@ class TreemaNode
     # http://stackoverflow.com/questions/17527870/how-does-trello-access-the-users-clipboard
     #if user is using text field
     el = document.activeElement
-    return if (el? and (el.tagName.toLowerCase() == 'input' and el.type == 'text') or el.tagName.toLowerCase() == 'textarea')
+    return if (el? and (el.tagName.toLowerCase() is 'input' and el.type is 'text') or (el.tagName.toLowerCase() is 'textarea' and not $(el).hasClass('treema-clipboard')))
 
     target = @getLastSelectedTreema() ? @  # You can get the parent treema by somehow giving it focus but without selecting it; hacky
     if e.which is 86 and $(e.target).hasClass 'treema-clipboard'
@@ -1108,12 +1108,19 @@ class TreemaNode
   @setNodeSubclass: (key, NodeClass) -> @nodeMap[key] = NodeClass
 
   @getNodeClassForSchema: (schema, def='string', localClasses=null) ->
+    typeMismatch = false
+    if schema.type
+      if $.isArray(schema.type)
+        typeMismatch = true if not def in schema.type
+      else
+        typeMismatch = def isnt schema.type
+        
     NodeClass = null
     localClasses = localClasses or {}
     NodeClass = localClasses[schema.format] or @nodeMap[schema.format] if schema.format
-    return NodeClass if NodeClass
+    return NodeClass if NodeClass and not typeMismatch
     type = schema.type or def
-    type = def if $.isArray(type)
+    type = def if $.isArray(type) or typeMismatch
     NodeClass = localClasses[type] or @nodeMap[type]
     return NodeClass if NodeClass
     @nodeMap['any']
@@ -1129,7 +1136,7 @@ class TreemaNode
     workingSchema = null
     type = null
     type = $.type(options.schema.default) unless options.schema.default is undefined
-    type = $.type(options.data) if options.data?
+    type = $.type(options.data) if options.data isnt undefined
     type = 'integer' if type == 'number' and options.data % 1
     unless type?
       schemaTypes = options.schema.type
