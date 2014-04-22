@@ -279,7 +279,7 @@ TreemaNode = (function() {
     this.onEditInputBlur = __bind(this.onEditInputBlur, this);
     this.$el = this.$el || $('<div></div>');
     this.settings = $.extend({}, defaults, options);
-    this.schema = this.settings.schema;
+    this.schema = $.extend({}, this.settings.schema);
     if (!(this.schema.id || this.parent)) {
       this.schema.id = '__base__';
     }
@@ -1341,14 +1341,13 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.chooseWorkingSchema = function(workingSchemas, data) {
-    var result, root, schema, _i, _len;
+    var result, schema, _i, _len;
     if (workingSchemas.length === 1) {
       return workingSchemas[0];
     }
-    root = this.getRoot();
     for (_i = 0, _len = workingSchemas.length; _i < _len; _i++) {
       schema = workingSchemas[_i];
-      result = tv4.validateMultiple(data, schema, false, root.schema);
+      result = tv4.validateMultiple(data, schema);
       if (result.valid) {
         return schema;
       }
@@ -1965,8 +1964,8 @@ TreemaNode = (function() {
     if (options.data !== void 0) {
       type = $.type(options.data);
     }
-    if (type === 'number' && options.data % 1) {
-      type = 'integer';
+    if (type === 'number' && (options.data != null) && options.data % 1 === 0) {
+      type = null;
     }
     if (type == null) {
       schemaTypes = options.schema.type;

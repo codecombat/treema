@@ -149,7 +149,7 @@ class TreemaNode
   constructor: (@$el, options, @parent) ->
     @$el = @$el or $('<div></div>')
     @settings = $.extend {}, defaults, options
-    @schema = @settings.schema
+    @schema = $.extend {}, @settings.schema
     @schema.id = '__base__' unless (@schema.id or @parent)
     @data = options.data
     @patches = []
@@ -790,9 +790,8 @@ class TreemaNode
 
   chooseWorkingSchema: (workingSchemas, data) ->
     return workingSchemas[0] if workingSchemas.length is 1
-    root = @getRoot()
     for schema in workingSchemas
-      result = tv4.validateMultiple(data, schema, false, root.schema)
+      result = tv4.validateMultiple(data, schema)
       return schema if result.valid
     return workingSchemas[0]
 
@@ -1137,7 +1136,7 @@ class TreemaNode
     type = null
     type = $.type(options.schema.default) unless options.schema.default is undefined
     type = $.type(options.data) if options.data isnt undefined
-    type = 'integer' if type == 'number' and options.data % 1
+    type = null if type is 'number' and options.data? and options.data % 1 is 0 # kick it to the schema to decide
     unless type?
       schemaTypes = options.schema.type
       schemaTypes = schemaTypes[0] if $.isArray(schemaTypes)
