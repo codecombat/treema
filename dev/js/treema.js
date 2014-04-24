@@ -2441,6 +2441,7 @@ TreemaNode = (function() {
 
     function ObjectNode() {
       this.cleanupAddNewChild = __bind(this.cleanupAddNewChild, this);
+      this.onAutocompleteSelect = __bind(this.onAutocompleteSelect, this);
       _ref6 = ObjectNode.__super__.constructor.apply(this, arguments);
       return _ref6;
     }
@@ -2627,13 +2628,19 @@ TreemaNode = (function() {
           source: properties,
           minLength: 0,
           delay: 0,
-          autoFocus: true
+          autoFocus: true,
+          select: this.onAutocompleteSelect
         });
       }
       this.getAddButtonEl().before(keyInput);
       keyInput.focus();
       keyInput.autocomplete('search');
       return true;
+    };
+
+    ObjectNode.prototype.onAutocompleteSelect = function(e, ui) {
+      $(e.target).val(ui.item.value);
+      return this.tryToAddNewChild(e, true);
     };
 
     ObjectNode.prototype.canAddChild = function() {

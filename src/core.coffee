@@ -271,11 +271,15 @@ do __init = ->
       keyInput.blur @cleanupAddNewChild
       keyInput.keydown (e) =>
         @originalTargetValue = $(e.target).val()
-      keyInput.autocomplete?(source: properties, minLength: 0, delay: 0, autoFocus: true)
+      keyInput.autocomplete?(source: properties, minLength: 0, delay: 0, autoFocus: true, select: @onAutocompleteSelect)
       @getAddButtonEl().before(keyInput)
       keyInput.focus()
       keyInput.autocomplete('search')
       true
+      
+    onAutocompleteSelect: (e, ui) =>
+      $(e.target).val(ui.item.value)
+      @tryToAddNewChild(e, true)
 
     canAddChild: ->
       return false if @settings.readOnly or @schema.readOnly
