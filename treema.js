@@ -2890,7 +2890,7 @@ TreemaNode = (function() {
           select: this.onAutocompleteSelect
         });
       }
-      this.getAddButtonEl().before(keyInput);
+      this.getAddButtonEl().before(keyInput).hide();
       keyInput.focus();
       keyInput.autocomplete('search');
       return true;
@@ -3091,6 +3091,7 @@ TreemaNode = (function() {
 
     ObjectNode.prototype.cleanupAddNewChild = function() {
       this.$el.find('.treema-new-prop').remove();
+      this.getAddButtonEl().show();
       return this.clearTemporaryErrors();
     };
 

@@ -272,7 +272,7 @@ do __init = ->
       keyInput.keydown (e) =>
         @originalTargetValue = $(e.target).val()
       keyInput.autocomplete?(source: properties, minLength: 0, delay: 0, autoFocus: true, select: @onAutocompleteSelect)
-      @getAddButtonEl().before(keyInput)
+      @getAddButtonEl().before(keyInput).hide()
       keyInput.focus()
       keyInput.autocomplete('search')
       true
@@ -406,6 +406,7 @@ do __init = ->
 
     cleanupAddNewChild: =>
       @$el.find('.treema-new-prop').remove()
+      @getAddButtonEl().show()
       @clearTemporaryErrors()
 
     addingNewProperty: -> document.activeElement is @$el.find('.treema-new-prop')[0]

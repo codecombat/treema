@@ -31,10 +31,10 @@
   $(document).ready(function () {
 
     var el = $('#scratch');
-    var schema = {};
+    var schema = {type: 'object', properties: {test:{}}};
     var options = {
       schema:schema,
-      data:[]
+      data:{}
     };
     var treema = el.treema(options);
     treema.build();
