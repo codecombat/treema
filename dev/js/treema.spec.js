@@ -1427,6 +1427,49 @@ describe('Schemaless', function() {
     return expect(treema.$el.find('input').val()).toBe('42');
   });
 });
+;describe('Property Schemas', function() {
+  beforeEach(function() {
+    this.schema = {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          "default": 'Merlin'
+        }
+      },
+      patternProperties: {
+        '^[a-zA-Z]*$': {
+          type: 'string',
+          description: 'alpha'
+        },
+        '^[0-9]*$': {
+          type: 'string',
+          description: 'num'
+        }
+      }
+    };
+    this.data = {
+      name: 'Monroe',
+      full_name: 'Marilyn Monroe',
+      hobby: 'Painting',
+      '9573': 'Super secret code'
+    };
+    return this.treema = TreemaNode.make(null, {
+      data: this.data,
+      schema: this.schema
+    });
+  });
+  it('allowed property schema', function() {
+    return expect(this.treema.getChildSchema('name')).toEqual(this.schema.properties.name);
+  });
+  it('allowed pattern property schema', function() {
+    expect(this.treema.getChildSchema('hobby')).toEqual(this.schema.patternProperties['^[a-zA-Z]*$']);
+    return expect(this.treema.getChildSchema('9573')).toEqual(this.schema.patternProperties['^[0-9]*$']);
+  });
+  return it('empty schema for no match', function() {
+    return expect(this.treema.getChildSchema('full_name')).toEqual({});
+  });
+});
 ;describe('readOnly in schema', function() {
   var data, schema, treema;
   schema = {

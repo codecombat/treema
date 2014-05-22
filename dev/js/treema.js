@@ -2508,7 +2508,7 @@ TreemaNode = (function() {
       for (key in _ref8) {
         child_schema = _ref8[key];
         re = new RegExp(key);
-        if (key.match(re)) {
+        if (key_or_title.match(re)) {
           return this.resolveReference(child_schema, true);
         }
       }
