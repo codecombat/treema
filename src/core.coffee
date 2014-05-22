@@ -200,7 +200,7 @@ do __init = ->
         return @resolveReference(child_schema, true) if key is key_or_title or child_schema.title is key_or_title
       for key, child_schema of schema.patternProperties
         re = new RegExp(key)
-        return @resolveReference(child_schema, true) if key.match(re)
+        return @resolveReference(child_schema, true) if key_or_title.match(re)
       return @resolveReference(schema.additionalProperties, true) if $.isPlainObject(schema.additionalProperties)
       return {}
 
