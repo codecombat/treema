@@ -1972,10 +1972,7 @@ TreemaNode = (function() {
       if ($.isArray(schemaTypes)) {
         schemaTypes = schemaTypes[0];
       }
-      if (schemaTypes == null) {
-        schemaTypes = 'string';
-      }
-      type = schemaTypes;
+      type = schemaTypes || null;
     }
     localClasses = parent ? parent.settings.nodeClasses : options.nodeClasses;
     if (parent) {
@@ -1985,8 +1982,17 @@ TreemaNode = (function() {
         data = options.schema["default"];
       }
       workingSchema = parent.chooseWorkingSchema(workingSchemas, data);
+      if (!type) {
+        type = (workingSchema != null ? workingSchema.type : void 0) || 'string';
+      }
+      if ($.isArray(type)) {
+        type = types[0];
+      }
       NodeClass = this.getNodeClassForSchema(workingSchema, type, localClasses);
     } else {
+      if (type == null) {
+        type = 'string';
+      }
       NodeClass = this.getNodeClassForSchema(options.schema, type, localClasses);
     }
     if (options.data === void 0) {

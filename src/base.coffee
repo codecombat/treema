@@ -1140,16 +1140,18 @@ class TreemaNode
     unless type?
       schemaTypes = options.schema.type
       schemaTypes = schemaTypes[0] if $.isArray(schemaTypes)
-      schemaTypes = 'string' unless schemaTypes?
-      type = schemaTypes
+      type = schemaTypes or null
     localClasses = if parent then parent.settings.nodeClasses else options.nodeClasses
     if parent
       workingSchemas = parent.buildWorkingSchemas(options.schema)
       data = options.data
       data = options.schema.default if data is undefined
       workingSchema = parent.chooseWorkingSchema(workingSchemas, data)
+      if not type then type = workingSchema?.type or 'string'
+      type = types[0] if $.isArray(type)
       NodeClass = @getNodeClassForSchema(workingSchema, type, localClasses)
     else
+      type ?= 'string'
       NodeClass = @getNodeClassForSchema(options.schema, type, localClasses)
 
     if options.data is undefined
