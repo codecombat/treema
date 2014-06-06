@@ -945,6 +945,7 @@ class TreemaNode
       if result is false and path.length is 1 and $.isPlainObject(@data)
         # handles inserting values into objects
         @data[path[0]] = newData
+        @refreshDisplay()
         return true
       return result
 

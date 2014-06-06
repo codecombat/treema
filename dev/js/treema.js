@@ -1596,6 +1596,7 @@ TreemaNode = (function() {
       result = this.digDeeper(path, 'set', false, [newData]);
       if (result === false && path.length === 1 && $.isPlainObject(this.data)) {
         this.data[path[0]] = newData;
+        this.refreshDisplay();
         return true;
       }
       return result;
