@@ -14,7 +14,9 @@ do __init = ->
       input.attr('maxlength', @schema.maxLength) if @schema.maxLength
       input.attr('type', @schema.format) if @schema.format in StringNode.inputTypes
 
-    saveChanges: (valEl) -> @data = $('input', valEl).val()
+    saveChanges: (valEl) -> 
+      super()
+      @data = $('input', valEl).val()
 
 
 
@@ -29,7 +31,9 @@ do __init = ->
       input.attr('max', @schema.maximum) if @schema.maximum
       input.attr('min', @schema.minimum) if @schema.minimum
 
-    saveChanges: (valEl) -> @data = parseFloat($('input', valEl).val())
+    saveChanges: (valEl) -> 
+      super()
+      @data = parseFloat($('input', valEl).val())
 
 
 
@@ -44,7 +48,9 @@ do __init = ->
       input.attr('max', @schema.maximum) if @schema.maximum
       input.attr('min', @schema.minimum) if @schema.minimum
 
-    saveChanges: (valEl) -> @data = parseInt($('input', valEl).val())
+    saveChanges: (valEl) -> 
+      super()
+      @data = parseInt($('input', valEl).val())
 
 
 
@@ -423,6 +429,7 @@ do __init = ->
 
     buildValueForEditing: (valEl) -> @buildValueForEditingSimply(valEl, JSON.stringify(@data))
     saveChanges: (valEl) ->
+      super()
       @data = $('input', valEl).val()
       if @data[0] is "'" and @data[@data.length-1] isnt "'"
         @data = @data[1..]

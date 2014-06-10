@@ -72,7 +72,10 @@ class TreemaNode
       @tv4 = root.tv4
 
   # Abstract functions --------------------------------------------------------
-  saveChanges: -> console.error('"saveChanges" has not been overridden.')
+  saveChanges: (valEl)-> 
+    root = @getRoot()
+    root.trackedActions.push {'data':@data, 'path':@getPath(), 'action':'edit'}
+    root.currentStateIndex++
   getDefaultValue: -> null
   buildValueForDisplay: -> console.error('"buildValueForDisplay" has not been overridden.')
   buildValueForEditing: ->
@@ -153,6 +156,8 @@ class TreemaNode
     @schema.id = '__base__' unless (@schema.id or @parent)
     @data = options.data
     @patches = []
+    @trackedActions = []
+    @currentStateIndex = 0
     @callbacks = @settings.callbacks
     @_defaults = defaults
     @_name = TreemaNode.pluginName
@@ -618,7 +623,11 @@ class TreemaNode
       nextSibling = selected[0].$el.next('.treema-node').data('instance')
       prevSibling = selected[0].$el.prev('.treema-node').data('instance')
       toSelect = nextSibling or prevSibling or selected[0].parent
-    treema.remove() for treema in selected
+    root = @getRoot()
+    for treema in selected
+      root.trackedActions.push { 'data':treema.data, 'path':treema.getPath(), 'action':'delete' }
+      root.currentStateIndex++
+      treema.remove() 
     toSelect.select() if toSelect and not @getSelectedTreemas().length
 
   remove: ->
@@ -746,6 +755,48 @@ class TreemaNode
     @$el.addClass('treema-last-selected')
     TreemaNode.didSelect = true
 
+  #Save/restore state
+  saveData: ->
+    rootNode = @
+    console.log rootNode, delta, @
+    # rootNode.dataChanges.push delta
+    # rootNode.previousState = rootNode.copyData()
+    # rootNode.currentStateIndex = rootNode.dataChanges.length-1
+
+  undo: ->
+    trackedActions = @getTrackedActions()
+    currentStateIndex = @getCurrentStateIndex()
+    root = @getRoot()
+    return unless currentStateIndex
+
+    restoreChange = trackedActions[currentStateIndex-1]
+    switch restoreChange.action
+      when 'delete'
+        @set restoreChange.path, restoreChange.data
+        root.currentStateIndex--
+      when 'edit'
+        @set restoreChange.path, restoreChange.data
+        root.currentStateIndex--
+
+  redo: ->
+    trackedActions = @getTrackedActions()
+    currentStateIndex = @getCurrentStateIndex()
+    root = @getRoot()
+    return unless @currentStateIndex isnt trackedActions.length
+
+    restoreChange = trackedActions[currentStateIndex]
+    switch restoreChange.action
+      when 'delete'
+        @delete restoreChange.path
+        root.currentStateIndex++
+      when 'edit'
+        @set restoreChange.path, restoreChange.data
+        root.currentStateIndex++
+
+  getTrackedActions: ->
+    @getRoot().trackedActions
+  getCurrentStateIndex: ->
+    @getRoot().currentStateIndex
   # Working schemas -----------------------------------------------------------
 
   # Schemas can be flexible using combinatorial properties and references.
