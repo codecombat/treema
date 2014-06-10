@@ -73,9 +73,7 @@ class TreemaNode
 
   # Abstract functions --------------------------------------------------------
   saveChanges: (valEl)-> 
-    root = @getRoot()
-    root.trackedActions.push {'data':@data, 'path':@getPath(), 'action':'edit'}
-    root.currentStateIndex++
+    @addTrackedAction {'data':@data, 'path':@getPath(), 'action':'edit'}
   getDefaultValue: -> null
   buildValueForDisplay: -> console.error('"buildValueForDisplay" has not been overridden.')
   buildValueForEditing: ->
@@ -622,10 +620,8 @@ class TreemaNode
       nextSibling = selected[0].$el.next('.treema-node').data('instance')
       prevSibling = selected[0].$el.prev('.treema-node').data('instance')
       toSelect = nextSibling or prevSibling or selected[0].parent
-    root = @getRoot()
     for treema in selected
-      root.trackedActions.push { 'data':treema.data, 'path':treema.getPath(), 'action':'delete' }
-      root.currentStateIndex++
+      @addTrackedAction { 'data':treema.data, 'path':treema.getPath(), 'action':'delete' }
       treema.remove() 
     toSelect.select() if toSelect and not @getSelectedTreemas().length
 
@@ -761,6 +757,12 @@ class TreemaNode
     # rootNode.dataChanges.push delta
     # rootNode.previousState = rootNode.copyData()
     # rootNode.currentStateIndex = rootNode.dataChanges.length-1
+    
+  addTrackedAction: (action)->
+    return unless action
+    root = @getRoot()
+    root.trackedActions.push action
+    root.currentStateIndex++
 
   undo: ->
     trackedActions = @getTrackedActions()
