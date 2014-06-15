@@ -72,8 +72,9 @@ class TreemaNode
       @tv4 = root.tv4
 
   # Abstract functions --------------------------------------------------------
-  saveChanges: (valEl)-> 
-    @addTrackedAction {'data':@data, 'path':@getPath(), 'action':'edit'}
+  saveChanges: (oldData)-> 
+    return if oldData is @data
+    @addTrackedAction {'oldData':oldData, 'newData':@data, 'path':@getPath(), 'action':'edit'}
   getDefaultValue: -> null
   buildValueForDisplay: -> console.error('"buildValueForDisplay" has not been overridden.')
   buildValueForEditing: ->
@@ -776,7 +777,7 @@ class TreemaNode
         @set restoreChange.path, restoreChange.data
         root.currentStateIndex--
       when 'edit'
-        @set restoreChange.path, restoreChange.data
+        @set restoreChange.path, restoreChange.oldData
         root.currentStateIndex--
 
   redo: ->
@@ -791,7 +792,7 @@ class TreemaNode
         @delete restoreChange.path
         root.currentStateIndex++
       when 'edit'
-        @set restoreChange.path, restoreChange.data
+        @set restoreChange.path, restoreChange.newData
         root.currentStateIndex++
 
   getTrackedActions: ->
@@ -848,6 +849,7 @@ class TreemaNode
     return workingSchemas[0]
 
   onSelectSchema: (e) =>
+    console.log 'schema selected'
     index = parseInt($(e.target).val())
     workingSchema = @workingSchemas[index]
     defaultType = "null"

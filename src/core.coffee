@@ -15,9 +15,9 @@ do __init = ->
       input.attr('type', @schema.format) if @schema.format in StringNode.inputTypes
 
     saveChanges: (valEl) -> 
-      super()
+      oldData = @data
       @data = $('input', valEl).val()
-
+      super(oldData)
 
 
   TreemaNode.setNodeSubclass 'number', class NumberNode extends TreemaNode
@@ -32,9 +32,9 @@ do __init = ->
       input.attr('min', @schema.minimum) if @schema.minimum
 
     saveChanges: (valEl) -> 
-      super()
+      oldData = @data
       @data = parseFloat($('input', valEl).val())
-
+      super(oldData)
 
 
   TreemaNode.setNodeSubclass 'integer', class IntegerNode extends TreemaNode
@@ -49,8 +49,9 @@ do __init = ->
       input.attr('min', @schema.minimum) if @schema.minimum
 
     saveChanges: (valEl) -> 
-      super()
+      oldData = @data
       @data = parseInt($('input', valEl).val())
+      super(oldData)
 
 
 
@@ -429,7 +430,7 @@ do __init = ->
 
     buildValueForEditing: (valEl) -> @buildValueForEditingSimply(valEl, JSON.stringify(@data))
     saveChanges: (valEl) ->
-      super()
+      oldData = @data
       @data = $('input', valEl).val()
       if @data[0] is "'" and @data[@data.length-1] isnt "'"
         @data = @data[1..]
@@ -444,6 +445,7 @@ do __init = ->
           @data = JSON.parse(@data)
         catch e
           console.log('could not parse data', @data)
+      super(oldData)
       @updateShadowMethods()
       @rebuild()
 
