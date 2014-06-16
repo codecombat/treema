@@ -779,6 +779,11 @@ class TreemaNode
       when 'edit'
         @set restoreChange.path, restoreChange.oldData
         root.currentStateIndex--
+      when 'replace'
+        restoreChange.newNode.replaceNode restoreChange.oldNode.constructor
+        @set restoreChange.path, restoreChange.oldNode.data
+        root.currentStateIndex--
+    @refreshDisplay()
 
   redo: ->
     trackedActions = @getTrackedActions()
@@ -794,6 +799,11 @@ class TreemaNode
       when 'edit'
         @set restoreChange.path, restoreChange.newData
         root.currentStateIndex++
+      when 'replace'
+        restoreChange.oldNode.replaceNode restoreChange.newNode.constructor
+        @set restoreChange.path, restoreChange.newNode.data
+        root.currentStateIndex++
+    @refreshDisplay()
 
   getTrackedActions: ->
     @getRoot().trackedActions
@@ -849,7 +859,6 @@ class TreemaNode
     return workingSchemas[0]
 
   onSelectSchema: (e) =>
-    console.log 'schema selected'
     index = parseInt($(e.target).val())
     workingSchema = @workingSchemas[index]
     defaultType = "null"
@@ -886,6 +895,7 @@ class TreemaNode
     @parent.createChildNode(newNode)
     @$el.replaceWith(newNode.$el)
     newNode.flushChanges() # should integrate
+    @addTrackedAction {'oldNode':@, 'newNode':newNode, 'path':@getPath(), 'action':'replace'}
 
 
   # Child node utilities ------------------------------------------------------
