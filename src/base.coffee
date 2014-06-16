@@ -157,6 +157,7 @@ class TreemaNode
     @patches = []
     @trackedActions = []
     @currentStateIndex = 0
+    @reverting = false
     @callbacks = @settings.callbacks
     @_defaults = defaults
     @_name = TreemaNode.pluginName
@@ -760,12 +761,14 @@ class TreemaNode
     # rootNode.currentStateIndex = rootNode.dataChanges.length-1
     
   addTrackedAction: (action)->
-    return unless action
     root = @getRoot()
+    return if root.reverting 
+    root.trackedActions.splice root.currentStateIndex, root.trackedActions.length - root.currentStateIndex
     root.trackedActions.push action
     root.currentStateIndex++
 
   undo: ->
+    @reverting = true
     trackedActions = @getTrackedActions()
     currentStateIndex = @getCurrentStateIndex()
     root = @getRoot()
@@ -783,9 +786,11 @@ class TreemaNode
         restoreChange.newNode.replaceNode restoreChange.oldNode.constructor
         @set restoreChange.path, restoreChange.oldNode.data
         root.currentStateIndex--
+    @reverting = false
     @refreshDisplay()
 
   redo: ->
+    @reverting = true
     trackedActions = @getTrackedActions()
     currentStateIndex = @getCurrentStateIndex()
     root = @getRoot()
@@ -803,6 +808,7 @@ class TreemaNode
         restoreChange.oldNode.replaceNode restoreChange.newNode.constructor
         @set restoreChange.path, restoreChange.newNode.data
         root.currentStateIndex++
+    @reverting = false
     @refreshDisplay()
 
   getTrackedActions: ->
