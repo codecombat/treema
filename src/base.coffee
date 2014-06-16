@@ -776,7 +776,15 @@ class TreemaNode
           when 'ObjectNode'
             @set restoreChange.path, restoreChange.node.data
           when 'ArrayNode'
-            @insert restoreChange.node.parent.getPath(), restoreChange.node.data
+            parentPath = restoreChange.node.parent.getPath()
+            parentData = @get parentPath
+            deleteIndex = parseInt (restoreChange.path.substring (restoreChange.path.lastIndexOf('/') + 1))
+
+            if deleteIndex < parentData.length
+              parentData.splice deleteIndex, 0, restoreChange.node.data
+              @set parentPath, parentData
+            else
+              @insert parentPath, restoreChange.node.data
 
       when 'edit'
         @set restoreChange.path, restoreChange.oldData
@@ -790,7 +798,6 @@ class TreemaNode
 
     root.currentStateIndex--
     @reverting = false
-    @refreshDisplay()
 
   redo: ->
     @reverting = true
@@ -821,7 +828,6 @@ class TreemaNode
 
     root.currentStateIndex++
     @reverting = false
-    @refreshDisplay()
 
   getTrackedActions: ->
     @getRoot().trackedActions
