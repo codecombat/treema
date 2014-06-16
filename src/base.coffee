@@ -615,8 +615,10 @@ class TreemaNode
     $(last).focus().select()
 
   # Removing nodes ------------------------------------------------------------
-  removeSelectedNodes: ->
-    selected = @getSelectedTreemas()
+  removeSelectedNodes: (nodes = []) ->
+    selected = nodes
+    selected = @getSelectedTreemas() unless nodes.length
+    console.log selected, nodes
     toSelect = null
     if selected.length is 1
       nextSibling = selected[0].$el.next('.treema-node').data('instance')
@@ -786,6 +788,9 @@ class TreemaNode
         restoreChange.newNode.replaceNode restoreChange.oldNode.constructor
         @set restoreChange.path, restoreChange.oldNode.data
         root.currentStateIndex--
+      when 'insert'
+        @removeSelectedNodes [restoreChange.node]
+        root.currentStateIndex--
     @reverting = false
     @refreshDisplay()
 
@@ -808,6 +813,8 @@ class TreemaNode
         restoreChange.oldNode.replaceNode restoreChange.newNode.constructor
         @set restoreChange.path, restoreChange.newNode.data
         root.currentStateIndex++
+      when 'insert'
+        @set restoreChange.path, restoreChange.node.data
     @reverting = false
     @refreshDisplay()
 

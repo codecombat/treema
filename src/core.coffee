@@ -141,6 +141,7 @@ do __init = ->
       newTreema.justCreated = true
       newTreema.tv4 = @tv4
       childNode = @createChildNode(newTreema)
+      @addTrackedAction {'node':newTreema, 'path':@getPath(), 'action':'insert'}
       @getAddButtonEl().before(childNode)
       if newTreema.canEdit()
         newTreema.edit()
@@ -396,6 +397,7 @@ do __init = ->
         else
           newTreema.addNewChild()
 
+      @addTrackedAction {'node':newTreema, 'path':@getPath(), 'action':'insert'}
       @updateMyAddButton()
 
     findObjectInsertionPoint: (key) ->
