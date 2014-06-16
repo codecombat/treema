@@ -618,7 +618,6 @@ class TreemaNode
   removeSelectedNodes: (nodes = []) ->
     selected = nodes
     selected = @getSelectedTreemas() unless nodes.length
-    console.log selected, nodes
     toSelect = null
     if selected.length is 1
       nextSibling = selected[0].$el.next('.treema-node').data('instance')
@@ -755,13 +754,6 @@ class TreemaNode
     TreemaNode.didSelect = true
 
   #Save/restore state
-  saveData: ->
-    rootNode = @
-    console.log rootNode, delta, @
-    # rootNode.dataChanges.push delta
-    # rootNode.previousState = rootNode.copyData()
-    # rootNode.currentStateIndex = rootNode.dataChanges.length-1
-    
   addTrackedAction: (action)->
     root = @getRoot()
     return if root.reverting 
@@ -777,23 +769,26 @@ class TreemaNode
     return unless currentStateIndex
 
     restoreChange = trackedActions[currentStateIndex-1]
+
     switch restoreChange.action
       when 'delete'
-        if restoreChange.node.parent.constructor.name is 'ObjectNode'
-          @set restoreChange.path, restoreChange.node.data
-        else if restoreChange.node.parent.constructor.name is 'ArrayNode'
-          @insert restoreChange.node.parent.getPath(), restoreChange.node.data
-        root.currentStateIndex--
+        switch restoreChange.node.parent.constructor.name
+          when 'ObjectNode'
+            @set restoreChange.path, restoreChange.node.data
+          when 'ArrayNode'
+            @insert restoreChange.node.parent.getPath(), restoreChange.node.data
+
       when 'edit'
         @set restoreChange.path, restoreChange.oldData
-        root.currentStateIndex--
+
       when 'replace'
         restoreChange.newNode.replaceNode restoreChange.oldNode.constructor
         @set restoreChange.path, restoreChange.oldNode.data
-        root.currentStateIndex--
+
       when 'insert'
         @delete restoreChange.path
-        root.currentStateIndex--
+
+    root.currentStateIndex--
     @reverting = false
     @refreshDisplay()
 
@@ -805,23 +800,26 @@ class TreemaNode
     return unless @currentStateIndex isnt trackedActions.length
 
     restoreChange = trackedActions[currentStateIndex]
+
     switch restoreChange.action
       when 'delete'
         @delete restoreChange.path
-        root.currentStateIndex++
+
       when 'edit'
         @set restoreChange.path, restoreChange.newData
-        root.currentStateIndex++
+
       when 'replace'
         restoreChange.oldNode.replaceNode restoreChange.newNode.constructor
         @set restoreChange.path, restoreChange.newNode.data
-        root.currentStateIndex++
+
       when 'insert'
-        if restoreChange.node.parent.constructor.name is 'ObjectNode'
-          @set restoreChange.path, restoreChange.node.data
-        else if restoreChange.node.parent.constructor.name is 'ArrayNode'
-          @insert restoreChange.node.parent.getPath(), restoreChange.node.data
-        root.currentStateIndex++
+        switch restoreChange.node.parent.constructor.name
+          when 'ObjectNode'
+            @set restoreChange.path, restoreChange.node.data
+          when 'ArrayNode'
+            @insert restoreChange.node.parent.getPath(), restoreChange.node.data
+
+    root.currentStateIndex++
     @reverting = false
     @refreshDisplay()
 
