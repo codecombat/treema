@@ -74,16 +74,18 @@ do __init = ->
       input.focus()
 
     toggleValue: (newValue=null) ->
+      oldData = @data
       @data = not @data
       @data = newValue if newValue?
       valEl = @getValEl().empty()
       if @isDisplaying() then @buildValueForDisplay(valEl) else @buildValueForEditing(valEl)
+      @saveChanges(oldData)
       @flushChanges()
 
     onSpacePressed: -> @toggleValue()
     onFPressed: -> @toggleValue(false)
     onTPressed: -> @toggleValue(true)
-    saveChanges: ->
+    saveChanges: (oldData)-> super(oldData)
     onClick: (e) ->
       value = $(e.target).closest('.treema-value')
       return super(e) unless value.length
