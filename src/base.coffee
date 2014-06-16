@@ -625,7 +625,7 @@ class TreemaNode
       prevSibling = selected[0].$el.prev('.treema-node').data('instance')
       toSelect = nextSibling or prevSibling or selected[0].parent
     for treema in selected
-      @addTrackedAction { 'data':treema.data, 'path':treema.getPath(), 'action':'delete' }
+      @addTrackedAction { 'node':treema, 'path':treema.getPath(), 'action':'delete' }
       treema.remove() 
     toSelect.select() if toSelect and not @getSelectedTreemas().length
 
@@ -779,7 +779,10 @@ class TreemaNode
     restoreChange = trackedActions[currentStateIndex-1]
     switch restoreChange.action
       when 'delete'
-        @set restoreChange.path, restoreChange.data
+        if restoreChange.node.parent.constructor.name is 'ObjectNode'
+          @set restoreChange.path, restoreChange.node.data
+        else if restoreChange.node.parent.constructor.name is 'ArrayNode'
+          @insert restoreChange.node.parent.getPath(), restoreChange.node.data
         root.currentStateIndex--
       when 'edit'
         @set restoreChange.path, restoreChange.oldData
@@ -789,7 +792,7 @@ class TreemaNode
         @set restoreChange.path, restoreChange.oldNode.data
         root.currentStateIndex--
       when 'insert'
-        @removeSelectedNodes [restoreChange.node]
+        @delete restoreChange.path
         root.currentStateIndex--
     @reverting = false
     @refreshDisplay()
@@ -814,7 +817,11 @@ class TreemaNode
         @set restoreChange.path, restoreChange.newNode.data
         root.currentStateIndex++
       when 'insert'
-        @set restoreChange.path, restoreChange.node.data
+        if restoreChange.node.parent.constructor.name is 'ObjectNode'
+          @set restoreChange.path, restoreChange.node.data
+        else if restoreChange.node.parent.constructor.name is 'ArrayNode'
+          @insert restoreChange.node.parent.getPath(), restoreChange.node.data
+        root.currentStateIndex++
     @reverting = false
     @refreshDisplay()
 
