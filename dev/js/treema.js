@@ -809,6 +809,10 @@ TreemaNode = (function() {
     }
     if (editing) {
       shouldRemove = this.shouldTryToRemoveFromParent();
+      this.saveChanges(this.getValEl());
+      if (!shouldRemove) {
+        this.flushChanges();
+      }
       if (!(aggressive || this.isValid())) {
         this.refreshErrors();
         return;
@@ -817,9 +821,6 @@ TreemaNode = (function() {
         offset = 2;
       }
       this.endExistingEdits();
-      if (!shouldRemove) {
-        this.flushChanges();
-      }
       this.select();
     }
     ctx = this.traversalContext(offset);

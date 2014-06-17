@@ -453,13 +453,14 @@ class TreemaNode
 
     if editing
       shouldRemove = @shouldTryToRemoveFromParent()
+      @saveChanges(@getValEl())
+      @flushChanges() unless shouldRemove
       unless aggressive or @isValid()
         @refreshErrors() # make sure workingSchema's errors come through
         return
       if shouldRemove and $(@$el[0].nextSibling)?.hasClass('treema-add-child') and offset is 1
         offset = 2
       @endExistingEdits()
-      @flushChanges() unless shouldRemove
       @select()
 
     ctx = @traversalContext(offset)
