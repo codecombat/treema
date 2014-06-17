@@ -119,8 +119,16 @@ TreemaNode = (function() {
     }
   };
 
-  TreemaNode.prototype.saveChanges = function() {
-    return console.error('"saveChanges" has not been overridden.');
+  TreemaNode.prototype.saveChanges = function(oldData) {
+    if (oldData === this.data) {
+      return;
+    }
+    return this.addTrackedAction({
+      'oldData': oldData,
+      'newData': this.data,
+      'path': this.getPath(),
+      'action': 'edit'
+    });
   };
 
   TreemaNode.prototype.getDefaultValue = function() {
@@ -285,6 +293,9 @@ TreemaNode = (function() {
     }
     this.data = options.data;
     this.patches = [];
+    this.trackedActions = [];
+    this.currentStateIndex = 0;
+    this.reverting = false;
     this.callbacks = this.settings.callbacks;
     this._defaults = defaults;
     this._name = TreemaNode.pluginName;
@@ -798,10 +809,6 @@ TreemaNode = (function() {
     }
     if (editing) {
       shouldRemove = this.shouldTryToRemoveFromParent();
-      this.saveChanges(this.getValEl());
-      if (!shouldRemove) {
-        this.flushChanges();
-      }
       if (!(aggressive || this.isValid())) {
         this.refreshErrors();
         return;
@@ -810,6 +817,9 @@ TreemaNode = (function() {
         offset = 2;
       }
       this.endExistingEdits();
+      if (!shouldRemove) {
+        this.flushChanges();
+      }
       this.select();
     }
     ctx = this.traversalContext(offset);
@@ -1047,9 +1057,15 @@ TreemaNode = (function() {
     return $(last).focus().select();
   };
 
-  TreemaNode.prototype.removeSelectedNodes = function() {
+  TreemaNode.prototype.removeSelectedNodes = function(nodes) {
     var nextSibling, prevSibling, selected, toSelect, treema, _i, _len;
-    selected = this.getSelectedTreemas();
+    if (nodes == null) {
+      nodes = [];
+    }
+    selected = nodes;
+    if (!nodes.length) {
+      selected = this.getSelectedTreemas();
+    }
     toSelect = null;
     if (selected.length === 1) {
       nextSibling = selected[0].$el.next('.treema-node').data('instance');
@@ -1058,6 +1074,11 @@ TreemaNode = (function() {
     }
     for (_i = 0, _len = selected.length; _i < _len; _i++) {
       treema = selected[_i];
+      this.addTrackedAction({
+        'node': treema,
+        'path': treema.getPath(),
+        'action': 'delete'
+      });
       treema.remove();
     }
     if (toSelect && !this.getSelectedTreemas().length) {
@@ -1277,6 +1298,101 @@ TreemaNode = (function() {
     return TreemaNode.didSelect = true;
   };
 
+  TreemaNode.prototype.addTrackedAction = function(action) {
+    var root;
+    root = this.getRoot();
+    if (root.reverting) {
+      return;
+    }
+    root.trackedActions.splice(root.currentStateIndex, root.trackedActions.length - root.currentStateIndex);
+    root.trackedActions.push(action);
+    return root.currentStateIndex++;
+  };
+
+  TreemaNode.prototype.undo = function() {
+    var currentStateIndex, deleteIndex, parentData, parentPath, restoreChange, root, trackedActions;
+    this.reverting = true;
+    trackedActions = this.getTrackedActions();
+    currentStateIndex = this.getCurrentStateIndex();
+    root = this.getRoot();
+    if (!currentStateIndex) {
+      return;
+    }
+    restoreChange = trackedActions[currentStateIndex - 1];
+    switch (restoreChange.action) {
+      case 'delete':
+        switch (restoreChange.node.parent.constructor.name) {
+          case 'ObjectNode':
+            this.set(restoreChange.path, restoreChange.node.data);
+            break;
+          case 'ArrayNode':
+            parentPath = restoreChange.node.parent.getPath();
+            parentData = this.get(parentPath);
+            deleteIndex = parseInt(restoreChange.path.substring(restoreChange.path.lastIndexOf('/') + 1));
+            if (deleteIndex < parentData.length) {
+              parentData.splice(deleteIndex, 0, restoreChange.node.data);
+              this.set(parentPath, parentData);
+            } else {
+              this.insert(parentPath, restoreChange.node.data);
+            }
+        }
+        break;
+      case 'edit':
+        this.set(restoreChange.path, restoreChange.oldData);
+        break;
+      case 'replace':
+        restoreChange.newNode.replaceNode(restoreChange.oldNode.constructor);
+        this.set(restoreChange.path, restoreChange.oldNode.data);
+        break;
+      case 'insert':
+        this["delete"](restoreChange.path);
+    }
+    root.currentStateIndex--;
+    return this.reverting = false;
+  };
+
+  TreemaNode.prototype.redo = function() {
+    var currentStateIndex, restoreChange, root, trackedActions;
+    this.reverting = true;
+    trackedActions = this.getTrackedActions();
+    currentStateIndex = this.getCurrentStateIndex();
+    root = this.getRoot();
+    if (this.currentStateIndex === trackedActions.length) {
+      return;
+    }
+    restoreChange = trackedActions[currentStateIndex];
+    switch (restoreChange.action) {
+      case 'delete':
+        this["delete"](restoreChange.path);
+        break;
+      case 'edit':
+        this.set(restoreChange.path, restoreChange.newData);
+        break;
+      case 'replace':
+        restoreChange.oldNode.replaceNode(restoreChange.newNode.constructor);
+        this.set(restoreChange.path, restoreChange.newNode.data);
+        break;
+      case 'insert':
+        switch (restoreChange.node.parent.constructor.name) {
+          case 'ObjectNode':
+            this.set(restoreChange.path, restoreChange.node.data);
+            break;
+          case 'ArrayNode':
+            this.insert(restoreChange.node.parent.getPath(), restoreChange.node.data);
+        }
+    }
+    root.currentStateIndex++;
+    return this.reverting = false;
+  };
+
+  TreemaNode.prototype.getTrackedActions = function() {
+    return this.getRoot().trackedActions;
+  };
+
+  TreemaNode.prototype.getCurrentStateIndex = function() {
+    return this.getRoot().currentStateIndex;
+  };
+
   TreemaNode.prototype.buildWorkingSchemas = function(originalSchema) {
     var allOf, anyOf, baseSchema, oneOf, s, schema, singularSchema, singularSchemas, workingSchemas, _i, _j, _len, _len1;
     baseSchema = this.resolveReference($.extend(true, {}, originalSchema || {}));
@@ -1412,7 +1528,13 @@ TreemaNode = (function() {
     newNode.setWorkingSchema(this.workingSchema, this.workingSchemas);
     this.parent.createChildNode(newNode);
     this.$el.replaceWith(newNode.$el);
-    return newNode.flushChanges();
+    newNode.flushChanges();
+    return this.addTrackedAction({
+      'oldNode': this,
+      'newNode': newNode,
+      'path': this.getPath(),
+      'action': 'replace'
+    });
   };
 
   TreemaNode.prototype.integrateChildTreema = function(treema) {
@@ -2118,7 +2240,10 @@ TreemaNode = (function() {
     };
 
     StringNode.prototype.saveChanges = function(valEl) {
-      return this.data = $('input', valEl).val();
+      var oldData;
+      oldData = this.data;
+      this.data = $('input', valEl).val();
+      return StringNode.__super__.saveChanges.call(this, oldData);
     };
 
     return StringNode;
@@ -2154,7 +2279,10 @@ TreemaNode = (function() {
     };
 
     NumberNode.prototype.saveChanges = function(valEl) {
-      return this.data = parseFloat($('input', valEl).val());
+      var oldData;
+      oldData = this.data;
+      this.data = parseFloat($('input', valEl).val());
+      return NumberNode.__super__.saveChanges.call(this, oldData);
     };
 
     return NumberNode;
@@ -2190,7 +2318,10 @@ TreemaNode = (function() {
     };
 
     IntegerNode.prototype.saveChanges = function(valEl) {
-      return this.data = parseInt($('input', valEl).val());
+      var oldData;
+      oldData = this.data;
+      this.data = parseInt($('input', valEl).val());
+      return IntegerNode.__super__.saveChanges.call(this, oldData);
     };
 
     return IntegerNode;
@@ -2241,10 +2372,11 @@ TreemaNode = (function() {
     };
 
     BooleanNode.prototype.toggleValue = function(newValue) {
-      var valEl;
+      var oldData, valEl;
       if (newValue == null) {
         newValue = null;
       }
+      oldData = this.data;
       this.data = !this.data;
       if (newValue != null) {
         this.data = newValue;
@@ -2255,6 +2387,7 @@ TreemaNode = (function() {
       } else {
         this.buildValueForEditing(valEl);
       }
+      this.saveChanges(oldData);
       return this.flushChanges();
     };
 
@@ -2270,7 +2403,9 @@ TreemaNode = (function() {
       return this.toggleValue(true);
     };
 
-    BooleanNode.prototype.saveChanges = function() {};
+    BooleanNode.prototype.saveChanges = function(oldData) {
+      return BooleanNode.__super__.saveChanges.call(this, oldData);
+    };
 
     BooleanNode.prototype.onClick = function(e) {
       var value;
@@ -2395,6 +2530,11 @@ TreemaNode = (function() {
       newTreema.justCreated = true;
       newTreema.tv4 = this.tv4;
       childNode = this.createChildNode(newTreema);
+      this.addTrackedAction({
+        'node': newTreema,
+        'path': newTreema.getPath(),
+        'action': 'insert'
+      });
       this.getAddButtonEl().before(childNode);
       if (newTreema.canEdit()) {
         newTreema.edit();
@@ -2818,6 +2958,11 @@ TreemaNode = (function() {
           newTreema.addNewChild();
         }
       }
+      this.addTrackedAction({
+        'node': newTreema,
+        'path': newTreema.getPath(),
+        'action': 'insert'
+      });
       return this.updateMyAddButton();
     };
 
@@ -2869,7 +3014,8 @@ TreemaNode = (function() {
     };
 
     AnyNode.prototype.saveChanges = function(valEl) {
-      var e;
+      var e, oldData;
+      oldData = this.data;
       this.data = $('input', valEl).val();
       if (this.data[0] === "'" && this.data[this.data.length - 1] !== "'") {
         this.data = this.data.slice(1);
@@ -2887,6 +3033,7 @@ TreemaNode = (function() {
           console.log('could not parse data', this.data);
         }
       }
+      AnyNode.__super__.saveChanges.call(this, oldData);
       this.updateShadowMethods();
       return this.rebuild();
     };
