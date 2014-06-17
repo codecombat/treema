@@ -360,6 +360,7 @@ class TreemaNode
     @onSpacePressed(e) if e.which is 32
     @onTPressed(e) if e.which is 84
     @onFPressed(e) if e.which is 70
+    @onZPressed(e) if e.which is 90
     @onDeletePressed(e) if e.which in [8, 46] and not e.heldDown
 
   # Default keyboard behaviors ------------------------------------------------
@@ -441,6 +442,13 @@ class TreemaNode
     @deselectAll() if success
     e.preventDefault()
 
+  onZPressed: (e) ->
+    if e.ctrlKey or e.metaKey
+      if e.shiftKey
+        @getRoot().redo()
+      else
+        @getRoot().undo()
+        
   # Tree traversing/navigation ------------------------------------------------
   # (traversing means editing and adding fields, pressing enter and tab)
   # (navigation means selecting fields, pressing arrow keys)

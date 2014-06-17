@@ -660,6 +660,9 @@ TreemaNode = (function() {
     if (e.which === 70) {
       this.onFPressed(e);
     }
+    if (e.which === 90) {
+      this.onZPressed(e);
+    }
     if (((_ref = e.which) === 8 || _ref === 46) && !e.heldDown) {
       return this.onDeletePressed(e);
     }
@@ -797,6 +800,16 @@ TreemaNode = (function() {
       this.deselectAll();
     }
     return e.preventDefault();
+  };
+
+  TreemaNode.prototype.onZPressed = function(e) {
+    if (e.ctrlKey || e.metaKey) {
+      if (e.shiftKey) {
+        return this.getRoot().redo();
+      } else {
+        return this.getRoot().undo();
+      }
+    }
   };
 
   TreemaNode.prototype.traverseWhileEditing = function(offset, aggressive) {
