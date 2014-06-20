@@ -1030,14 +1030,16 @@ class TreemaNode
     return data
 
   set: (path, newData) ->
-    originalPath = path
+    #Original path needs to be stored, not the one on subsequent calls from digDeeper
+    if @set.caller isnt @digDeeper 
+      @getRoot().originalPath = path
     path = @normalizePath(path)
 
     if path.length is 0
       oldData = @data        
       @data = newData
       @refreshDisplay()
-      @addTrackedAction {'oldData':oldData, 'newData':newData, 'path':originalPath, 'action':'edit'}
+      @addTrackedAction {'oldData':oldData, 'newData':newData, 'path':@getRoot().originalPath, 'action':'edit'}
       return true
 
     if @childrenTreemas?
@@ -1047,7 +1049,7 @@ class TreemaNode
         oldData = data[path[0]]
         @data[path[0]] = newData
         @refreshDisplay()
-        @addTrackedAction {'oldData':oldData, 'newData':newData, 'path':originalPath, 'action':'edit'}
+        @addTrackedAction {'oldData':oldData, 'newData':newData, 'path':@getRoot().originalPath, 'action':'edit'}
         return true
       return result
 
@@ -1058,7 +1060,7 @@ class TreemaNode
         oldData = data[seg]
         data[seg] = newData
         @refreshDisplay()
-        @addTrackedAction {'oldData':oldData, 'newData':newData, 'path':originalPath, 'action':'edit'}
+        @addTrackedAction {'oldData':oldData, 'newData':newData, 'path':@getRoot().originalPath, 'action':'edit'}
         return true
       else
         data = data[seg]

@@ -1721,8 +1721,10 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.set = function(path, newData) {
-    var data, i, oldData, originalPath, result, seg, _i, _len;
-    originalPath = path;
+    var data, i, oldData, result, seg, _i, _len;
+    if (this.set.caller !== this.digDeeper) {
+      this.getRoot().originalPath = path;
+    }
     path = this.normalizePath(path);
     if (path.length === 0) {
       oldData = this.data;
@@ -1731,7 +1733,7 @@ TreemaNode = (function() {
       this.addTrackedAction({
         'oldData': oldData,
         'newData': newData,
-        'path': originalPath,
+        'path': this.getRoot().originalPath,
         'action': 'edit'
       });
       return true;
@@ -1745,7 +1747,7 @@ TreemaNode = (function() {
         this.addTrackedAction({
           'oldData': oldData,
           'newData': newData,
-          'path': originalPath,
+          'path': this.getRoot().originalPath,
           'action': 'edit'
         });
         return true;
@@ -1763,7 +1765,7 @@ TreemaNode = (function() {
         this.addTrackedAction({
           'oldData': oldData,
           'newData': newData,
-          'path': originalPath,
+          'path': this.getRoot().originalPath,
           'action': 'edit'
         });
         return true;
