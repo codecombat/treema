@@ -2067,7 +2067,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.insert = function(path, newData) {
-    var data, i, lastKey, lastTreema, seg, treemaKeys, _i, _len;
+    var data, i, lastTreema, seg, _i, _len;
     path = this.normalizePath(path);
     if (path.length === 0) {
       if (!$.isArray(this.data)) {
@@ -2076,9 +2076,7 @@ TreemaNode = (function() {
       this.data.push(newData);
       this.refreshDisplay();
       this.flushChanges();
-      treemaKeys = Object.keys(this.childrenTreemas);
-      lastKey = treemaKeys[treemaKeys.length - 1];
-      lastTreema = this.childrenTreemas[lastKey];
+      lastTreema = this.getLastTreema();
       this.addTrackedAction({
         'node': lastTreema,
         'path': lastTreema.getPath(),
@@ -2101,6 +2099,12 @@ TreemaNode = (function() {
     if (!$.isArray(data)) {
       return false;
     }
+    lastTreema = this.getLastTreema();
+    this.addTrackedAction({
+      'node': lastTreema,
+      'path': lastTreema.getPath(),
+      'action': 'insert'
+    });
     data.push(newData);
     this.refreshDisplay();
     return true;
@@ -2248,6 +2252,14 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.getData = function() {
     return this.data;
+  };
+
+  TreemaNode.prototype.getLastTreema = function() {
+    var lastKey, lastTreema, treemaKeys;
+    treemaKeys = Object.keys(this.childrenTreemas);
+    lastKey = treemaKeys[treemaKeys.length - 1];
+    lastTreema = this.childrenTreemas[lastKey];
+    return lastTreema;
   };
 
   TreemaNode.prototype.isRoot = function() {

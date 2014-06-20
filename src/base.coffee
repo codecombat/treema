@@ -1092,9 +1092,7 @@ class TreemaNode
       @refreshDisplay()
       @flushChanges()
 
-      treemaKeys = Object.keys(@childrenTreemas)
-      lastKey = treemaKeys[treemaKeys.length-1]
-      lastTreema = @childrenTreemas[lastKey]
+      lastTreema = @getLastTreema()
       @addTrackedAction {'node':lastTreema, 'path':lastTreema.getPath(), 'action':'insert'}
       return true
 
@@ -1107,6 +1105,8 @@ class TreemaNode
       return false if data is undefined
 
     return false unless $.isArray(data)
+    lastTreema = @getLastTreema()
+    @addTrackedAction {'node':lastTreema, 'path':lastTreema.getPath(), 'action':'insert'}
     data.push(newData)
     @refreshDisplay()
     return true
@@ -1182,6 +1182,11 @@ class TreemaNode
     pathPieces.reverse()
     return '/' + pathPieces.join('/')
   getData: -> @data
+  getLastTreema: ->
+    treemaKeys = Object.keys(@childrenTreemas)
+    lastKey = treemaKeys[treemaKeys.length-1]
+    lastTreema = @childrenTreemas[lastKey]
+    return lastTreema
 
   isRoot: -> not @parent
   isEditing: -> @getValEl().hasClass('treema-edit')
