@@ -2256,6 +2256,9 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.getLastTreema = function() {
     var lastKey, lastTreema, treemaKeys;
+    if (!this.childrenTreemas) {
+      return this;
+    }
     treemaKeys = Object.keys(this.childrenTreemas);
     lastKey = treemaKeys[treemaKeys.length - 1];
     lastTreema = this.childrenTreemas[lastKey];

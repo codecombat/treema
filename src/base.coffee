@@ -1183,6 +1183,7 @@ class TreemaNode
     return '/' + pathPieces.join('/')
   getData: -> @data
   getLastTreema: ->
+    return @ unless @childrenTreemas
     treemaKeys = Object.keys(@childrenTreemas)
     lastKey = treemaKeys[treemaKeys.length-1]
     lastTreema = @childrenTreemas[lastKey]
