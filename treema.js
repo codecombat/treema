@@ -2067,7 +2067,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.insert = function(path, newData) {
-    var data, i, seg, _i, _len;
+    var data, i, lastKey, lastTreema, seg, treemaKeys, _i, _len;
     path = this.normalizePath(path);
     if (path.length === 0) {
       if (!$.isArray(this.data)) {
@@ -2076,6 +2076,14 @@ TreemaNode = (function() {
       this.data.push(newData);
       this.refreshDisplay();
       this.flushChanges();
+      treemaKeys = Object.keys(this.childrenTreemas);
+      lastKey = treemaKeys[treemaKeys.length - 1];
+      lastTreema = this.childrenTreemas[lastKey];
+      this.addTrackedAction({
+        'node': lastTreema,
+        'path': lastTreema.getPath(),
+        'action': 'insert'
+      });
       return true;
     }
     if (this.childrenTreemas != null) {

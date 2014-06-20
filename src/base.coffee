@@ -1091,6 +1091,11 @@ class TreemaNode
       @data.push(newData)
       @refreshDisplay()
       @flushChanges()
+
+      treemaKeys = Object.keys(@childrenTreemas)
+      lastKey = treemaKeys[treemaKeys.length-1]
+      lastTreema = @childrenTreemas[lastKey]
+      @addTrackedAction {'node':lastTreema, 'path':lastTreema.getPath(), 'action':'insert'}
       return true
 
     return @digDeeper(path, 'insert', false, [newData]) if @childrenTreemas?
