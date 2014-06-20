@@ -1030,19 +1030,24 @@ class TreemaNode
     return data
 
   set: (path, newData) ->
+    originalPath = path
     path = @normalizePath(path)
 
     if path.length is 0
+      oldData = @data        
       @data = newData
       @refreshDisplay()
+      @addTrackedAction {'oldData':oldData, 'newData':newData, 'path':originalPath, 'action':'edit'}
       return true
 
     if @childrenTreemas?
       result = @digDeeper(path, 'set', false, [newData])
       if result is false and path.length is 1 and $.isPlainObject(@data)
         # handles inserting values into objects
+        oldData = data[path[0]]
         @data[path[0]] = newData
         @refreshDisplay()
+        @addTrackedAction {'oldData':oldData, 'newData':newData, 'path':originalPath, 'action':'edit'}
         return true
       return result
 
@@ -1050,8 +1055,10 @@ class TreemaNode
     for seg, i in path
       seg = @normalizeKey(seg, data)
       if path.length is i+1
+        oldData = data[seg]
         data[seg] = newData
         @refreshDisplay()
+        @addTrackedAction {'oldData':oldData, 'newData':newData, 'path':originalPath, 'action':'edit'}
         return true
       else
         data = data[seg]

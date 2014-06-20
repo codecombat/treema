@@ -1721,18 +1721,33 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.set = function(path, newData) {
-    var data, i, result, seg, _i, _len;
+    var data, i, oldData, originalPath, result, seg, _i, _len;
+    originalPath = path;
     path = this.normalizePath(path);
     if (path.length === 0) {
+      oldData = this.data;
       this.data = newData;
       this.refreshDisplay();
+      this.addTrackedAction({
+        'oldData': oldData,
+        'newData': newData,
+        'path': originalPath,
+        'action': 'edit'
+      });
       return true;
     }
     if (this.childrenTreemas != null) {
       result = this.digDeeper(path, 'set', false, [newData]);
       if (result === false && path.length === 1 && $.isPlainObject(this.data)) {
+        oldData = data[path[0]];
         this.data[path[0]] = newData;
         this.refreshDisplay();
+        this.addTrackedAction({
+          'oldData': oldData,
+          'newData': newData,
+          'path': originalPath,
+          'action': 'edit'
+        });
         return true;
       }
       return result;
@@ -1742,8 +1757,15 @@ TreemaNode = (function() {
       seg = path[i];
       seg = this.normalizeKey(seg, data);
       if (path.length === i + 1) {
+        oldData = data[seg];
         data[seg] = newData;
         this.refreshDisplay();
+        this.addTrackedAction({
+          'oldData': oldData,
+          'newData': newData,
+          'path': originalPath,
+          'action': 'edit'
+        });
         return true;
       } else {
         data = data[seg];
