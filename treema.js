@@ -1615,11 +1615,11 @@ TreemaNode = (function() {
           parentPath = treema.parent.getPath();
           treemaPath = restoreChange.path[i];
           parentData = this.get(parentPath);
-          switch (treema.parent.constructor.name) {
-            case 'ObjectNode':
+          switch (treema.parent.ordered) {
+            case false:
               this.set(treemaPath, treema.data);
               break;
-            case 'ArrayNode':
+            case true:
               deleteIndex = parseInt(treemaPath.substring(treemaPath.lastIndexOf('/') + 1));
               if (deleteIndex < parentData.length) {
                 parentData.splice(deleteIndex, 0, treema.data);
@@ -1673,11 +1673,11 @@ TreemaNode = (function() {
         this.set(restoreChange.path, restoreChange.newNode.data);
         break;
       case 'insert':
-        switch (restoreChange.node.parent.constructor.name) {
-          case 'ObjectNode':
+        switch (restoreChange.node.parent.ordered) {
+          case false:
             this.set(restoreChange.path, restoreChange.node.data);
             break;
-          case 'ArrayNode':
+          case true:
             this.insert(restoreChange.node.parent.getPath(), restoreChange.node.data);
         }
     }

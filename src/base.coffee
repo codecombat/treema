@@ -794,10 +794,10 @@ class TreemaNode
           parentPath = treema.parent.getPath()
           treemaPath = restoreChange.path[i]
           parentData = @get parentPath
-          switch treema.parent.constructor.name
-            when 'ObjectNode'
+          switch treema.parent.ordered
+            when false
               @set treemaPath, treema.data
-            when 'ArrayNode'
+            when true
               deleteIndex = parseInt (treemaPath.substring (treemaPath.lastIndexOf('/') + 1))
               if deleteIndex < parentData.length
                 parentData.splice deleteIndex, 0, treema.data
@@ -842,10 +842,10 @@ class TreemaNode
         @set restoreChange.path, restoreChange.newNode.data
 
       when 'insert'
-        switch restoreChange.node.parent.constructor.name
-          when 'ObjectNode'
+        switch restoreChange.node.parent.ordered
+          when false
             @set restoreChange.path, restoreChange.node.data
-          when 'ArrayNode'
+          when true
             @insert restoreChange.node.parent.getPath(), restoreChange.node.data
 
     root.currentStateIndex++
