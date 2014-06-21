@@ -79,13 +79,13 @@ do __init = ->
       @data = newValue if newValue?
       valEl = @getValEl().empty()
       if @isDisplaying() then @buildValueForDisplay(valEl) else @buildValueForEditing(valEl)
-      @saveChanges(oldData)
+      @addTrackedAction {'oldData':oldData, 'newData':@data, 'path':@getPath(), 'action':'edit'}
       @flushChanges()
 
     onSpacePressed: -> @toggleValue()
     onFPressed: -> @toggleValue(false)
     onTPressed: -> @toggleValue(true)
-    saveChanges: (oldData)-> super(oldData)
+    saveChanges: -> 
     onClick: (e) ->
       value = $(e.target).closest('.treema-value')
       return super(e) unless value.length

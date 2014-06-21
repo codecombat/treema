@@ -2476,7 +2476,12 @@ TreemaNode = (function() {
       } else {
         this.buildValueForEditing(valEl);
       }
-      this.saveChanges(oldData);
+      this.addTrackedAction({
+        'oldData': oldData,
+        'newData': this.data,
+        'path': this.getPath(),
+        'action': 'edit'
+      });
       return this.flushChanges();
     };
 
@@ -2492,9 +2497,7 @@ TreemaNode = (function() {
       return this.toggleValue(true);
     };
 
-    BooleanNode.prototype.saveChanges = function(oldData) {
-      return BooleanNode.__super__.saveChanges.call(this, oldData);
-    };
+    BooleanNode.prototype.saveChanges = function() {};
 
     BooleanNode.prototype.onClick = function(e) {
       var value;
