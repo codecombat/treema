@@ -1387,7 +1387,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.redo = function() {
-    var currentStateIndex, restoreChange, root, trackedActions;
+    var currentStateIndex, restoreChange, root, trackedActions, treema, _i, _len, _ref;
     this.reverting = true;
     trackedActions = this.getTrackedActions();
     currentStateIndex = this.getCurrentStateIndex();
@@ -1398,7 +1398,14 @@ TreemaNode = (function() {
     restoreChange = trackedActions[currentStateIndex];
     switch (restoreChange.action) {
       case 'delete':
-        this["delete"](restoreChange.path);
+        if (!$.isArray(restoreChange.node)) {
+          restoreChange.node = [restoreChange.node];
+        }
+        _ref = restoreChange.node;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          treema = _ref[_i];
+          this["delete"](treema.getPath());
+        }
         break;
       case 'edit':
         this.set(restoreChange.path, restoreChange.newData);

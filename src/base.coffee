@@ -829,7 +829,10 @@ class TreemaNode
 
     switch restoreChange.action
       when 'delete'
-        @delete restoreChange.path
+        if not $.isArray(restoreChange.node)
+          restoreChange.node = [restoreChange.node]
+        for treema in restoreChange.node
+          @delete treema.getPath()
 
       when 'edit'
         @set restoreChange.path, restoreChange.newData
