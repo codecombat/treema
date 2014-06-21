@@ -263,6 +263,12 @@ TreemaNode = (function() {
     return this.saveChanges = function(valEl) {
       var index;
       index = valEl.find('select').prop('selectedIndex');
+      _this.addTrackedAction({
+        'oldData': _this.data,
+        'newData': _this["enum"][index],
+        'path': _this.getPath(),
+        'action': 'edit'
+      });
       _this.data = _this["enum"][index];
       TreemaNode.changedTreemas.push(_this);
       return _this.broadcastChanges();

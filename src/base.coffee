@@ -138,6 +138,7 @@ class TreemaNode
 
     @saveChanges = (valEl) =>
       index = valEl.find('select').prop('selectedIndex')
+      @addTrackedAction {'oldData':@data, 'newData':@enum[index], 'path':@getPath(), 'action':'edit'}
       @data = @enum[index]
       TreemaNode.changedTreemas.push(@)
       @broadcastChanges()
