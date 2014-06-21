@@ -1762,7 +1762,7 @@ TreemaNode = (function() {
     if (this.childrenTreemas != null) {
       result = this.digDeeper(path, 'set', false, [newData]);
       if (result === false && path.length === 1 && $.isPlainObject(this.data)) {
-        oldData = data[path[0]];
+        oldData = this.data[path[0]];
         this.data[path[0]] = newData;
         this.refreshDisplay();
         this.addTrackedAction({

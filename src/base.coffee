@@ -1056,7 +1056,7 @@ class TreemaNode
       result = @digDeeper(path, 'set', false, [newData])
       if result is false and path.length is 1 and $.isPlainObject(@data)
         # handles inserting values into objects
-        oldData = data[path[0]]
+        oldData = @data[path[0]]
         @data[path[0]] = newData
         @refreshDisplay()
         @addTrackedAction {'oldData':oldData, 'newData':newData, 'path':@getRoot().originalPath, 'action':'edit'}
