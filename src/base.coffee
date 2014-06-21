@@ -633,8 +633,14 @@ class TreemaNode
       nextSibling = selected[0].$el.next('.treema-node').data('instance')
       prevSibling = selected[0].$el.prev('.treema-node').data('instance')
       toSelect = nextSibling or prevSibling or selected[0].parent
+    #Saves path and node before removing to preserve original paths
+    nodes = []
+    paths = []
     for treema in selected
-      @addTrackedAction { 'node':treema, 'path':treema.getPath(), 'action':'delete' }
+      nodes.push treema
+      paths.push treema.getPath()
+    @addTrackedAction { 'node':nodes, 'path':paths, 'action':'delete' }
+    for treema in selected
       treema.remove() 
     toSelect.select() if toSelect and not @getSelectedTreemas().length
 
@@ -782,19 +788,22 @@ class TreemaNode
 
     switch restoreChange.action
       when 'delete'
-        switch restoreChange.node.parent.constructor.name
-          when 'ObjectNode'
-            @set restoreChange.path, restoreChange.node.data
-          when 'ArrayNode'
-            parentPath = restoreChange.node.parent.getPath()
-            parentData = @get parentPath
-            deleteIndex = parseInt (restoreChange.path.substring (restoreChange.path.lastIndexOf('/') + 1))
-
-            if deleteIndex < parentData.length
-              parentData.splice deleteIndex, 0, restoreChange.node.data
-              @set parentPath, parentData
-            else
-              @insert parentPath, restoreChange.node.data
+        if not $.isArray(restoreChange.node)
+          restoreChange.node = [restoreChange.node]
+        for treema, i in restoreChange.node
+          parentPath = treema.parent.getPath()
+          treemaPath = restoreChange.path[i]
+          parentData = @get parentPath
+          switch treema.parent.constructor.name
+            when 'ObjectNode'
+              @set treemaPath, treema.data
+            when 'ArrayNode'
+              deleteIndex = parseInt (treemaPath.substring (treemaPath.lastIndexOf('/') + 1))
+              if deleteIndex < parentData.length
+                parentData.splice deleteIndex, 0, treema.data
+                @set parentPath, parentData
+              else
+                @insert parentPath, treema.data
 
       when 'edit'
         @set restoreChange.path, restoreChange.oldData

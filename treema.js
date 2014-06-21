@@ -1336,7 +1336,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.removeSelectedNodes = function(nodes) {
-    var nextSibling, prevSibling, selected, toSelect, treema, _i, _len;
+    var nextSibling, paths, prevSibling, selected, toSelect, treema, _i, _j, _len, _len1;
     if (nodes == null) {
       nodes = [];
     }
@@ -1350,13 +1350,20 @@ TreemaNode = (function() {
       prevSibling = selected[0].$el.prev('.treema-node').data('instance');
       toSelect = nextSibling || prevSibling || selected[0].parent;
     }
+    nodes = [];
+    paths = [];
     for (_i = 0, _len = selected.length; _i < _len; _i++) {
       treema = selected[_i];
-      this.addTrackedAction({
-        'node': treema,
-        'path': treema.getPath(),
-        'action': 'delete'
-      });
+      nodes.push(treema);
+      paths.push(treema.getPath());
+    }
+    this.addTrackedAction({
+      'node': nodes,
+      'path': paths,
+      'action': 'delete'
+    });
+    for (_j = 0, _len1 = selected.length; _j < _len1; _j++) {
+      treema = selected[_j];
       treema.remove();
     }
     if (toSelect && !this.getSelectedTreemas().length) {
@@ -1588,7 +1595,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.undo = function() {
-    var currentStateIndex, deleteIndex, parentData, parentPath, restoreChange, root, trackedActions;
+    var currentStateIndex, deleteIndex, i, parentData, parentPath, restoreChange, root, trackedActions, treema, treemaPath, _i, _len, _ref;
     this.reverting = true;
     trackedActions = this.getTrackedActions();
     currentStateIndex = this.getCurrentStateIndex();
@@ -1599,20 +1606,28 @@ TreemaNode = (function() {
     restoreChange = trackedActions[currentStateIndex - 1];
     switch (restoreChange.action) {
       case 'delete':
-        switch (restoreChange.node.parent.constructor.name) {
-          case 'ObjectNode':
-            this.set(restoreChange.path, restoreChange.node.data);
-            break;
-          case 'ArrayNode':
-            parentPath = restoreChange.node.parent.getPath();
-            parentData = this.get(parentPath);
-            deleteIndex = parseInt(restoreChange.path.substring(restoreChange.path.lastIndexOf('/') + 1));
-            if (deleteIndex < parentData.length) {
-              parentData.splice(deleteIndex, 0, restoreChange.node.data);
-              this.set(parentPath, parentData);
-            } else {
-              this.insert(parentPath, restoreChange.node.data);
-            }
+        if (!$.isArray(restoreChange.node)) {
+          restoreChange.node = [restoreChange.node];
+        }
+        _ref = restoreChange.node;
+        for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+          treema = _ref[i];
+          parentPath = treema.parent.getPath();
+          treemaPath = restoreChange.path[i];
+          parentData = this.get(parentPath);
+          switch (treema.parent.constructor.name) {
+            case 'ObjectNode':
+              this.set(treemaPath, treema.data);
+              break;
+            case 'ArrayNode':
+              deleteIndex = parseInt(treemaPath.substring(treemaPath.lastIndexOf('/') + 1));
+              if (deleteIndex < parentData.length) {
+                parentData.splice(deleteIndex, 0, treema.data);
+                this.set(parentPath, parentData);
+              } else {
+                this.insert(parentPath, treema.data);
+              }
+          }
         }
         break;
       case 'edit':
