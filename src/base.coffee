@@ -790,6 +790,7 @@ class TreemaNode
       when 'delete'
         if not $.isArray(restoreChange.node)
           restoreChange.node = [restoreChange.node]
+          restoreChange.path = [restoreChange.path]
         for treema, i in restoreChange.node
           parentPath = treema.parent.getPath()
           treemaPath = restoreChange.path[i]
@@ -1081,7 +1082,9 @@ class TreemaNode
 
   delete: (path) ->
     path = @normalizePath(path)
-    return @remove() if path.length is 0
+    if path.length is 0
+      @addTrackedAction {'node': @, 'path':@getPath(), 'action':'delete'}
+      return @remove() 
     return @digDeeper(path, 'delete', false, []) if @childrenTreemas?
 
     data = @data

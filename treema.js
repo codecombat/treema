@@ -1608,6 +1608,7 @@ TreemaNode = (function() {
       case 'delete':
         if (!$.isArray(restoreChange.node)) {
           restoreChange.node = [restoreChange.node];
+          restoreChange.path = [restoreChange.path];
         }
         _ref = restoreChange.node;
         for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
@@ -2068,6 +2069,11 @@ TreemaNode = (function() {
     var data, i, seg, _i, _len;
     path = this.normalizePath(path);
     if (path.length === 0) {
+      this.addTrackedAction({
+        'node': this,
+        'path': this.getPath(),
+        'action': 'delete'
+      });
       return this.remove();
     }
     if (this.childrenTreemas != null) {
