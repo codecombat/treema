@@ -1338,13 +1338,13 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.undo = function() {
     var currentStateIndex, deleteIndex, i, parentData, parentPath, restoreChange, root, trackedActions, treema, treemaPath, _i, _len, _ref;
-    this.reverting = true;
     trackedActions = this.getTrackedActions();
     currentStateIndex = this.getCurrentStateIndex();
     root = this.getRoot();
     if (!currentStateIndex) {
       return;
     }
+    this.reverting = true;
     restoreChange = trackedActions[currentStateIndex - 1];
     switch (restoreChange.action) {
       case 'delete':
@@ -1389,13 +1389,13 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.redo = function() {
     var currentStateIndex, restoreChange, root, trackedActions, treema, _i, _len, _ref;
-    this.reverting = true;
     trackedActions = this.getTrackedActions();
     currentStateIndex = this.getCurrentStateIndex();
     root = this.getRoot();
     if (this.currentStateIndex === trackedActions.length) {
       return;
     }
+    this.reverting = true;
     restoreChange = trackedActions[currentStateIndex];
     switch (restoreChange.action) {
       case 'delete':

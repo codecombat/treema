@@ -778,12 +778,12 @@ class TreemaNode
     root.currentStateIndex++
 
   undo: ->
-    @reverting = true
     trackedActions = @getTrackedActions()
     currentStateIndex = @getCurrentStateIndex()
     root = @getRoot()
     return unless currentStateIndex
 
+    @reverting = true
     restoreChange = trackedActions[currentStateIndex-1]
 
     switch restoreChange.action
@@ -820,12 +820,12 @@ class TreemaNode
     @reverting = false
 
   redo: ->
-    @reverting = true
     trackedActions = @getTrackedActions()
     currentStateIndex = @getCurrentStateIndex()
     root = @getRoot()
     return unless @currentStateIndex isnt trackedActions.length
 
+    @reverting = true
     restoreChange = trackedActions[currentStateIndex]
 
     switch restoreChange.action
