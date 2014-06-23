@@ -1112,6 +1112,13 @@ class TreemaNode
       parentPath += '/' + seg
 
   insert: (path, newData) ->
+    if @insertRecursive(path, newData)
+      parentPath = path
+      parentData = @get parentPath
+      childPath = parentPath + '/' + (parentData.length-1).toString()
+      @addTrackedAction {'data':newData, 'path':childPath, 'parentPath':parentPath, 'action':'insert'}
+
+  insertRecursive: (path, newData) ->
     # inserts objects at the end of arrays, path is to the array
     # for adding properties to object, use set
     path = @normalizePath(path)
@@ -1124,10 +1131,9 @@ class TreemaNode
       parentPath = @getPath()
       childPath = @getPath() + '/' + (@data.length-1).toString()
       lastTreema = @getLastTreema()
-      @addTrackedAction {'data':newData, 'path':childPath, 'parentPath':parentPath, 'action':'insert'}
       return true
 
-    return @digDeeper(path, 'insert', false, [newData]) if @childrenTreemas?
+    return @digDeeper(path, 'insertRecursive', false, [newData]) if @childrenTreemas?
 
     data = @data
 
@@ -1141,8 +1147,6 @@ class TreemaNode
     return false unless $.isArray(data)
     data.push(newData)
     @refreshDisplay()
-    childPath = parentPath + '/' + (data.length-1).toString()
-    @addTrackedAction {'data':newData, 'path':childPath, 'parentPath':parentPath, 'action':'insert'}
     return true
 
   normalizeKey: (key, collection) ->

@@ -1859,6 +1859,21 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.insert = function(path, newData) {
+    var childPath, parentData, parentPath;
+    if (this.insertRecursive(path, newData)) {
+      parentPath = path;
+      parentData = this.get(parentPath);
+      childPath = parentPath + '/' + (parentData.length - 1).toString();
+      return this.addTrackedAction({
+        'data': newData,
+        'path': childPath,
+        'parentPath': parentPath,
+        'action': 'insert'
+      });
+    }
+  };
+
+  TreemaNode.prototype.insertRecursive = function(path, newData) {
     var childPath, data, i, lastTreema, parentPath, seg, _i, _len;
     path = this.normalizePath(path);
     if (path.length === 0) {
@@ -1871,16 +1886,10 @@ TreemaNode = (function() {
       parentPath = this.getPath();
       childPath = this.getPath() + '/' + (this.data.length - 1).toString();
       lastTreema = this.getLastTreema();
-      this.addTrackedAction({
-        'data': newData,
-        'path': childPath,
-        'parentPath': parentPath,
-        'action': 'insert'
-      });
       return true;
     }
     if (this.childrenTreemas != null) {
-      return this.digDeeper(path, 'insert', false, [newData]);
+      return this.digDeeper(path, 'insertRecursive', false, [newData]);
     }
     data = this.data;
     parentPath = this.getPath();
@@ -1898,13 +1907,6 @@ TreemaNode = (function() {
     }
     data.push(newData);
     this.refreshDisplay();
-    childPath = parentPath + '/' + (data.length - 1).toString();
-    this.addTrackedAction({
-      'data': newData,
-      'path': childPath,
-      'parentPath': parentPath,
-      'action': 'insert'
-    });
     return true;
   };
 
