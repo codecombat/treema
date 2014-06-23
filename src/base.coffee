@@ -1049,48 +1049,51 @@ class TreemaNode
     return data
 
   set: (path, newData) ->
-    #Original path needs to be stored, not the one on subsequent calls from digDeeper
-    if @set.caller isnt @digDeeper 
-      @getRoot().originalPath = path
+    oldData = @get path
+    if @setRecursive(path, newData)
+      @addTrackedAction {'oldData':oldData, 'newData':newData, 'path':path, 'action':'edit'}
+
+  setRecursive: (path, newData) ->
     path = @normalizePath(path)
 
     if path.length is 0
-      oldData = @data        
       @data = newData
       @refreshDisplay()
-      @addTrackedAction {'oldData':oldData, 'newData':newData, 'path':@getRoot().originalPath, 'action':'edit'}
       return true
 
     if @childrenTreemas?
-      result = @digDeeper(path, 'set', false, [newData])
+      result = @digDeeper(path, 'setRecursive', false, [newData])
       if result is false and path.length is 1 and $.isPlainObject(@data)
         # handles inserting values into objects
-        oldData = @data[path[0]]
         @data[path[0]] = newData
         @refreshDisplay()
-        @addTrackedAction {'oldData':oldData, 'newData':newData, 'path':@getRoot().originalPath, 'action':'edit'}
         return true
       return result
 
     data = @data
+    nodePath = @getPath()
     for seg, i in path
       seg = @normalizeKey(seg, data)
       if path.length is i+1
         oldData = data[seg]
         data[seg] = newData
         @refreshDisplay()
-        @addTrackedAction {'oldData':oldData, 'newData':newData, 'path':@getRoot().originalPath, 'action':'edit'}
         return true
       else
         data = data[seg]
         return false if data is undefined
 
   delete: (path) ->
+    oldData = @get path
+    if @deleteRecursive(path)
+      parentPath = path.substring(0, path.lastIndexOf('/'))
+      @addTrackedAction {'data': oldData, 'path': path, 'parentPath':parentPath, 'action':'delete'}
+
+  deleteRecursive: (path) ->
     path = @normalizePath(path)
     if path.length is 0
-      @addTrackedAction {'data': @data, 'path':@getPath(), 'parentPath':@parent?.getPath(), 'action':'delete'}
       return @remove() 
-    return @digDeeper(path, 'delete', false, []) if @childrenTreemas?
+    return @digDeeper(path, 'deleteRecursive', false, []) if @childrenTreemas?
 
     data = @data
     parentPath = @getPath()
@@ -1103,8 +1106,6 @@ class TreemaNode
           deletedData = data.splice(seg, 1) 
           delete data[seg]
         @refreshDisplay()
-        childPath = parentPath + '/' + seg
-        @addTrackedAction {'data': deletedData[0], 'path':childPath, 'parentPath':parentPath, 'action':'delete'}
         return true
       else
         data = data[seg]

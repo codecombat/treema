@@ -1755,40 +1755,37 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.set = function(path, newData) {
-    var data, i, oldData, result, seg, _i, _len;
-    if (this.set.caller !== this.digDeeper) {
-      this.getRoot().originalPath = path;
-    }
-    path = this.normalizePath(path);
-    if (path.length === 0) {
-      oldData = this.data;
-      this.data = newData;
-      this.refreshDisplay();
-      this.addTrackedAction({
+    var oldData;
+    oldData = this.get(path);
+    if (this.setRecursive(path, newData)) {
+      return this.addTrackedAction({
         'oldData': oldData,
         'newData': newData,
-        'path': this.getRoot().originalPath,
+        'path': path,
         'action': 'edit'
       });
+    }
+  };
+
+  TreemaNode.prototype.setRecursive = function(path, newData) {
+    var data, i, nodePath, oldData, result, seg, _i, _len;
+    path = this.normalizePath(path);
+    if (path.length === 0) {
+      this.data = newData;
+      this.refreshDisplay();
       return true;
     }
     if (this.childrenTreemas != null) {
-      result = this.digDeeper(path, 'set', false, [newData]);
+      result = this.digDeeper(path, 'setRecursive', false, [newData]);
       if (result === false && path.length === 1 && $.isPlainObject(this.data)) {
-        oldData = this.data[path[0]];
         this.data[path[0]] = newData;
         this.refreshDisplay();
-        this.addTrackedAction({
-          'oldData': oldData,
-          'newData': newData,
-          'path': this.getRoot().originalPath,
-          'action': 'edit'
-        });
         return true;
       }
       return result;
     }
     data = this.data;
+    nodePath = this.getPath();
     for (i = _i = 0, _len = path.length; _i < _len; i = ++_i) {
       seg = path[i];
       seg = this.normalizeKey(seg, data);
@@ -1796,12 +1793,6 @@ TreemaNode = (function() {
         oldData = data[seg];
         data[seg] = newData;
         this.refreshDisplay();
-        this.addTrackedAction({
-          'oldData': oldData,
-          'newData': newData,
-          'path': this.getRoot().originalPath,
-          'action': 'edit'
-        });
         return true;
       } else {
         data = data[seg];
@@ -1813,19 +1804,27 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype["delete"] = function(path) {
-    var childPath, data, deletedData, i, parentPath, seg, _i, _len, _ref;
-    path = this.normalizePath(path);
-    if (path.length === 0) {
-      this.addTrackedAction({
-        'data': this.data,
-        'path': this.getPath(),
-        'parentPath': (_ref = this.parent) != null ? _ref.getPath() : void 0,
+    var oldData, parentPath;
+    oldData = this.get(path);
+    if (this.deleteRecursive(path)) {
+      parentPath = path.substring(0, path.lastIndexOf('/'));
+      return this.addTrackedAction({
+        'data': oldData,
+        'path': path,
+        'parentPath': parentPath,
         'action': 'delete'
       });
+    }
+  };
+
+  TreemaNode.prototype.deleteRecursive = function(path) {
+    var data, deletedData, i, parentPath, seg, _i, _len;
+    path = this.normalizePath(path);
+    if (path.length === 0) {
       return this.remove();
     }
     if (this.childrenTreemas != null) {
-      return this.digDeeper(path, 'delete', false, []);
+      return this.digDeeper(path, 'deleteRecursive', false, []);
     }
     data = this.data;
     parentPath = this.getPath();
@@ -1840,13 +1839,6 @@ TreemaNode = (function() {
           delete data[seg];
         }
         this.refreshDisplay();
-        childPath = parentPath + '/' + seg;
-        this.addTrackedAction({
-          'data': deletedData[0],
-          'path': childPath,
-          'parentPath': parentPath,
-          'action': 'delete'
-        });
         return true;
       } else {
         data = data[seg];
