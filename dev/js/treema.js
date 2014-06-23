@@ -1078,7 +1078,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.removeSelectedNodes = function(nodes) {
-    var nextSibling, paths, prevSibling, selected, toSelect, treema, _i, _j, _len, _len1;
+    var data, nextSibling, parentPaths, paths, prevSibling, selected, toSelect, treema, _i, _j, _len, _len1, _ref;
     if (nodes == null) {
       nodes = [];
     }
@@ -1092,16 +1092,19 @@ TreemaNode = (function() {
       prevSibling = selected[0].$el.prev('.treema-node').data('instance');
       toSelect = nextSibling || prevSibling || selected[0].parent;
     }
-    nodes = [];
+    data = [];
     paths = [];
+    parentPaths = [];
     for (_i = 0, _len = selected.length; _i < _len; _i++) {
       treema = selected[_i];
-      nodes.push(treema);
+      data.push(treema.data);
       paths.push(treema.getPath());
+      parentPaths.push((_ref = treema.parent) != null ? _ref.getPath() : void 0);
     }
     this.addTrackedAction({
-      'node': nodes,
+      'data': data,
       'path': paths,
+      'parentPath': parentPaths,
       'action': 'delete'
     });
     for (_j = 0, _len1 = selected.length; _j < _len1; _j++) {
@@ -1337,7 +1340,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.undo = function() {
-    var currentStateIndex, deleteIndex, i, parentData, parentPath, restoreChange, root, trackedActions, treema, treemaPath, _i, _len, _ref;
+    var currentStateIndex, deleteIndex, i, parentData, parentPath, restoreChange, root, trackedActions, treemaData, treemaPath, _i, _len, _ref;
     trackedActions = this.getTrackedActions();
     currentStateIndex = this.getCurrentStateIndex();
     root = this.getRoot();
@@ -1348,27 +1351,28 @@ TreemaNode = (function() {
     restoreChange = trackedActions[currentStateIndex - 1];
     switch (restoreChange.action) {
       case 'delete':
-        if (!$.isArray(restoreChange.node)) {
-          restoreChange.node = [restoreChange.node];
+        if (!$.isArray(restoreChange.path)) {
+          restoreChange.data = [restoreChange.data];
           restoreChange.path = [restoreChange.path];
+          restoreChange.parentPath = [restoreChange.parentPath];
         }
-        _ref = restoreChange.node;
+        _ref = restoreChange.data;
         for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
-          treema = _ref[i];
-          parentPath = treema.parent.getPath();
+          treemaData = _ref[i];
+          parentPath = restoreChange.parentPath[i];
           treemaPath = restoreChange.path[i];
           parentData = this.get(parentPath);
-          switch (treema.parent.ordered) {
+          switch ($.isArray(parentData)) {
             case false:
-              this.set(treemaPath, treema.data);
+              this.set(treemaPath, treemaData);
               break;
             case true:
               deleteIndex = parseInt(treemaPath.substring(treemaPath.lastIndexOf('/') + 1));
               if (deleteIndex < parentData.length) {
-                parentData.splice(deleteIndex, 0, treema.data);
+                parentData.splice(deleteIndex, 0, treemaData);
                 this.set(parentPath, parentData);
               } else {
-                this.insert(parentPath, treema.data);
+                this.insert(parentPath, treemaData);
               }
           }
         }
@@ -1388,7 +1392,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.redo = function() {
-    var currentStateIndex, restoreChange, root, trackedActions, treema, _i, _len, _ref;
+    var currentStateIndex, parentData, path, restoreChange, root, trackedActions, _i, _len, _ref;
     trackedActions = this.getTrackedActions();
     currentStateIndex = this.getCurrentStateIndex();
     root = this.getRoot();
@@ -1399,13 +1403,13 @@ TreemaNode = (function() {
     restoreChange = trackedActions[currentStateIndex];
     switch (restoreChange.action) {
       case 'delete':
-        if (!$.isArray(restoreChange.node)) {
-          restoreChange.node = [restoreChange.node];
+        if (!$.isArray(restoreChange.path)) {
+          restoreChange.path = [restoreChange.path];
         }
-        _ref = restoreChange.node;
+        _ref = restoreChange.path;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          treema = _ref[_i];
-          this["delete"](treema.getPath());
+          path = _ref[_i];
+          this["delete"](path);
         }
         break;
       case 'edit':
@@ -1416,12 +1420,13 @@ TreemaNode = (function() {
         this.set(restoreChange.path, restoreChange.newNode.data);
         break;
       case 'insert':
-        switch (restoreChange.node.parent.ordered) {
-          case false:
-            this.set(restoreChange.path, restoreChange.node.data);
-            break;
+        parentData = this.get(restoreChange.parentPath);
+        switch ($.isArray(parentData)) {
           case true:
-            this.insert(restoreChange.node.parent.getPath(), restoreChange.node.data);
+            this.insert(restoreChange.parentPath, restoreChange.data);
+            break;
+          case false:
+            this.set(restoreChange.path, restoreChange.data);
         }
     }
     root.currentStateIndex++;
@@ -1808,12 +1813,13 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype["delete"] = function(path) {
-    var data, i, seg, _i, _len;
+    var childPath, data, deletedData, i, parentPath, seg, _i, _len, _ref;
     path = this.normalizePath(path);
     if (path.length === 0) {
       this.addTrackedAction({
-        'node': this,
+        'data': this.data,
         'path': this.getPath(),
+        'parentPath': (_ref = this.parent) != null ? _ref.getPath() : void 0,
         'action': 'delete'
       });
       return this.remove();
@@ -1822,16 +1828,25 @@ TreemaNode = (function() {
       return this.digDeeper(path, 'delete', false, []);
     }
     data = this.data;
+    parentPath = this.getPath();
     for (i = _i = 0, _len = path.length; _i < _len; i = ++_i) {
       seg = path[i];
       seg = this.normalizeKey(seg, data);
       if (path.length === i + 1) {
         if ($.isArray(data)) {
-          data.splice(seg, 1);
+          deletedData = data.splice(seg, 1);
         } else {
+          deletedData = data.splice(seg, 1);
           delete data[seg];
         }
         this.refreshDisplay();
+        childPath = parentPath + '/' + seg;
+        this.addTrackedAction({
+          'data': deletedData[0],
+          'path': childPath,
+          'parentPath': parentPath,
+          'action': 'delete'
+        });
         return true;
       } else {
         data = data[seg];
@@ -1839,11 +1854,12 @@ TreemaNode = (function() {
           return false;
         }
       }
+      parentPath += '/' + seg;
     }
   };
 
   TreemaNode.prototype.insert = function(path, newData) {
-    var data, i, lastTreema, seg, _i, _len;
+    var childPath, data, i, lastTreema, parentPath, seg, _i, _len;
     path = this.normalizePath(path);
     if (path.length === 0) {
       if (!$.isArray(this.data)) {
@@ -1852,10 +1868,13 @@ TreemaNode = (function() {
       this.data.push(newData);
       this.refreshDisplay();
       this.flushChanges();
+      parentPath = this.getPath();
+      childPath = this.getPath() + '/' + (this.data.length - 1).toString();
       lastTreema = this.getLastTreema();
       this.addTrackedAction({
-        'node': lastTreema,
-        'path': lastTreema.getPath(),
+        'data': newData,
+        'path': childPath,
+        'parentPath': parentPath,
         'action': 'insert'
       });
       return true;
@@ -1864,8 +1883,10 @@ TreemaNode = (function() {
       return this.digDeeper(path, 'insert', false, [newData]);
     }
     data = this.data;
+    parentPath = this.getPath();
     for (i = _i = 0, _len = path.length; _i < _len; i = ++_i) {
       seg = path[i];
+      parentPath += '/' + seg;
       seg = this.normalizeKey(seg, data);
       data = data[seg];
       if (data === void 0) {
@@ -1875,14 +1896,15 @@ TreemaNode = (function() {
     if (!$.isArray(data)) {
       return false;
     }
-    lastTreema = this.getLastTreema();
-    this.addTrackedAction({
-      'node': lastTreema,
-      'path': lastTreema.getPath(),
-      'action': 'insert'
-    });
     data.push(newData);
     this.refreshDisplay();
+    childPath = parentPath + '/' + (data.length - 1).toString();
+    this.addTrackedAction({
+      'data': newData,
+      'path': childPath,
+      'parentPath': parentPath,
+      'action': 'insert'
+    });
     return true;
   };
 
@@ -2629,8 +2651,9 @@ TreemaNode = (function() {
       newTreema.tv4 = this.tv4;
       childNode = this.createChildNode(newTreema);
       this.addTrackedAction({
-        'node': newTreema,
+        'data': newTreema.data,
         'path': newTreema.getPath(),
+        'parentPath': this.getPath(),
         'action': 'insert'
       });
       this.getAddButtonEl().before(childNode);
@@ -3057,9 +3080,10 @@ TreemaNode = (function() {
         }
       }
       this.addTrackedAction({
-        'node': newTreema,
+        'data': newTreema.data,
         'path': newTreema.getPath(),
-        'action': 'insert'
+        'parentPath': this.getPath(),
+        action: 'insert'
       });
       return this.updateMyAddButton();
     };

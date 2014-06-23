@@ -634,12 +634,14 @@ class TreemaNode
       prevSibling = selected[0].$el.prev('.treema-node').data('instance')
       toSelect = nextSibling or prevSibling or selected[0].parent
     #Saves path and node before removing to preserve original paths
-    nodes = []
+    data = []
     paths = []
+    parentPaths = []
     for treema in selected
-      nodes.push treema
+      data.push treema.data
       paths.push treema.getPath()
-    @addTrackedAction { 'node':nodes, 'path':paths, 'action':'delete' }
+      parentPaths.push treema.parent?.getPath()
+    @addTrackedAction { 'data':data, 'path':paths, 'parentPath':parentPaths, 'action':'delete' }
     for treema in selected
       treema.remove() 
     toSelect.select() if toSelect and not @getSelectedTreemas().length
@@ -788,23 +790,25 @@ class TreemaNode
 
     switch restoreChange.action
       when 'delete'
-        if not $.isArray(restoreChange.node)
-          restoreChange.node = [restoreChange.node]
+        if not $.isArray(restoreChange.path)
+          restoreChange.data = [restoreChange.data]
           restoreChange.path = [restoreChange.path]
-        for treema, i in restoreChange.node
-          parentPath = treema.parent.getPath()
+          restoreChange.parentPath = [restoreChange.parentPath]
+
+        for treemaData, i in restoreChange.data
+          parentPath = restoreChange.parentPath[i]
           treemaPath = restoreChange.path[i]
           parentData = @get parentPath
-          switch treema.parent.ordered
+          switch $.isArray(parentData)
             when false
-              @set treemaPath, treema.data
+              @set treemaPath, treemaData
             when true
               deleteIndex = parseInt (treemaPath.substring (treemaPath.lastIndexOf('/') + 1))
               if deleteIndex < parentData.length
-                parentData.splice deleteIndex, 0, treema.data
+                parentData.splice deleteIndex, 0, treemaData
                 @set parentPath, parentData
               else
-                @insert parentPath, treema.data
+                @insert parentPath, treemaData
 
       when 'edit'
         @set restoreChange.path, restoreChange.oldData
@@ -830,10 +834,10 @@ class TreemaNode
 
     switch restoreChange.action
       when 'delete'
-        if not $.isArray(restoreChange.node)
-          restoreChange.node = [restoreChange.node]
-        for treema in restoreChange.node
-          @delete treema.getPath()
+        if not $.isArray(restoreChange.path)
+          restoreChange.path = [restoreChange.path]
+        for path in restoreChange.path
+          @delete path
 
       when 'edit'
         @set restoreChange.path, restoreChange.newData
@@ -843,11 +847,12 @@ class TreemaNode
         @set restoreChange.path, restoreChange.newNode.data
 
       when 'insert'
-        switch restoreChange.node.parent.ordered
-          when false
-            @set restoreChange.path, restoreChange.node.data
+        parentData = @get restoreChange.parentPath
+        switch $.isArray(parentData)
           when true
-            @insert restoreChange.node.parent.getPath(), restoreChange.node.data
+            @insert restoreChange.parentPath, restoreChange.data
+          when false
+            @set restoreChange.path, restoreChange.data
 
     root.currentStateIndex++
     @reverting = false
@@ -1083,20 +1088,28 @@ class TreemaNode
   delete: (path) ->
     path = @normalizePath(path)
     if path.length is 0
-      @addTrackedAction {'node': @, 'path':@getPath(), 'action':'delete'}
+      @addTrackedAction {'data': @data, 'path':@getPath(), 'parentPath':@parent?.getPath(), 'action':'delete'}
       return @remove() 
     return @digDeeper(path, 'delete', false, []) if @childrenTreemas?
 
     data = @data
+    parentPath = @getPath()
     for seg, i in path
       seg = @normalizeKey(seg, data)
       if path.length is i+1
-        if $.isArray(data) then data.splice(seg, 1) else delete data[seg]
+        if $.isArray(data)
+          deletedData = data.splice(seg, 1) 
+        else
+          deletedData = data.splice(seg, 1) 
+          delete data[seg]
         @refreshDisplay()
+        childPath = parentPath + '/' + seg
+        @addTrackedAction {'data': deletedData[0], 'path':childPath, 'parentPath':parentPath, 'action':'delete'}
         return true
       else
         data = data[seg]
         return false if data is undefined
+      parentPath += '/' + seg
 
   insert: (path, newData) ->
     # inserts objects at the end of arrays, path is to the array
@@ -1108,25 +1121,29 @@ class TreemaNode
       @refreshDisplay()
       @flushChanges()
 
+      parentPath = @getPath()
+      childPath = @getPath() + '/' + (@data.length-1).toString()
       lastTreema = @getLastTreema()
-      @addTrackedAction {'node':lastTreema, 'path':lastTreema.getPath(), 'action':'insert'}
+      @addTrackedAction {'data':newData, 'path':childPath, 'parentPath':parentPath, 'action':'insert'}
       return true
 
     return @digDeeper(path, 'insert', false, [newData]) if @childrenTreemas?
 
     data = @data
+
+    parentPath = @getPath()
     for seg, i in path
+      parentPath +=  '/' + seg
       seg = @normalizeKey(seg, data)
       data = data[seg]
       return false if data is undefined
 
     return false unless $.isArray(data)
-    lastTreema = @getLastTreema()
-    @addTrackedAction {'node':lastTreema, 'path':lastTreema.getPath(), 'action':'insert'}
     data.push(newData)
     @refreshDisplay()
+    childPath = parentPath + '/' + (data.length-1).toString()
+    @addTrackedAction {'data':newData, 'path':childPath, 'parentPath':parentPath, 'action':'insert'}
     return true
-
 
   normalizeKey: (key, collection) ->
     if $.isArray(collection)
