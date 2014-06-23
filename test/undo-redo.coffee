@@ -53,14 +53,15 @@ describe 'Undo-redo behavior', ->
     treema.set '/', jQuery.extend(true, {}, originalData)
 
   # Insert actions---------------------------------------------------------------------
-  # it 'reverts an element inserted into an array', ->
-    # path = '/numbers'
-    # treema.insert path, '1' 
-    # treema.undo()
-    # expect(treema.data).toEqual(originalData)
-    # treema.redo()
-    # expect(treema.get('/numbers/2')).toEqual('1')
-    # treema.set '/', jQuery.extend(true, {}, originalData)
+  it 'reverts an element inserted into an array', ->
+    path = '/numbers'
+    treema.insert path, '1' 
+    treema.undo()
+    expect(treema.data).toEqual(originalData)
+    treema.redo()
+    numbersData = treema.get path
+    expect(numbersData[numbersData.length-1]).toEqual('1')
+    treema.set '/', jQuery.extend(true, {}, originalData)
   
   # Delete actions----------------------------------------------------------------------
   it 'reverts a deleted object property', ->
@@ -72,29 +73,32 @@ describe 'Undo-redo behavior', ->
     expect(treema.get(path)).toBe(undefined)
     treema.set '/', jQuery.extend(true, {}, originalData)
 
-  # it 'reverts a element deleted from the middle of an array', ->
-  #   path = '/numbers/1'
-  #   treema.delete path
-  #   treema.undo()
-  #   expect(treema.data).toEqual(originalData)
-  #   treema.redo()
-  #   expect(treema.get(path)).toBe(undefined)
-  #   treema.set '/', jQuery.extend(true, {}, originalData)    
+  it 'reverts a element deleted from the middle of an array', ->
+    path = '/numbers/1'
+    treema.delete path
+    treema.undo()
+    expect(treema.data).toEqual(originalData)
+    treema.redo()
+    expect(treema.data).toNotEqual(originalData)
+    treema.set '/', jQuery.extend(true, {}, originalData)    
 
   #Combinations of actions
   it 'reverts a series of edit, insert and delete actions', ->
     treema.set '/name', 'Alice'
-    # treema.insert '/numbers', '1'
+    treema.insert '/numbers', '1'
     treema.delete '/numbers'
 
     treema.undo()
     expect(treema.get('/numbers')).toBeDefined()
-    # treema.undo()
-    # expect(treema.get('/numbers')).toEqual(numbersTreema.data)
+    treema.undo()
+    expect(treema.get('/numbers')).toEqual(numbersTreema.data)
     treema.undo()
     expect(treema.data).toEqual(originalData)
 
     treema.redo()
     expect(treema.get('/name')).toBe('Alice')
+    treema.redo()
+    numbersData = treema.get '/numbers'
+    expect(numbersData[numbersData.length-1]).toEqual('1')
     treema.redo()
     expect(treema.get('/numbers')).toBeUndefined()
