@@ -1758,12 +1758,15 @@ TreemaNode = (function() {
     var oldData;
     oldData = this.get(path);
     if (this.setRecursive(path, newData)) {
-      return this.addTrackedAction({
+      this.addTrackedAction({
         'oldData': oldData,
         'newData': newData,
         'path': path,
         'action': 'edit'
       });
+      return true;
+    } else {
+      return false;
     }
   };
 
@@ -1808,17 +1811,20 @@ TreemaNode = (function() {
     oldData = this.get(path);
     if (this.deleteRecursive(path)) {
       parentPath = path.substring(0, path.lastIndexOf('/'));
-      return this.addTrackedAction({
+      this.addTrackedAction({
         'data': oldData,
         'path': path,
         'parentPath': parentPath,
         'action': 'delete'
       });
+      return true;
+    } else {
+      return false;
     }
   };
 
   TreemaNode.prototype.deleteRecursive = function(path) {
-    var data, deletedData, i, parentPath, seg, _i, _len;
+    var data, i, parentPath, seg, _i, _len;
     path = this.normalizePath(path);
     if (path.length === 0) {
       return this.remove();
@@ -1833,9 +1839,8 @@ TreemaNode = (function() {
       seg = this.normalizeKey(seg, data);
       if (path.length === i + 1) {
         if ($.isArray(data)) {
-          deletedData = data.splice(seg, 1);
+          data.splice(seg, 1);
         } else {
-          deletedData = data.splice(seg, 1);
           delete data[seg];
         }
         this.refreshDisplay();
@@ -1856,12 +1861,15 @@ TreemaNode = (function() {
       parentPath = path;
       parentData = this.get(parentPath);
       childPath = parentPath + '/' + (parentData.length - 1).toString();
-      return this.addTrackedAction({
+      this.addTrackedAction({
         'data': newData,
         'path': childPath,
         'parentPath': parentPath,
         'action': 'insert'
       });
+      return true;
+    } else {
+      return false;
     }
   };
 

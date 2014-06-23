@@ -1052,6 +1052,9 @@ class TreemaNode
     oldData = @get path
     if @setRecursive(path, newData)
       @addTrackedAction {'oldData':oldData, 'newData':newData, 'path':path, 'action':'edit'}
+      return true
+    else
+      return false
 
   setRecursive: (path, newData) ->
     path = @normalizePath(path)
@@ -1088,6 +1091,9 @@ class TreemaNode
     if @deleteRecursive(path)
       parentPath = path.substring(0, path.lastIndexOf('/'))
       @addTrackedAction {'data': oldData, 'path': path, 'parentPath':parentPath, 'action':'delete'}
+      return true
+    else
+      return false
 
   deleteRecursive: (path) ->
     path = @normalizePath(path)
@@ -1100,11 +1106,7 @@ class TreemaNode
     for seg, i in path
       seg = @normalizeKey(seg, data)
       if path.length is i+1
-        if $.isArray(data)
-          deletedData = data.splice(seg, 1) 
-        else
-          deletedData = data.splice(seg, 1) 
-          delete data[seg]
+        if $.isArray(data) then data.splice(seg, 1) else delete data[seg]
         @refreshDisplay()
         return true
       else
@@ -1118,6 +1120,9 @@ class TreemaNode
       parentData = @get parentPath
       childPath = parentPath + '/' + (parentData.length-1).toString()
       @addTrackedAction {'data':newData, 'path':childPath, 'parentPath':parentPath, 'action':'insert'}
+      return true
+    else
+      return false
 
   insertRecursive: (path, newData) ->
     # inserts objects at the end of arrays, path is to the array
