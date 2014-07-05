@@ -1641,5 +1641,129 @@ describe('Schemaless', function() {
     return expect(treema.getErrors().length).toBe(1);
   });
 });
+;describe('Undo-redo behavior', function() {
+  var addressTreema, completedTreema, data, nameTreema, numbersTreema, originalData, schema, treema;
+  schema = {
+    type: 'object',
+    properties: {
+      name: {
+        type: 'string'
+      },
+      numbers: {
+        type: 'array',
+        items: {
+          type: ['string', 'array']
+        }
+      },
+      address: {
+        type: 'string'
+      },
+      completed: {
+        type: 'boolean'
+      }
+    }
+  };
+  data = {
+    name: 'Bob',
+    numbers: ['401-401-1337', '123-456-7890', '456-7890-123'],
+    address: 'Mars',
+    completed: false
+  };
+  originalData = jQuery.extend(true, {}, data);
+  treema = TreemaNode.make(null, {
+    data: data,
+    schema: schema
+  });
+  treema.build();
+  nameTreema = treema.childrenTreemas.name;
+  numbersTreema = treema.childrenTreemas.numbers;
+  addressTreema = treema.childrenTreemas.address;
+  completedTreema = treema.childrenTreemas.completed;
+  it('does nothing when there are no actions to be undone', function() {
+    treema.undo();
+    expect(treema.data).toEqual(originalData);
+    treema.redo();
+    expect(treema.data).toEqual(originalData);
+    return treema.set('/', jQuery.extend(true, {}, originalData));
+  });
+  it('reverts a set object property', function() {
+    var path;
+    path = '/name';
+    treema.set('/name', 'Alice');
+    treema.undo();
+    expect(treema.data).toEqual(originalData);
+    treema.redo();
+    expect(treema.get(path)).toEqual('Alice');
+    return treema.set('/', jQuery.extend(true, {}, originalData));
+  });
+  it('reverts a set array element', function() {
+    var path;
+    path = '/numbers/1';
+    treema.set(path, '1');
+    treema.undo();
+    expect(treema.data).toEqual(originalData);
+    treema.redo();
+    expect(treema.get(path)).toEqual('1');
+    return treema.set('/', jQuery.extend(true, {}, originalData));
+  });
+  it('reverts a toggled boolean value', function() {
+    completedTreema.toggleValue();
+    treema.undo();
+    expect(treema.data).toEqual(originalData);
+    treema.redo();
+    expect(treema.get('/completed')).toBe(true);
+    return treema.set('/', jQuery.extend(true, {}, originalData));
+  });
+  it('reverts an element inserted into an array', function() {
+    var numbersData, path;
+    path = '/numbers';
+    treema.insert(path, '1');
+    treema.undo();
+    expect(treema.data).toEqual(originalData);
+    treema.redo();
+    numbersData = treema.get(path);
+    expect(numbersData[numbersData.length - 1]).toEqual('1');
+    return treema.set('/', jQuery.extend(true, {}, originalData));
+  });
+  it('reverts a deleted object property', function() {
+    var path;
+    path = '/name';
+    treema["delete"](path);
+    treema.undo();
+    expect(treema.data).toEqual(originalData);
+    treema.redo();
+    expect(treema.get(path)).toBe(void 0);
+    return treema.set('/', jQuery.extend(true, {}, originalData));
+  });
+  it('reverts a element deleted from the middle of an array', function() {
+    var path;
+    path = '/numbers/1';
+    treema["delete"](path);
+    treema.undo();
+    expect(treema.data).toEqual(originalData);
+    treema.redo();
+    expect(treema.data).toNotEqual(originalData);
+    return treema.set('/', jQuery.extend(true, {}, originalData));
+  });
+  return it('reverts a series of edit, insert and delete actions', function() {
+    var numbersData;
+    treema.set('/name', 'Alice');
+    treema.insert('/numbers', '1');
+    treema["delete"]('/numbers');
+    treema.undo();
+    expect(treema.get('/numbers')).toBeDefined();
+    treema.undo();
+    expect(treema.get('/numbers')).toEqual(numbersTreema.data);
+    treema.undo();
+    expect(treema.data).toEqual(originalData);
+    treema.redo();
+    expect(treema.get('/name')).toBe('Alice');
+    treema.redo();
+    numbersData = treema.get('/numbers');
+    expect(numbersData[numbersData.length - 1]).toEqual('1');
+    treema.redo();
+    return expect(treema.get('/numbers')).toBeUndefined();
+  });
+});
 ;
 //# sourceMappingURL=treema.spec.js.map

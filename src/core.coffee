@@ -14,8 +14,10 @@ do __init = ->
       input.attr('maxlength', @schema.maxLength) if @schema.maxLength
       input.attr('type', @schema.format) if @schema.format in StringNode.inputTypes
 
-    saveChanges: (valEl) -> @data = $('input', valEl).val()
-
+    saveChanges: (valEl) -> 
+      oldData = @data
+      @data = $('input', valEl).val()
+      super(oldData)
 
 
   TreemaNode.setNodeSubclass 'number', class NumberNode extends TreemaNode
@@ -29,8 +31,10 @@ do __init = ->
       input.attr('max', @schema.maximum) if @schema.maximum
       input.attr('min', @schema.minimum) if @schema.minimum
 
-    saveChanges: (valEl) -> @data = parseFloat($('input', valEl).val())
-
+    saveChanges: (valEl) -> 
+      oldData = @data
+      @data = parseFloat($('input', valEl).val())
+      super(oldData)
 
 
   TreemaNode.setNodeSubclass 'integer', class IntegerNode extends TreemaNode
@@ -44,7 +48,10 @@ do __init = ->
       input.attr('max', @schema.maximum) if @schema.maximum
       input.attr('min', @schema.minimum) if @schema.minimum
 
-    saveChanges: (valEl) -> @data = parseInt($('input', valEl).val())
+    saveChanges: (valEl) -> 
+      oldData = @data
+      @data = parseInt($('input', valEl).val())
+      super(oldData)
 
 
 
@@ -67,16 +74,18 @@ do __init = ->
       input.focus()
 
     toggleValue: (newValue=null) ->
+      oldData = @data
       @data = not @data
       @data = newValue if newValue?
       valEl = @getValEl().empty()
       if @isDisplaying() then @buildValueForDisplay(valEl) else @buildValueForEditing(valEl)
+      @addTrackedAction {'oldData':oldData, 'newData':@data, 'path':@getPath(), 'action':'edit'}
       @flushChanges()
 
     onSpacePressed: -> @toggleValue()
     onFPressed: -> @toggleValue(false)
     onTPressed: -> @toggleValue(true)
-    saveChanges: ->
+    saveChanges: -> 
     onClick: (e) ->
       value = $(e.target).closest('.treema-value')
       return super(e) unless value.length
@@ -134,6 +143,7 @@ do __init = ->
       newTreema.justCreated = true
       newTreema.tv4 = @tv4
       childNode = @createChildNode(newTreema)
+      @addTrackedAction {'data':newTreema.data, 'path':newTreema.getPath(), 'parentPath':@getPath(), 'action':'insert'}
       @getAddButtonEl().before(childNode)
       if newTreema.canEdit()
         newTreema.edit()
@@ -389,6 +399,7 @@ do __init = ->
         else
           newTreema.addNewChild()
 
+      @addTrackedAction {'data':newTreema.data, 'path':newTreema.getPath(), 'parentPath':@getPath(), action:'insert'}
       @updateMyAddButton()
 
     findObjectInsertionPoint: (key) ->
@@ -423,6 +434,7 @@ do __init = ->
 
     buildValueForEditing: (valEl) -> @buildValueForEditingSimply(valEl, JSON.stringify(@data))
     saveChanges: (valEl) ->
+      oldData = @data
       @data = $('input', valEl).val()
       if @data[0] is "'" and @data[@data.length-1] isnt "'"
         @data = @data[1..]
@@ -437,6 +449,7 @@ do __init = ->
           @data = JSON.parse(@data)
         catch e
           console.log('could not parse data', @data)
+      super(oldData)
       @updateShadowMethods()
       @rebuild()
 

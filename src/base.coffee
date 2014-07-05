@@ -72,7 +72,9 @@ class TreemaNode
       @tv4 = root.tv4
 
   # Abstract functions --------------------------------------------------------
-  saveChanges: -> console.error('"saveChanges" has not been overridden.')
+  saveChanges: (oldData)-> 
+    return if oldData is @data
+    @addTrackedAction {'oldData':oldData, 'newData':@data, 'path':@getPath(), 'action':'edit'}
   getDefaultValue: -> null
   buildValueForDisplay: -> console.error('"buildValueForDisplay" has not been overridden.')
   buildValueForEditing: ->
@@ -136,6 +138,7 @@ class TreemaNode
 
     @saveChanges = (valEl) =>
       index = valEl.find('select').prop('selectedIndex')
+      @addTrackedAction {'oldData':@data, 'newData':@enum[index], 'path':@getPath(), 'action':'edit'}
       @data = @enum[index]
       TreemaNode.changedTreemas.push(@)
       @broadcastChanges()
@@ -153,6 +156,9 @@ class TreemaNode
     @schema.id = '__base__' unless (@schema.id or @parent)
     @data = options.data
     @patches = []
+    @trackedActions = []
+    @currentStateIndex = 0
+    @reverting = false
     @callbacks = @settings.callbacks
     @_defaults = defaults
     @_name = TreemaNode.pluginName
@@ -355,6 +361,7 @@ class TreemaNode
     @onSpacePressed(e) if e.which is 32
     @onTPressed(e) if e.which is 84
     @onFPressed(e) if e.which is 70
+    @onZPressed(e) if e.which is 90
     @onDeletePressed(e) if e.which in [8, 46] and not e.heldDown
 
   # Default keyboard behaviors ------------------------------------------------
@@ -436,6 +443,13 @@ class TreemaNode
     @deselectAll() if success
     e.preventDefault()
 
+  onZPressed: (e) ->
+    if e.ctrlKey or e.metaKey
+      if e.shiftKey
+        @getRoot().redo()
+      else
+        @getRoot().undo()
+        
   # Tree traversing/navigation ------------------------------------------------
   # (traversing means editing and adding fields, pressing enter and tab)
   # (navigation means selecting fields, pressing arrow keys)
@@ -611,14 +625,25 @@ class TreemaNode
     $(last).focus().select()
 
   # Removing nodes ------------------------------------------------------------
-  removeSelectedNodes: ->
-    selected = @getSelectedTreemas()
+  removeSelectedNodes: (nodes = []) ->
+    selected = nodes
+    selected = @getSelectedTreemas() unless nodes.length
     toSelect = null
     if selected.length is 1
       nextSibling = selected[0].$el.next('.treema-node').data('instance')
       prevSibling = selected[0].$el.prev('.treema-node').data('instance')
       toSelect = nextSibling or prevSibling or selected[0].parent
-    treema.remove() for treema in selected
+    #Saves path and node before removing to preserve original paths
+    data = []
+    paths = []
+    parentPaths = []
+    for treema in selected
+      data.push treema.data
+      paths.push treema.getPath()
+      parentPaths.push treema.parent?.getPath()
+    @addTrackedAction { 'data':data, 'path':paths, 'parentPath':parentPaths, 'action':'delete' }
+    for treema in selected
+      treema.remove() 
     toSelect.select() if toSelect and not @getSelectedTreemas().length
 
   remove: ->
@@ -746,6 +771,96 @@ class TreemaNode
     @$el.addClass('treema-last-selected')
     TreemaNode.didSelect = true
 
+  #Save/restore state
+  addTrackedAction: (action)->
+    root = @getRoot()
+    return if root.reverting 
+    root.trackedActions.splice root.currentStateIndex, root.trackedActions.length - root.currentStateIndex
+    root.trackedActions.push action
+    root.currentStateIndex++
+
+  undo: ->
+    trackedActions = @getTrackedActions()
+    currentStateIndex = @getCurrentStateIndex()
+    root = @getRoot()
+    return unless currentStateIndex
+
+    @reverting = true
+    restoreChange = trackedActions[currentStateIndex-1]
+
+    switch restoreChange.action
+      when 'delete'
+        if not $.isArray(restoreChange.path)
+          restoreChange.data = [restoreChange.data]
+          restoreChange.path = [restoreChange.path]
+          restoreChange.parentPath = [restoreChange.parentPath]
+
+        for treemaData, i in restoreChange.data
+          parentPath = restoreChange.parentPath[i]
+          treemaPath = restoreChange.path[i]
+          parentData = @get parentPath
+          switch $.isArray(parentData)
+            when false
+              @set treemaPath, treemaData
+            when true
+              deleteIndex = parseInt (treemaPath.substring (treemaPath.lastIndexOf('/') + 1))
+              if deleteIndex < parentData.length
+                parentData.splice deleteIndex, 0, treemaData
+                @set parentPath, parentData
+              else
+                @insert parentPath, treemaData
+
+      when 'edit'
+        @set restoreChange.path, restoreChange.oldData
+
+      when 'replace'
+        restoreChange.newNode.replaceNode restoreChange.oldNode.constructor
+        @set restoreChange.path, restoreChange.oldNode.data
+
+      when 'insert'
+        @delete restoreChange.path
+
+    root.currentStateIndex--
+    @reverting = false
+
+  redo: ->
+    trackedActions = @getTrackedActions()
+    currentStateIndex = @getCurrentStateIndex()
+    root = @getRoot()
+    return unless @currentStateIndex isnt trackedActions.length
+
+    @reverting = true
+    restoreChange = trackedActions[currentStateIndex]
+
+    switch restoreChange.action
+      when 'delete'
+        if not $.isArray(restoreChange.path)
+          restoreChange.path = [restoreChange.path]
+        for path in restoreChange.path
+          @delete path
+
+      when 'edit'
+        @set restoreChange.path, restoreChange.newData
+
+      when 'replace'
+        restoreChange.oldNode.replaceNode restoreChange.newNode.constructor
+        @set restoreChange.path, restoreChange.newNode.data
+
+      when 'insert'
+        parentData = @get restoreChange.parentPath
+        switch $.isArray(parentData)
+          when true
+            @insert restoreChange.parentPath, restoreChange.data
+          when false
+            @set restoreChange.path, restoreChange.data
+
+    root.currentStateIndex++
+    @reverting = false
+
+  getTrackedActions: ->
+    @getRoot().trackedActions
+  getCurrentStateIndex: ->
+    @getRoot().currentStateIndex
   # Working schemas -----------------------------------------------------------
 
   # Schemas can be flexible using combinatorial properties and references.
@@ -832,6 +947,7 @@ class TreemaNode
     @parent.createChildNode(newNode)
     @$el.replaceWith(newNode.$el)
     newNode.flushChanges() # should integrate
+    @addTrackedAction {'oldNode':@, 'newNode':newNode, 'path':@getPath(), 'action':'replace'}
 
 
   # Child node utilities ------------------------------------------------------
@@ -933,6 +1049,14 @@ class TreemaNode
     return data
 
   set: (path, newData) ->
+    oldData = @get path
+    if @setRecursive(path, newData)
+      @addTrackedAction {'oldData':oldData, 'newData':newData, 'path':path, 'action':'edit'}
+      return true
+    else
+      return false
+
+  setRecursive: (path, newData) ->
     path = @normalizePath(path)
 
     if path.length is 0
@@ -941,17 +1065,20 @@ class TreemaNode
       return true
 
     if @childrenTreemas?
-      result = @digDeeper(path, 'set', false, [newData])
+      result = @digDeeper(path, 'setRecursive', false, [newData])
       if result is false and path.length is 1 and $.isPlainObject(@data)
         # handles inserting values into objects
         @data[path[0]] = newData
+        @refreshDisplay()
         return true
       return result
 
     data = @data
+    nodePath = @getPath()
     for seg, i in path
       seg = @normalizeKey(seg, data)
       if path.length is i+1
+        oldData = data[seg]
         data[seg] = newData
         @refreshDisplay()
         return true
@@ -960,11 +1087,22 @@ class TreemaNode
         return false if data is undefined
 
   delete: (path) ->
+    oldData = @get path
+    if @deleteRecursive(path)
+      parentPath = path.substring(0, path.lastIndexOf('/'))
+      @addTrackedAction {'data': oldData, 'path': path, 'parentPath':parentPath, 'action':'delete'}
+      return true
+    else
+      return false
+
+  deleteRecursive: (path) ->
     path = @normalizePath(path)
-    return @remove() if path.length is 0
-    return @digDeeper(path, 'delete', false, []) if @childrenTreemas?
+    if path.length is 0
+      return @remove() 
+    return @digDeeper(path, 'deleteRecursive', false, []) if @childrenTreemas?
 
     data = @data
+    parentPath = @getPath()
     for seg, i in path
       seg = @normalizeKey(seg, data)
       if path.length is i+1
@@ -974,8 +1112,19 @@ class TreemaNode
       else
         data = data[seg]
         return false if data is undefined
+      parentPath += '/' + seg
 
   insert: (path, newData) ->
+    if @insertRecursive(path, newData)
+      parentPath = path
+      parentData = @get parentPath
+      childPath = parentPath + '/' + (parentData.length-1).toString()
+      @addTrackedAction {'data':newData, 'path':childPath, 'parentPath':parentPath, 'action':'insert'}
+      return true
+    else
+      return false
+
+  insertRecursive: (path, newData) ->
     # inserts objects at the end of arrays, path is to the array
     # for adding properties to object, use set
     path = @normalizePath(path)
@@ -984,12 +1133,19 @@ class TreemaNode
       @data.push(newData)
       @refreshDisplay()
       @flushChanges()
+
+      parentPath = @getPath()
+      childPath = @getPath() + '/' + (@data.length-1).toString()
+      lastTreema = @getLastTreema()
       return true
 
-    return @digDeeper(path, 'insert', false, [newData]) if @childrenTreemas?
+    return @digDeeper(path, 'insertRecursive', false, [newData]) if @childrenTreemas?
 
     data = @data
+
+    parentPath = @getPath()
     for seg, i in path
+      parentPath +=  '/' + seg
       seg = @normalizeKey(seg, data)
       data = data[seg]
       return false if data is undefined
@@ -998,7 +1154,6 @@ class TreemaNode
     data.push(newData)
     @refreshDisplay()
     return true
-
 
   normalizeKey: (key, collection) ->
     if $.isArray(collection)
@@ -1070,6 +1225,12 @@ class TreemaNode
     pathPieces.reverse()
     return '/' + pathPieces.join('/')
   getData: -> @data
+  getLastTreema: ->
+    return @ unless @childrenTreemas
+    treemaKeys = Object.keys(@childrenTreemas)
+    lastKey = treemaKeys[treemaKeys.length-1]
+    lastTreema = @childrenTreemas[lastKey]
+    return lastTreema
 
   isRoot: -> not @parent
   isEditing: -> @getValEl().hasClass('treema-edit')
