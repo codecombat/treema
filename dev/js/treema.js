@@ -1396,7 +1396,7 @@ TreemaNode = (function() {
     trackedActions = this.getTrackedActions();
     currentStateIndex = this.getCurrentStateIndex();
     root = this.getRoot();
-    if (this.currentStateIndex === trackedActions.length) {
+    if (currentStateIndex === trackedActions.length) {
       return;
     }
     this.reverting = true;
@@ -1856,7 +1856,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.insert = function(path, newData) {
-    var childPath, parentData, parentPath;
+    var childPath, insertPos, key, parentData, parentPath, val;
     if (this.insertRecursive(path, newData)) {
       parentPath = path;
       parentData = this.get(parentPath);
@@ -1864,7 +1864,18 @@ TreemaNode = (function() {
       if (parentPath !== '/') {
         childPath += '/';
       }
-      childPath += (parentData.length - 1).toString();
+      if (parentData[parentData.length - 1] !== newData) {
+        for (key in parentData) {
+          val = parentData[key];
+          if (JSON.stringify(val) === JSON.stringify(newData)) {
+            insertPos = key;
+            break;
+          }
+        }
+      } else {
+        insertPos = parentData.length - 1;
+      }
+      childPath += insertPos.toString();
       this.addTrackedAction({
         'data': newData,
         'path': childPath,

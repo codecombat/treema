@@ -827,7 +827,7 @@ class TreemaNode
     trackedActions = @getTrackedActions()
     currentStateIndex = @getCurrentStateIndex()
     root = @getRoot()
-    return unless @currentStateIndex isnt trackedActions.length
+    return unless currentStateIndex isnt trackedActions.length
 
     @reverting = true
     restoreChange = trackedActions[currentStateIndex]
@@ -1120,7 +1120,16 @@ class TreemaNode
       parentData = @get parentPath
       childPath = parentPath
       childPath += '/' unless parentPath is '/' 
-      childPath += (parentData.length-1).toString()
+
+      if parentData[parentData.length-1] isnt newData
+        for key, val of parentData
+          if JSON.stringify(val) is JSON.stringify(newData)
+            insertPos = key
+            break
+      else
+        insertPos = parentData.length-1
+
+      childPath += insertPos.toString()
       @addTrackedAction {'data':newData, 'path':childPath, 'parentPath':parentPath, 'action':'insert'}
       return true
     else
