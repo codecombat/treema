@@ -1118,7 +1118,9 @@ class TreemaNode
     if @insertRecursive(path, newData)
       parentPath = path
       parentData = @get parentPath
-      childPath = parentPath + '/' + (parentData.length-1).toString()
+      childPath = parentPath
+      childPath += '/' unless parentPath is '/' 
+      childPath += (parentData.length-1).toString()
       @addTrackedAction {'data':newData, 'path':childPath, 'parentPath':parentPath, 'action':'insert'}
       return true
     else

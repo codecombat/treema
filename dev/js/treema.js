@@ -1860,7 +1860,11 @@ TreemaNode = (function() {
     if (this.insertRecursive(path, newData)) {
       parentPath = path;
       parentData = this.get(parentPath);
-      childPath = parentPath + '/' + (parentData.length - 1).toString();
+      childPath = parentPath;
+      if (parentPath !== '/') {
+        childPath += '/';
+      }
+      childPath += (parentData.length - 1).toString();
       this.addTrackedAction({
         'data': newData,
         'path': childPath,
