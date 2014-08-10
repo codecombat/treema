@@ -47,7 +47,7 @@
   connect();
 })();
 
-(function(e){if("function"==typeof bootstrap)bootstrap("jade",e);else if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else if("undefined"!=typeof ses){if(!ses.ok())return;ses.makeJade=e}else"undefined"!=typeof window?window.jade=e():global.jade=e()})(function(){var define,ses,bootstrap,module,exports;
+;(function(e){if("function"==typeof bootstrap)bootstrap("jade",e);else if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else if("undefined"!=typeof ses){if(!ses.ok())return;ses.makeJade=e}else"undefined"!=typeof window?window.jade=e():global.jade=e()})(function(){var define,ses,bootstrap,module,exports;
 return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 
 /*!
@@ -256,7 +256,7 @@ exports.rethrow = function rethrow(err, filename, lineno, str){
 });
 ;
 
-var TreemaNode,
+;var TreemaNode,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
   __slice = [].slice;
@@ -3729,6 +3729,7 @@ TreemaNode = (function() {
     __extends(AceNode, _super);
 
     function AceNode() {
+      this.saveChanges = __bind(this.saveChanges, this);
       _ref3 = AceNode.__super__.constructor.apply(this, arguments);
       return _ref3;
     }
@@ -3739,21 +3740,11 @@ TreemaNode = (function() {
       return '';
     };
 
-    AceNode.prototype.buildValueForDisplay = function(valEl) {
-      var pre, _ref4;
-      if ((_ref4 = this.editor) != null) {
-        _ref4.destroy();
-      }
-      pre = $('<pre></pre>').text(this.data);
-      return valEl.append(pre);
-    };
-
-    AceNode.prototype.buildValueForEditing = function(valEl) {
+    AceNode.prototype.initEditor = function(valEl) {
       var d, session;
       d = $('<div></div>').text(this.data);
       valEl.append(d);
       this.editor = ace.edit(d[0]);
-      this.editor.setReadOnly(false);
       session = this.editor.getSession();
       if (this.schema.aceMode != null) {
         session.setMode(this.schema.aceMode);
@@ -3766,14 +3757,32 @@ TreemaNode = (function() {
       }
       session.setNewLineMode("unix");
       session.setUseSoftTabs(true);
+      session.on('change', this.saveChanges);
+      this.editor.setOptions({
+        maxLines: Infinity
+      });
       if (this.schema.aceTheme != null) {
-        this.editor.setTheme(this.schema.aceTheme);
+        return this.editor.setTheme(this.schema.aceTheme);
       }
-      return valEl.find('textarea').focus();
     };
 
+    AceNode.prototype.toggleEdit = function() {
+      if (!this.editor) {
+        return this.initEditor(this.getValEl());
+      }
+    };
+
+    AceNode.prototype.buildValueForDisplay = function(valEl) {
+      if (!this.editor) {
+        return this.initEditor(valEl);
+      }
+    };
+
+    AceNode.prototype.buildValueForEditing = function() {};
+
     AceNode.prototype.saveChanges = function() {
-      return this.data = this.editor.getValue();
+      this.data = this.editor.getValue();
+      return this.flushChanges();
     };
 
     AceNode.prototype.onTabPressed = function() {};

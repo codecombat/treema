@@ -142,27 +142,29 @@ do ->
 
     getDefaultValue: -> ''
 
-    buildValueForDisplay: (valEl) ->
-      @editor?.destroy()
-      pre = $('<pre></pre>').text(@data)
-      valEl.append(pre)
-
-    buildValueForEditing: (valEl) ->
+    initEditor: (valEl) ->
       d = $('<div></div>').text(@data)
       valEl.append(d)
       @editor = ace.edit(d[0])
-      @editor.setReadOnly(false)
       session = @editor.getSession()
       session.setMode(@schema.aceMode) if @schema.aceMode?
       session.setTabSize(@schema.aceTabSize) if @schema.aceTabSize?
       session.setUseWrapMode(@schema.aceUseWrapMode) if @schema.aceUseWrapMode?
       session.setNewLineMode "unix"
       session.setUseSoftTabs true
+      session.on('change', @saveChanges)
+      @editor.setOptions({ maxLines: Infinity })
       @editor.setTheme(@schema.aceTheme) if @schema.aceTheme?
-      valEl.find('textarea').focus()
 
-    saveChanges: ->
+    # HACK: This gets the editor to be always on like I want, but which is unlike
+    # most other nodes where there's an edit state and a view state.
+    toggleEdit: -> @initEditor(@getValEl()) unless @editor
+    buildValueForDisplay: (valEl) -> @initEditor(valEl) unless @editor
+    buildValueForEditing: ->
+
+    saveChanges: =>
       @data = @editor.getValue()
+      @flushChanges()
 
     onTabPressed: ->
     onEnterPressed: ->
