@@ -168,6 +168,7 @@ do ->
     saveChanges: =>
       @data = @editor.getValue()
       @flushChanges()
+      @broadcastChanges()
 
     onTabPressed: ->
     onEnterPressed: ->

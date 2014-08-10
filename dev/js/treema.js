@@ -3525,7 +3525,8 @@ TreemaNode = (function() {
 
     AceNode.prototype.saveChanges = function() {
       this.data = this.editor.getValue();
-      return this.flushChanges();
+      this.flushChanges();
+      return this.broadcastChanges();
     };
 
     AceNode.prototype.onTabPressed = function() {};
