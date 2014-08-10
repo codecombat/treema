@@ -158,7 +158,10 @@ do ->
 
     # HACK: This gets the editor to be always on like I want, but which is unlike
     # most other nodes where there's an edit state and a view state.
-    toggleEdit: -> @initEditor(@getValEl()) unless @editor
+    toggleEdit: -> 
+      @initEditor(@getValEl()) unless @editor
+      @deselectAll()
+      
     buildValueForDisplay: (valEl) -> @initEditor(valEl) unless @editor
     buildValueForEditing: ->
 

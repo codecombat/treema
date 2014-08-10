@@ -3510,8 +3510,9 @@ TreemaNode = (function() {
 
     AceNode.prototype.toggleEdit = function() {
       if (!this.editor) {
-        return this.initEditor(this.getValEl());
+        this.initEditor(this.getValEl());
       }
+      return this.deselectAll();
     };
 
     AceNode.prototype.buildValueForDisplay = function(valEl) {
