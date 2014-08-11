@@ -301,7 +301,7 @@ TreemaNode = (function() {
     this.patches = [];
     this.trackedActions = [];
     this.currentStateIndex = 0;
-    this.reverting = false;
+    this.trackingDisabled = false;
     this.callbacks = this.settings.callbacks;
     this._defaults = defaults;
     this._name = TreemaNode.pluginName;
@@ -1331,7 +1331,7 @@ TreemaNode = (function() {
   TreemaNode.prototype.addTrackedAction = function(action) {
     var root;
     root = this.getRoot();
-    if (root.reverting) {
+    if (root.trackingDisabled) {
       return;
     }
     root.trackedActions.splice(root.currentStateIndex, root.trackedActions.length - root.currentStateIndex);
@@ -1339,15 +1339,27 @@ TreemaNode = (function() {
     return root.currentStateIndex++;
   };
 
+  TreemaNode.prototype.disableTracking = function() {
+    return this.getRoot().trackingDisabled = true;
+  };
+
+  TreemaNode.prototype.enableTracking = function() {
+    return this.getRoot().trackingDisabled = false;
+  };
+
+  TreemaNode.prototype.canUndo = function() {
+    return this.getCurrentStateIndex() !== 0;
+  };
+
   TreemaNode.prototype.undo = function() {
     var currentStateIndex, deleteIndex, i, parentData, parentPath, restoreChange, root, trackedActions, treemaData, treemaPath, _i, _len, _ref;
+    if (!this.canUndo()) {
+      return;
+    }
     trackedActions = this.getTrackedActions();
     currentStateIndex = this.getCurrentStateIndex();
     root = this.getRoot();
-    if (!currentStateIndex) {
-      return;
-    }
-    this.reverting = true;
+    this.disableTracking();
     restoreChange = trackedActions[currentStateIndex - 1];
     switch (restoreChange.action) {
       case 'delete':
@@ -1378,7 +1390,11 @@ TreemaNode = (function() {
         }
         break;
       case 'edit':
-        this.set(restoreChange.path, restoreChange.oldData);
+        if (restoreChange.oldData === void 0) {
+          this["delete"](restoreChange.path);
+        } else {
+          this.set(restoreChange.path, restoreChange.oldData);
+        }
         break;
       case 'replace':
         restoreChange.newNode.replaceNode(restoreChange.oldNode.constructor);
@@ -1388,18 +1404,22 @@ TreemaNode = (function() {
         this["delete"](restoreChange.path);
     }
     root.currentStateIndex--;
-    return this.reverting = false;
+    return this.enableTracking();
+  };
+
+  TreemaNode.prototype.canRedo = function() {
+    return this.getCurrentStateIndex() !== this.getTrackedActions().length;
   };
 
   TreemaNode.prototype.redo = function() {
     var currentStateIndex, parentData, path, restoreChange, root, trackedActions, _i, _len, _ref;
+    if (!this.canRedo()) {
+      return;
+    }
     trackedActions = this.getTrackedActions();
     currentStateIndex = this.getCurrentStateIndex();
     root = this.getRoot();
-    if (currentStateIndex === trackedActions.length) {
-      return;
-    }
-    this.reverting = true;
+    this.disableTracking();
     restoreChange = trackedActions[currentStateIndex];
     switch (restoreChange.action) {
       case 'delete':
@@ -1430,7 +1450,7 @@ TreemaNode = (function() {
         }
     }
     root.currentStateIndex++;
-    return this.reverting = false;
+    return this.enableTracking();
   };
 
   TreemaNode.prototype.getTrackedActions = function() {
@@ -1758,12 +1778,14 @@ TreemaNode = (function() {
     var oldData;
     oldData = this.get(path);
     if (this.setRecursive(path, newData)) {
-      this.addTrackedAction({
-        'oldData': oldData,
-        'newData': newData,
-        'path': path,
-        'action': 'edit'
-      });
+      if (JSON.stringify(newData) !== JSON.stringify(oldData)) {
+        this.addTrackedAction({
+          'oldData': oldData,
+          'newData': newData,
+          'path': path,
+          'action': 'edit'
+        });
+      }
       return true;
     } else {
       return false;
