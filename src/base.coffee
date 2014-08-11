@@ -158,7 +158,7 @@ class TreemaNode
     @patches = []
     @trackedActions = []
     @currentStateIndex = 0
-    @reverting = false
+    @trackingDisabled = false
     @callbacks = @settings.callbacks
     @_defaults = defaults
     @_name = TreemaNode.pluginName
@@ -774,18 +774,27 @@ class TreemaNode
   #Save/restore state
   addTrackedAction: (action)->
     root = @getRoot()
-    return if root.reverting 
+    return if root.trackingDisabled 
     root.trackedActions.splice root.currentStateIndex, root.trackedActions.length - root.currentStateIndex
     root.trackedActions.push action
     root.currentStateIndex++
 
+  disableTracking: ->
+    @getRoot().trackingDisabled = true
+
+  enableTracking: ->
+    @getRoot().trackingDisabled = false
+    
+  canUndo: ->
+    return @getCurrentStateIndex() isnt 0
+
   undo: ->
+    return unless @canUndo()
+
     trackedActions = @getTrackedActions()
     currentStateIndex = @getCurrentStateIndex()
     root = @getRoot()
-    return unless currentStateIndex
-
-    @reverting = true
+    @disableTracking()
     restoreChange = trackedActions[currentStateIndex-1]
 
     switch restoreChange.action
@@ -811,7 +820,10 @@ class TreemaNode
                 @insert parentPath, treemaData
 
       when 'edit'
-        @set restoreChange.path, restoreChange.oldData
+        if restoreChange.oldData is undefined
+          @delete restoreChange.path
+        else
+          @set restoreChange.path, restoreChange.oldData
 
       when 'replace'
         restoreChange.newNode.replaceNode restoreChange.oldNode.constructor
@@ -821,15 +833,18 @@ class TreemaNode
         @delete restoreChange.path
 
     root.currentStateIndex--
-    @reverting = false
+    @enableTracking()
+
+  canRedo: ->
+    return @getCurrentStateIndex() isnt @getTrackedActions().length
 
   redo: ->
+    return unless @canRedo()
+
     trackedActions = @getTrackedActions()
     currentStateIndex = @getCurrentStateIndex()
     root = @getRoot()
-    return unless @currentStateIndex isnt trackedActions.length
-
-    @reverting = true
+    @disableTracking()
     restoreChange = trackedActions[currentStateIndex]
 
     switch restoreChange.action
@@ -855,7 +870,7 @@ class TreemaNode
             @set restoreChange.path, restoreChange.data
 
     root.currentStateIndex++
-    @reverting = false
+    @enableTracking()
 
   getTrackedActions: ->
     @getRoot().trackedActions
@@ -1051,7 +1066,8 @@ class TreemaNode
   set: (path, newData) ->
     oldData = @get path
     if @setRecursive(path, newData)
-      @addTrackedAction {'oldData':oldData, 'newData':newData, 'path':path, 'action':'edit'}
+      if JSON.stringify(newData) isnt JSON.stringify(oldData)
+        @addTrackedAction {'oldData':oldData, 'newData':newData, 'path':path, 'action':'edit'}
       return true
     else
       return false
@@ -1118,7 +1134,18 @@ class TreemaNode
     if @insertRecursive(path, newData)
       parentPath = path
       parentData = @get parentPath
-      childPath = parentPath + '/' + (parentData.length-1).toString()
+      childPath = parentPath
+      childPath += '/' unless parentPath is '/' 
+
+      if parentData[parentData.length-1] isnt newData
+        for key, val of parentData
+          if JSON.stringify(val) is JSON.stringify(newData)
+            insertPos = key
+            break
+      else
+        insertPos = parentData.length-1
+
+      childPath += insertPos.toString()
       @addTrackedAction {'data':newData, 'path':childPath, 'parentPath':parentPath, 'action':'insert'}
       return true
     else
