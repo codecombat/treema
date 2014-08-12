@@ -62,6 +62,8 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.workingSchema = null;
 
+  TreemaNode.prototype.nodeDescription = 'Node';
+
   TreemaNode.prototype.isValid = function() {
     var errors;
     errors = this.getErrors();
@@ -1451,6 +1453,49 @@ TreemaNode = (function() {
     }
     root.currentStateIndex++;
     return this.enableTracking();
+  };
+
+  TreemaNode.prototype.getUndoDescription = function() {
+    var currentStateIndex, trackedActions;
+    if (!this.canUndo()) {
+      return '';
+    }
+    trackedActions = this.getTrackedActions();
+    currentStateIndex = this.getCurrentStateIndex();
+    return this.getTrackedActionDescription(trackedActions[currentStateIndex - 1]);
+  };
+
+  TreemaNode.prototype.getRedoDescription = function() {
+    var currentStateIndex, trackedActions;
+    if (!this.canRedo()) {
+      return '';
+    }
+    trackedActions = this.getTrackedActions();
+    currentStateIndex = this.getCurrentStateIndex();
+    return this.getTrackedActionDescription(trackedActions[currentStateIndex]);
+  };
+
+  TreemaNode.prototype.getTrackedActionDescription = function(trackedAction) {
+    var path, trackedActionDescription;
+    switch (trackedAction.action) {
+      case 'insert':
+        trackedActionDescription = 'Add New ' + this.nodeDescription;
+        break;
+      case 'delete':
+        trackedActionDescription = 'Delete ' + this.nodeDescription;
+        break;
+      case 'edit':
+        path = trackedAction.path.split('/');
+        if (path[path.length - 1] === 'pos') {
+          trackedActionDescription = 'Move ' + this.nodeDescription;
+        } else {
+          trackedActionDescription = 'Edit ' + this.nodeDescription;
+        }
+        break;
+      default:
+        trackedActionDescription = '';
+    }
+    return trackedActionDescription;
   };
 
   TreemaNode.prototype.getTrackedActions = function() {
