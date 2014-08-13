@@ -39,6 +39,8 @@ class TreemaNode
   removed: false
   workingSchema: null
 
+  # Node name to be used in undo-redo descriptions
+  nodeDescription: 'Node'
   # Thin interface for tv4 ----------------------------------------------------
   isValid: ->
     errors = @getErrors()
@@ -733,6 +735,7 @@ class TreemaNode
     @toggleSelect()
     @keepFocus()
     TreemaNode.didSelect = true
+    TreemaNode.lastTreemaWithFocus = @getRoot()
 
   deselectAll: (excludeSelf=false) ->
     for treema in @getSelectedTreemas()
@@ -871,6 +874,37 @@ class TreemaNode
 
     root.currentStateIndex++
     @enableTracking()
+
+  getUndoDescription: ->
+    return '' unless @canUndo()
+    trackedActions = @getTrackedActions()
+    currentStateIndex = @getCurrentStateIndex()
+    return @getTrackedActionDescription( trackedActions[currentStateIndex - 1] )
+
+  getRedoDescription: ->
+    return '' unless @canRedo()
+    trackedActions = @getTrackedActions()
+    currentStateIndex = @getCurrentStateIndex()
+    return @getTrackedActionDescription trackedActions[currentStateIndex]
+
+  getTrackedActionDescription: (trackedAction) ->
+    switch trackedAction.action
+      when 'insert'
+        trackedActionDescription = 'Add New ' + @nodeDescription
+
+      when 'delete'
+        trackedActionDescription = 'Delete ' + @nodeDescription
+
+      when 'edit'
+        path = trackedAction.path.split '/'
+        if path[path.length-1] is 'pos'
+          trackedActionDescription = 'Move ' + @nodeDescription
+        else
+          trackedActionDescription = 'Edit ' + @nodeDescription
+
+      else
+        trackedActionDescription = ''
+    trackedActionDescription
 
   getTrackedActions: ->
     @getRoot().trackedActions
@@ -1258,6 +1292,8 @@ class TreemaNode
     lastKey = treemaKeys[treemaKeys.length-1]
     lastTreema = @childrenTreemas[lastKey]
     return lastTreema
+  @getLastTreemaWithFocus: ->
+    return @lastTreemaWithFocus
 
   isRoot: -> not @parent
   isEditing: -> @getValEl().hasClass('treema-edit')

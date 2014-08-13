@@ -62,6 +62,8 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.workingSchema = null;
 
+  TreemaNode.prototype.nodeDescription = 'Node';
+
   TreemaNode.prototype.isValid = function() {
     var errors;
     errors = this.getErrors();
@@ -1256,7 +1258,8 @@ TreemaNode = (function() {
     this.deselectAll(excludeSelf);
     this.toggleSelect();
     this.keepFocus();
-    return TreemaNode.didSelect = true;
+    TreemaNode.didSelect = true;
+    return TreemaNode.lastTreemaWithFocus = this.getRoot();
   };
 
   TreemaNode.prototype.deselectAll = function(excludeSelf) {
@@ -1451,6 +1454,49 @@ TreemaNode = (function() {
     }
     root.currentStateIndex++;
     return this.enableTracking();
+  };
+
+  TreemaNode.prototype.getUndoDescription = function() {
+    var currentStateIndex, trackedActions;
+    if (!this.canUndo()) {
+      return '';
+    }
+    trackedActions = this.getTrackedActions();
+    currentStateIndex = this.getCurrentStateIndex();
+    return this.getTrackedActionDescription(trackedActions[currentStateIndex - 1]);
+  };
+
+  TreemaNode.prototype.getRedoDescription = function() {
+    var currentStateIndex, trackedActions;
+    if (!this.canRedo()) {
+      return '';
+    }
+    trackedActions = this.getTrackedActions();
+    currentStateIndex = this.getCurrentStateIndex();
+    return this.getTrackedActionDescription(trackedActions[currentStateIndex]);
+  };
+
+  TreemaNode.prototype.getTrackedActionDescription = function(trackedAction) {
+    var path, trackedActionDescription;
+    switch (trackedAction.action) {
+      case 'insert':
+        trackedActionDescription = 'Add New ' + this.nodeDescription;
+        break;
+      case 'delete':
+        trackedActionDescription = 'Delete ' + this.nodeDescription;
+        break;
+      case 'edit':
+        path = trackedAction.path.split('/');
+        if (path[path.length - 1] === 'pos') {
+          trackedActionDescription = 'Move ' + this.nodeDescription;
+        } else {
+          trackedActionDescription = 'Edit ' + this.nodeDescription;
+        }
+        break;
+      default:
+        trackedActionDescription = '';
+    }
+    return trackedActionDescription;
   };
 
   TreemaNode.prototype.getTrackedActions = function() {
@@ -2102,6 +2148,10 @@ TreemaNode = (function() {
     return lastTreema;
   };
 
+  TreemaNode.getLastTreemaWithFocus = function() {
+    return this.lastTreemaWithFocus;
+  };
+
   TreemaNode.prototype.isRoot = function() {
     return !this.parent;
   };
@@ -2517,7 +2567,8 @@ TreemaNode = (function() {
     };
 
     BooleanNode.prototype.buildValueForDisplay = function(valEl) {
-      return this.buildValueForDisplaySimply(valEl, JSON.stringify(this.data));
+      this.buildValueForDisplaySimply(valEl, JSON.stringify(this.data));
+      return this.select();
     };
 
     BooleanNode.prototype.buildValueForEditing = function(valEl) {
@@ -2549,6 +2600,7 @@ TreemaNode = (function() {
         'path': this.getPath(),
         'action': 'edit'
       });
+      this.select();
       return this.flushChanges();
     };
 
