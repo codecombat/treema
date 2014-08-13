@@ -735,6 +735,7 @@ class TreemaNode
     @toggleSelect()
     @keepFocus()
     TreemaNode.didSelect = true
+    TreemaNode.lastTreemaWithFocus = @getRoot()
 
   deselectAll: (excludeSelf=false) ->
     for treema in @getSelectedTreemas()
@@ -1291,6 +1292,8 @@ class TreemaNode
     lastKey = treemaKeys[treemaKeys.length-1]
     lastTreema = @childrenTreemas[lastKey]
     return lastTreema
+  @getLastTreemaWithFocus: ->
+    return @lastTreemaWithFocus
 
   isRoot: -> not @parent
   isEditing: -> @getValEl().hasClass('treema-edit')

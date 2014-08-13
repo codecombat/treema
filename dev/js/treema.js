@@ -1258,7 +1258,8 @@ TreemaNode = (function() {
     this.deselectAll(excludeSelf);
     this.toggleSelect();
     this.keepFocus();
-    return TreemaNode.didSelect = true;
+    TreemaNode.didSelect = true;
+    return TreemaNode.lastTreemaWithFocus = this.getRoot();
   };
 
   TreemaNode.prototype.deselectAll = function(excludeSelf) {
@@ -2145,6 +2146,10 @@ TreemaNode = (function() {
     lastKey = treemaKeys[treemaKeys.length - 1];
     lastTreema = this.childrenTreemas[lastKey];
     return lastTreema;
+  };
+
+  TreemaNode.getLastTreemaWithFocus = function() {
+    return this.lastTreemaWithFocus;
   };
 
   TreemaNode.prototype.isRoot = function() {
