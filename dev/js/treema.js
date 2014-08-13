@@ -2567,7 +2567,8 @@ TreemaNode = (function() {
     };
 
     BooleanNode.prototype.buildValueForDisplay = function(valEl) {
-      return this.buildValueForDisplaySimply(valEl, JSON.stringify(this.data));
+      this.buildValueForDisplaySimply(valEl, JSON.stringify(this.data));
+      return this.select();
     };
 
     BooleanNode.prototype.buildValueForEditing = function(valEl) {
@@ -2599,6 +2600,7 @@ TreemaNode = (function() {
         'path': this.getPath(),
         'action': 'edit'
       });
+      this.select();
       return this.flushChanges();
     };
 

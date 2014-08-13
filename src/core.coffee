@@ -66,7 +66,9 @@ do __init = ->
     valueClass: 'treema-boolean'
     getDefaultValue: -> false
 
-    buildValueForDisplay: (valEl) -> @buildValueForDisplaySimply(valEl, JSON.stringify(@data))
+    buildValueForDisplay: (valEl) -> 
+      @buildValueForDisplaySimply(valEl, JSON.stringify(@data))
+      @select()
 
     buildValueForEditing: (valEl) ->
       input = @buildValueForEditingSimply(valEl, JSON.stringify(@data))
@@ -80,6 +82,7 @@ do __init = ->
       valEl = @getValEl().empty()
       if @isDisplaying() then @buildValueForDisplay(valEl) else @buildValueForEditing(valEl)
       @addTrackedAction {'oldData':oldData, 'newData':@data, 'path':@getPath(), 'action':'edit'}
+      @select()
       @flushChanges()
 
     onSpacePressed: -> @toggleValue()
