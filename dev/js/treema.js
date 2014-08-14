@@ -3161,13 +3161,15 @@ TreemaNode = (function() {
         newTreema.edit();
       } else {
         this.integrateChildTreema(newTreema);
-        children = newTreema.getChildren();
-        if (children.length) {
-          newTreema.open();
-          child = newTreema.childrenTreemas[children[0][0]];
-          child.select();
-        } else {
-          newTreema.addNewChild();
+        if (newTreema.collection) {
+          children = newTreema.getChildren();
+          if (children.length) {
+            newTreema.open();
+            child = newTreema.childrenTreemas[children[0][0]];
+            child.select();
+          } else {
+            newTreema.addNewChild();
+          }
         }
       }
       this.addTrackedAction({

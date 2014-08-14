@@ -47,7 +47,7 @@
   connect();
 })();
 
-(function(e){if("function"==typeof bootstrap)bootstrap("jade",e);else if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else if("undefined"!=typeof ses){if(!ses.ok())return;ses.makeJade=e}else"undefined"!=typeof window?window.jade=e():global.jade=e()})(function(){var define,ses,bootstrap,module,exports;
+;(function(e){if("function"==typeof bootstrap)bootstrap("jade",e);else if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else if("undefined"!=typeof ses){if(!ses.ok())return;ses.makeJade=e}else"undefined"!=typeof window?window.jade=e():global.jade=e()})(function(){var define,ses,bootstrap,module,exports;
 return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 
 /*!
@@ -256,7 +256,7 @@ exports.rethrow = function rethrow(err, filename, lineno, str){
 });
 ;
 
-var TreemaNode,
+;var TreemaNode,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
   __slice = [].slice;
@@ -3419,13 +3419,15 @@ TreemaNode = (function() {
         newTreema.edit();
       } else {
         this.integrateChildTreema(newTreema);
-        children = newTreema.getChildren();
-        if (children.length) {
-          newTreema.open();
-          child = newTreema.childrenTreemas[children[0][0]];
-          child.select();
-        } else {
-          newTreema.addNewChild();
+        if (newTreema.collection) {
+          children = newTreema.getChildren();
+          if (children.length) {
+            newTreema.open();
+            child = newTreema.childrenTreemas[children[0][0]];
+            child.select();
+          } else {
+            newTreema.addNewChild();
+          }
         }
       }
       this.addTrackedAction({

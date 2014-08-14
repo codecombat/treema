@@ -394,13 +394,14 @@ do __init = ->
       else
         @integrateChildTreema(newTreema)
         # new treemas may already have children from default
-        children = newTreema.getChildren()
-        if children.length
-          newTreema.open()
-          child = newTreema.childrenTreemas[children[0][0]]
-          child.select()
-        else
-          newTreema.addNewChild()
+        if newTreema.collection
+          children = newTreema.getChildren()
+          if children.length
+            newTreema.open()
+            child = newTreema.childrenTreemas[children[0][0]]
+            child.select()
+          else
+            newTreema.addNewChild()
 
       @addTrackedAction {'data':newTreema.data, 'path':newTreema.getPath(), 'parentPath':@getPath(), action:'insert'}
       @updateMyAddButton()
