@@ -105,7 +105,7 @@ do __init = ->
     sort: false
 
     getChildren: ->
-      ([key, value, @getChildSchema(key)] for value, key in @data)
+      ({key:key, value: value, schema: @getChildSchema(key)} for value, key in @data)
 
     getChildSchema: (index) ->
       schema = @workingSchema or @schema
@@ -200,11 +200,11 @@ do __init = ->
         for key of @schema.properties
           continue if typeof @data[key] is 'undefined'
           keysAccountedFor.push(key)
-          children.push([key, @data[key], @getChildSchema(key)])
+          children.push({key: key, value: @data[key], schema: @getChildSchema(key)})
 
       for key, value of @data
         continue if key in keysAccountedFor
-        children.push([key, value, @getChildSchema(key)])
+        children.push({key: key, value: value, schema: @getChildSchema(key)})
       children
 
     getChildSchema: (key_or_title) ->

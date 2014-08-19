@@ -686,9 +686,9 @@ class TreemaNode
       childrenContainer = @$el.find('.treema-children').detach()
       childrenContainer.empty()
       @childrenTreemas = {}
-      for [key, value, schema] in @getChildren()
-        continue if schema.format is 'hidden'
-        treema = TreemaNode.make(null, {schema: schema, data:value}, @, key)
+      for child in @getChildren()
+        continue if child.schema.format is 'hidden'
+        treema = TreemaNode.make(null, {schema: child.schema, data:child.value}, @, child.key)
         @integrateChildTreema(treema)
         childNode = @createChildNode(treema)
         childrenContainer.append(childNode)

@@ -1766,4 +1766,5 @@ describe('Schemaless', function() {
   });
 });
 ;
+;
 //# sourceMappingURL=treema.spec.js.map

@@ -1422,7 +1422,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.open = function(depth) {
-    var child, childIndex, childNode, childrenContainer, key, schema, treema, value, _i, _len, _ref, _ref1, _ref2, _ref3, _results;
+    var child, childIndex, childNode, childrenContainer, treema, _i, _len, _ref, _ref1, _ref2, _results;
     if (depth == null) {
       depth = 1;
     }
@@ -1432,14 +1432,14 @@ TreemaNode = (function() {
       this.childrenTreemas = {};
       _ref = this.getChildren();
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        _ref1 = _ref[_i], key = _ref1[0], value = _ref1[1], schema = _ref1[2];
-        if (schema.format === 'hidden') {
+        child = _ref[_i];
+        if (child.schema.format === 'hidden') {
           continue;
         }
         treema = TreemaNode.make(null, {
-          schema: schema,
-          data: value
-        }, this, key);
+          schema: child.schema,
+          data: child.value
+        }, this, child.key);
         this.integrateChildTreema(treema);
         childNode = this.createChildNode(treema);
         childrenContainer.append(childNode);
@@ -1457,10 +1457,10 @@ TreemaNode = (function() {
     }
     depth -= 1;
     if (depth) {
-      _ref3 = (_ref2 = this.childrenTreemas) != null ? _ref2 : {};
+      _ref2 = (_ref1 = this.childrenTreemas) != null ? _ref1 : {};
       _results = [];
-      for (childIndex in _ref3) {
-        child = _ref3[childIndex];
+      for (childIndex in _ref2) {
+        child = _ref2[childIndex];
         _results.push(child.open(depth));
       }
       return _results;
@@ -2918,7 +2918,11 @@ TreemaNode = (function() {
       _results = [];
       for (key = _i = 0, _len = _ref6.length; _i < _len; key = ++_i) {
         value = _ref6[key];
-        _results.push([key, value, this.getChildSchema(key)]);
+        _results.push({
+          key: key,
+          value: value,
+          schema: this.getChildSchema(key)
+        });
       }
       return _results;
     };
@@ -3097,7 +3101,11 @@ TreemaNode = (function() {
             continue;
           }
           keysAccountedFor.push(key);
-          children.push([key, this.data[key], this.getChildSchema(key)]);
+          children.push({
+            key: key,
+            value: this.data[key],
+            schema: this.getChildSchema(key)
+          });
         }
       }
       _ref7 = this.data;
@@ -3106,7 +3114,11 @@ TreemaNode = (function() {
         if (__indexOf.call(keysAccountedFor, key) >= 0) {
           continue;
         }
-        children.push([key, value, this.getChildSchema(key)]);
+        children.push({
+          key: key,
+          value: value,
+          schema: this.getChildSchema(key)
+        });
       }
       return children;
     };
@@ -3938,5 +3950,6 @@ TreemaNode = (function() {
     return TreemaNode.make(element, options);
   };
 })(jQuery);
+;
 ;
 //# sourceMappingURL=treema.js.map
