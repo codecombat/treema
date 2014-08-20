@@ -1263,6 +1263,52 @@ class TreemaNode
 
   @setNodeSubclass: (key, NodeClass) -> @nodeMap[key] = NodeClass
 
+  @make: (element, options, parent, keyForParent) ->
+    # this is a mess, make a factory which is able to deal with working schemas
+    # and setting defaults.
+    
+    if options.schema.default? and not (options.data? or options.defaultData?)
+      options.data = @utils.cloneDeep(options.schema.default)
+      
+    workingData = options.data or options.defaultData
+    workingSchemas = @utils.buildWorkingSchemas(options.schema, parent?.tv4)
+    workingSchema = @utils.chooseWorkingSchema(workingData, workingSchemas, options.tv4)
+    @massageData(options, workingSchema) # make sure the data at least meshes with the working schema type
+    type = $.type(options.data ? options.defaultData)
+    localClasses = if parent then parent.settings.nodeClasses else options.nodeClasses
+    NodeClass = @getNodeClassForSchema(workingSchema, type, localClasses)
+
+    # still to redo a bit...
+    combinedOps = {}
+    $.extend(combinedOps, parent.settings) if parent
+    $.extend(combinedOps, options)
+    newNode = new NodeClass(element, combinedOps, parent)
+    newNode.keyForParent = keyForParent if keyForParent?
+    if parent
+      newNode.setWorkingSchema(workingSchema, workingSchemas)
+    newNode
+    
+  @massageData: (options, workingSchema) ->
+    # do not allow data or default data to start out invalid with the working schema type, if possible
+    return unless schemaTypes = workingSchema.type
+    schemaTypes = [schemaTypes] unless $.type(schemaTypes) is 'array'
+
+    dataType = $.type(options.data)
+    defaultDataType = $.type(options.defaultData)
+
+    if dataType isnt 'undefined' and dataType not in schemaTypes
+      options.data = @defaultForType(schemaTypes[0])
+      
+    if defaultDataType isnt 'undefined' and defaultDataType not in schemaTypes
+      delete options.defaultDataType
+      defaultDataType = 'undefined'
+      
+    if dataType is 'undefined' and defaultDataType is 'undefined'
+      options.data = @defaultForType(schemaTypes[0])
+              
+  @defaultForType: (type) ->
+    {'string':'', 'number':0, 'null': null, 'object': {}, 'integer': 0, 'boolean': false, 'array':[]}[type]
+
   @getNodeClassForSchema: (schema, def='string', localClasses=null) ->
     typeMismatch = false
     if schema.type
@@ -1270,7 +1316,7 @@ class TreemaNode
         typeMismatch = true if not def in schema.type
       else
         typeMismatch = def isnt schema.type
-        
+
     NodeClass = null
     localClasses = localClasses or {}
     NodeClass = localClasses[schema.format] or @nodeMap[schema.format] if schema.format
@@ -1280,62 +1326,6 @@ class TreemaNode
     NodeClass = localClasses[type] or @nodeMap[type]
     return NodeClass if NodeClass
     @nodeMap['any']
-
-  @make: (element, options, parent, keyForParent) ->
-    # this is a mess, make a factory which is able to deal with working schemas
-    # and setting defaults.
-    if options.data is undefined and options.schema.default?
-      d = options.schema.default
-      options.data = $.extend(true, {}, {'x':d})['x']
-
-    workingSchemas = []
-    workingSchema = null
-    type = null
-    type = $.type(options.schema.default) unless options.schema.default is undefined
-    type = $.type(options.data) if options.data isnt undefined
-    type = null if type is 'number' and options.data? and options.data % 1 is 0 # kick it to the schema to decide
-    unless type?
-      schemaTypes = options.schema.type
-      schemaTypes = schemaTypes[0] if $.isArray(schemaTypes)
-      type = schemaTypes or null
-    localClasses = if parent then parent.settings.nodeClasses else options.nodeClasses
-    if parent
-      workingSchemas = TreemaNode.utils.buildWorkingSchemas(options.schema, options.tv4)
-      data = options.data
-      data = options.schema.default if data is undefined
-      workingSchema = TreemaNode.utils.chooseWorkingSchema(data, workingSchemas, options.tv4)
-      if not type then type = workingSchema?.type or 'string'
-      type = types[0] if $.isArray(type)
-      NodeClass = @getNodeClassForSchema(workingSchema, type, localClasses)
-    else
-      type ?= 'string'
-      NodeClass = @getNodeClassForSchema(options.schema, type, localClasses)
-
-    if options.data is undefined
-      type = options.schema.type
-      type ?= workingSchema?.type
-      type ?= 'string'
-      type = type[0] if $.isArray(type)
-      options.data = {
-        'string':'',
-        'number':0,
-        'null': null,
-        'object': {},
-        'integer': 0,
-        'boolean': false,
-        'array':[]
-      }[type]
-
-    combinedOps = {}
-    $.extend(combinedOps, parent.settings) if parent
-    $.extend(combinedOps, options)
-
-    newNode = new NodeClass(element, combinedOps, parent)
-    newNode.tv4 = parent.tv4 if parent?
-    newNode.keyForParent = keyForParent if keyForParent?
-    if parent
-      newNode.setWorkingSchema(workingSchema, workingSchemas)
-    newNode
 
   @extend: (child) ->
     # https://github.com/jashkenas/coffee-script/issues/2385

@@ -5,13 +5,13 @@ TreemaNode.utils = {}
 
 TreemaNode.utils.populateDefaults = (rootData, rootSchema, tv4) ->
   if rootSchema.default and not rootData
-    rootData = @deepClone(rootSchema.default)
+    rootData = @cloneDeep(rootSchema.default)
     
   @walk rootData, rootSchema, tv4, (path, data, schema) =>
     def = schema.default
     return unless @type(def) is 'object' and @type(data) is 'object'
     for key, value of def
-      data[key] ?= @deepClone(value)
+      data[key] ?= @cloneDeep(value)
       
   rootData
 
@@ -129,7 +129,7 @@ TreemaNode.utils.combineSchemas = (schema1, schema2) ->
     schema1[key] = value 
   schema1
   
-TreemaNode.utils.deepClone = (data) ->
+TreemaNode.utils.cloneDeep = (data) ->
   clone = data
   type = @type(data)
   if type is 'object'
@@ -138,7 +138,7 @@ TreemaNode.utils.deepClone = (data) ->
     clone = []
   if type in ['object', 'array']
     for key, value of data
-      clone[key] = @deepClone(value)
+      clone[key] = @cloneDeep(value)
   return clone
 
 # http://arcturo.github.io/library/coffeescript/07_the_bad_parts.html
