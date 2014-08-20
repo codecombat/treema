@@ -36,580 +36,580 @@ $(document).ready(function () {
 
   var schema = {
     "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "name": {
+        "type": "string",
+        "maxLength": 100,
+        "title": "Name",
+        "pattern": "^[A-Z][A-Za-z0-9]*$"
+      },
+      "slug": {
+        "type": "string",
+        "maxLength": 100,
+        "title": "Slug",
+        "format": "hidden"
+      },
+      "system": {
+        "title": "System",
+        "description": "The short name of the System this Component belongs to, like \"ai\".",
+        "type": "string",
+        "enum": [
+          "action",
+          "ai",
+          "alliance",
+          "collision",
+          "combat",
+          "event",
+          "existence",
+          "hearing",
+          "inventory",
+          "movement",
+          "programming",
+          "targeting",
+          "ui",
+          "vision",
+          "misc"
+        ],
+        "default": "ai"
+      },
+      "description": {
+        "title": "Description",
+        "description": "A short explanation of what this Component does.",
+        "type": "string",
+        "maxLength": 2000,
+        "default": "This Component makes the Thang attack itself."
+      },
+      "code": {
+        "title": "Code",
+        "description": "The code for this Component, as a CoffeeScript class. TODO: add link to documentation fr how to write these.",
+        "default": "class AttacksSelf extends Component\n  @className: \"AttacksSelf\"\n  chooseAction: ->\n    @attack @",
+        "type": "string",
+        "format": "code"
+      },
+      "language": {
+        "type": "string",
+        "title": "Language",
+        "description": "Which programming language this Component is written in.",
+        "enum": [
+          "coffeescript"
+        ]
+      },
+      "dependencies": {
+        "type": "array",
+        "items": {
+          "type": "object",
           "additionalProperties": false,
           "properties": {
-    "name": {
-      "type": "string",
-              "maxLength": 100,
-              "title": "Name",
-              "pattern": "^[A-Z][A-Za-z0-9]*$"
-    },
-    "slug": {
-      "type": "string",
-              "maxLength": 100,
-              "title": "Slug",
-              "format": "hidden"
-    },
-    "system": {
-      "title": "System",
-              "description": "The short name of the System this Component belongs to, like \"ai\".",
-              "type": "string",
-              "enum": [
-        "action",
-        "ai",
-        "alliance",
-        "collision",
-        "combat",
-        "event",
-        "existence",
-        "hearing",
-        "inventory",
-        "movement",
-        "programming",
-        "targeting",
-        "ui",
-        "vision",
-        "misc"
-      ],
-              "default": "ai"
-    },
-    "description": {
-      "title": "Description",
-              "description": "A short explanation of what this Component does.",
-              "type": "string",
-              "maxLength": 2000,
-              "default": "This Component makes the Thang attack itself."
-    },
-    "code": {
-      "title": "Code",
-              "description": "The code for this Component, as a CoffeeScript class. TODO: add link to documentation fr how to write these.",
-              "default": "class AttacksSelf extends Component\n  @className: \"AttacksSelf\"\n  chooseAction: ->\n    @attack @",
-              "type": "string",
-              "format": "code"
-    },
-    "language": {
-      "type": "string",
-              "title": "Language",
-              "description": "Which programming language this Component is written in.",
-              "enum": [
-        "coffeescript"
-      ]
-    },
-    "dependencies": {
-      "type": "array",
-              "items": {
-        "type": "object",
-                "additionalProperties": false,
-                "properties": {
-          "original": {
-            "type": [
-              "object",
-              "string"
-            ],
-                    "title": "Original",
-                    "description": "A reference to another Component upon which this Component depends."
+            "original": {
+              "type": [
+                "object",
+                "string"
+              ],
+              "title": "Original",
+              "description": "A reference to another Component upon which this Component depends."
+            },
+            "majorVersion": {
+              "title": "Major Version",
+              "description": "Which major version of the Component this Component needs.",
+              "type": "integer",
+              "minimum": 0
+            }
           },
-          "majorVersion": {
-            "title": "Major Version",
-                    "description": "Which major version of the Component this Component needs.",
-                    "type": "integer",
-                    "minimum": 0
-          }
+          "title": "Property Documentation",
+          "description": "Documentation entry for a property this Component will add to its Thang which other Components might want to also use.",
+          "default": {
+            "majorVersion": 0
+          },
+          "required": [
+            "original",
+            "majorVersion"
+          ]
         },
-        "title": "Property Documentation",
-                "description": "Documentation entry for a property this Component will add to its Thang which other Components might want to also use.",
-                "default": {
-          "majorVersion": 0
-        },
-        "required": [
-          "original",
-          "majorVersion"
-        ]
+        "title": "Dependencies",
+        "description": "An array of Components upon which this Component depends.",
+        "default": [],
+        "uniqueItems": true
       },
-      "title": "Dependencies",
-              "description": "An array of Components upon which this Component depends.",
-              "default": [],
-              "uniqueItems": true
-    },
-    "propertyDocumentation": {
-      "type": "array",
+      "propertyDocumentation": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string",
+              "pattern": "^[a-z][A-Za-z0-9]*$",
+              "title": "Name",
+              "description": "Name of the property."
+            },
+            "type": {
+              "type": "string",
+              "maxLength": 100,
+              "title": "Type",
+              "description": "Intendd type of the property."
+            },
+            "description": {
+              "type": "string",
+              "description": "Description of the property.",
+              "maxLength": 1000
+            },
+            "args": {
+              "type": "array",
               "items": {
-        "type": "object",
+                "type": "object",
                 "additionalProperties": false,
                 "properties": {
-          "name": {
-            "type": "string",
+                  "name": {
+                    "type": "string",
                     "pattern": "^[a-z][A-Za-z0-9]*$",
                     "title": "Name",
-                    "description": "Name of the property."
-          },
-          "type": {
-            "type": "string",
+                    "description": "Name of the function argument."
+                  },
+                  "type": {
+                    "type": "string",
                     "maxLength": 100,
                     "title": "Type",
-                    "description": "Intendd type of the property."
-          },
-          "description": {
-            "type": "string",
-                    "description": "Description of the property.",
+                    "description": "Intended type of the argument."
+                  },
+                  "example": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "title": "Example",
+                    "description": "Example value for the argument."
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Description of the argument.",
                     "maxLength": 1000
-          },
-          "args": {
-            "type": "array",
-                    "items": {
-              "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                "name": {
-                  "type": "string",
-                          "pattern": "^[a-z][A-Za-z0-9]*$",
-                          "title": "Name",
-                          "description": "Name of the function argument."
+                  },
+                  "default": {
+                    "title": "Default",
+                    "description": "Default value of the argument. (Your code should set this.)",
+                    "default": null
+                  }
                 },
-                "type": {
-                  "type": "string",
-                          "maxLength": 100,
-                          "title": "Type",
-                          "description": "Intended type of the argument."
-                },
-                "example": {
-                  "type": "string",
-                          "maxLength": 100,
-                          "title": "Example",
-                          "description": "Example value for the argument."
-                },
-                "description": {
-                  "type": "string",
-                          "description": "Description of the argument.",
-                          "maxLength": 1000
-                },
+                "title": "Function Argument",
+                "description": "Documentation entry for a function argument.",
                 "default": {
-                  "title": "Default",
-                          "description": "Default value of the argument. (Your code should set this.)",
-                          "default": null
-                }
+                  "name": "target",
+                  "type": "Thang",
+                  "example": "this.getNearestEnemy()",
+                  "description": "The target of this function.",
+                  "default": null
+                },
+                "required": [
+                  "name",
+                  "type",
+                  "example",
+                  "description",
+                  "default"
+                ]
               },
-              "title": "Function Argument",
-                      "description": "Documentation entry for a function argument.",
-                      "default": {
-                "name": "target",
-                        "type": "Thang",
-                        "example": "this.getNearestEnemy()",
-                        "description": "The target of this function.",
-                        "default": null
-              },
-              "required": [
-                "name",
-                "type",
-                "example",
-                "description",
-                "default"
-              ]
-            },
-            "title": "Arguments",
-                    "description": "If this property has type 'function', then provide documentation for any function arguments."
-          }
+              "title": "Arguments",
+              "description": "If this property has type 'function', then provide documentation for any function arguments."
+            }
+          },
+          "title": "Property Documentation",
+          "description": "Documentation entry for a property this Component will add to its Thang which other Components might want to also use.",
+          "default": {
+            "name": "foo",
+            "type": "object",
+            "description": "This Component provides a 'foo' property to satisfy all one's foobar needs. Use it wisely."
+          },
+          "required": [
+            "name",
+            "type",
+            "description"
+          ]
         },
         "title": "Property Documentation",
-                "description": "Documentation entry for a property this Component will add to its Thang which other Components might want to also use.",
-                "default": {
-          "name": "foo",
-                  "type": "object",
-                  "description": "This Component provides a 'foo' property to satisfy all one's foobar needs. Use it wisely."
-        },
-        "required": [
-          "name",
-          "type",
-          "description"
-        ]
+        "description": "An array of documentation entries for each notable property this Component will add to its Thang which other Components might want to also use.",
+        "default": []
       },
-      "title": "Property Documentation",
-              "description": "An array of documentation entries for each notable property this Component will add to its Thang which other Components might want to also use.",
-              "default": []
-    },
-    "configSchema": {
-      "id": "metaschema",
-              "displayProperty": "title",
-              "$schema": "http://json-schema.org/draft-04/schema#",
-              "title": "Configuration Schema",
-              "description": "A schema for validating the arguments that can be passed to this Component as configuration.",
-              "definitions": {
-        "schemaArray": {
-          "type": "array",
-                  "minItems": 1,
-                  "items": {
-            "$ref": "metaschema#"
-          },
-          "title": "Array of Schemas",
-                  "default": [
-            {}
-          ]
-        },
-        "positiveInteger": {
-          "type": "integer",
-                  "minimum": 0,
-                  "title": "Positive Integer"
-        },
-        "positiveIntegerDefault0": {
-          "allOf": [
-            {
-              "$ref": "metaschema#/definitions/positiveInteger"
+      "configSchema": {
+        "id": "metaschema",
+        "displayProperty": "title",
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "title": "Configuration Schema",
+        "description": "A schema for validating the arguments that can be passed to this Component as configuration.",
+        "definitions": {
+          "schemaArray": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "metaschema#"
             },
-            {
-              "default": 0
-            }
-          ]
+            "title": "Array of Schemas",
+            "default": [
+              {}
+            ]
+          },
+          "positiveInteger": {
+            "type": "integer",
+            "minimum": 0,
+            "title": "Positive Integer"
+          },
+          "positiveIntegerDefault0": {
+            "allOf": [
+              {
+                "$ref": "metaschema#/definitions/positiveInteger"
+              },
+              {
+                "default": 0
+              }
+            ]
+          },
+          "simpleTypes": {
+            "title": "Single Type",
+            "enum": [
+              "array",
+              "boolean",
+              "integer",
+              "null",
+              "number",
+              "object",
+              "string"
+            ]
+          },
+          "stringArray": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "uniqueItems": true,
+            "title": "String Array",
+            "default": [
+              ""
+            ]
+          }
         },
-        "simpleTypes": {
-          "title": "Single Type",
-                  "enum": [
-            "array",
-            "boolean",
-            "integer",
-            "null",
-            "number",
-            "object",
-            "string"
-          ]
-        },
-        "stringArray": {
-          "type": "array",
-                  "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uri"
+          },
+          "$schema": {
+            "type": "string",
+            "format": "uri",
+            "default": "http://json-schema.org/draft-04/schema#"
+          },
+          "title": {
             "type": "string"
           },
-          "minItems": 1,
-                  "uniqueItems": true,
-                  "title": "String Array",
-                  "default": [
-            ""
-          ]
-        }
-      },
-      "type": "object",
-              "properties": {
-        "id": {
-          "type": "string",
-                  "format": "uri"
-        },
-        "$schema": {
-          "type": "string",
-                  "format": "uri",
-                  "default": "http://json-schema.org/draft-04/schema#"
-        },
-        "title": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "default": {},
-        "multipleOf": {
-          "type": "number",
-                  "minimum": 0,
-                  "exclusiveMinimum": true
-        },
-        "maximum": {
-          "type": "number"
-        },
-        "exclusiveMaximum": {
-          "type": "boolean",
-                  "default": false
-        },
-        "minimum": {
-          "type": "number"
-        },
-        "exclusiveMinimum": {
-          "type": "boolean",
-                  "default": false
-        },
-        "maxLength": {
-          "$ref": "metaschema#/definitions/positiveInteger"
-        },
-        "minLength": {
-          "$ref": "metaschema#/definitions/positiveIntegerDefault0"
-        },
-        "pattern": {
-          "type": "string",
-                  "format": "regex"
-        },
-        "additionalItems": {
-          "anyOf": [
-            {
-              "type": "boolean",
-              "default": false
-            },
-            {
-              "$ref": "metaschema#"
-            }
-          ]
-        },
-        "items": {
-          "anyOf": [
-            {
-              "$ref": "metaschema#"
-            },
-            {
-              "$ref": "metaschema#/definitions/schemaArray"
-            }
-          ],
-                  "default": {}
-        },
-        "maxItems": {
-          "$ref": "metaschema#/definitions/positiveInteger"
-        },
-        "minItems": {
-          "$ref": "metaschema#/definitions/positiveIntegerDefault0"
-        },
-        "uniqueItems": {
-          "type": "boolean",
-                  "default": false
-        },
-        "maxProperties": {
-          "$ref": "metaschema#/definitions/positiveInteger"
-        },
-        "minProperties": {
-          "$ref": "metaschema#/definitions/positiveIntegerDefault0"
-        },
-        "required": {
-          "$ref": "metaschema#/definitions/stringArray"
-        },
-        "additionalProperties": {
-          "anyOf": [
-            {
-              "type": "boolean",
-              "default": true
-            },
-            {
-              "$ref": "metaschema#"
-            }
-          ],
-                  "default": {}
-        },
-        "definitions": {
-          "type": "object",
-                  "additionalProperties": {
-            "$ref": "metaschema#"
+          "description": {
+            "type": "string"
           },
-          "default": {}
-        },
-        "properties": {
-          "type": "object",
-                  "additionalProperties": {
-            "$ref": "metaschema#"
+          "default": {},
+          "multipleOf": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true
           },
-          "default": {}
-        },
-        "patternProperties": {
-          "type": "object",
-                  "additionalProperties": {
-            "$ref": "metaschema#"
+          "maximum": {
+            "type": "number"
           },
-          "default": {}
-        },
-        "dependencies": {
-          "type": "object",
-                  "additionalProperties": {
+          "exclusiveMaximum": {
+            "type": "boolean",
+            "default": false
+          },
+          "minimum": {
+            "type": "number"
+          },
+          "exclusiveMinimum": {
+            "type": "boolean",
+            "default": false
+          },
+          "maxLength": {
+            "$ref": "metaschema#/definitions/positiveInteger"
+          },
+          "minLength": {
+            "$ref": "metaschema#/definitions/positiveIntegerDefault0"
+          },
+          "pattern": {
+            "type": "string",
+            "format": "regex"
+          },
+          "additionalItems": {
+            "anyOf": [
+              {
+                "type": "boolean",
+                "default": false
+              },
+              {
+                "$ref": "metaschema#"
+              }
+            ]
+          },
+          "items": {
             "anyOf": [
               {
                 "$ref": "metaschema#"
               },
               {
-                "$ref": "metaschema#/definitions/stringArray"
+                "$ref": "metaschema#/definitions/schemaArray"
               }
-            ]
-          }
-        },
-        "enum": {
-          "type": "array",
-                  "minItems": 1,
-                  "uniqueItems": true,
-                  "default": [
-            ""
-          ]
-        },
-        "type": {
-          "anyOf": [
-            {
-              "$ref": "metaschema#/definitions/simpleTypes"
-            },
-            {
-              "type": "array",
-              "items": {
-                "$ref": "metaschema#/definitions/simpleTypes"
+            ],
+            "default": {}
+          },
+          "maxItems": {
+            "$ref": "metaschema#/definitions/positiveInteger"
+          },
+          "minItems": {
+            "$ref": "metaschema#/definitions/positiveIntegerDefault0"
+          },
+          "uniqueItems": {
+            "type": "boolean",
+            "default": false
+          },
+          "maxProperties": {
+            "$ref": "metaschema#/definitions/positiveInteger"
+          },
+          "minProperties": {
+            "$ref": "metaschema#/definitions/positiveIntegerDefault0"
+          },
+          "required": {
+            "$ref": "metaschema#/definitions/stringArray"
+          },
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "boolean",
+                "default": true
               },
-              "minItems": 1,
-              "uniqueItems": true,
-              "title": "Array of Types",
-              "default": [
-                "string"
+              {
+                "$ref": "metaschema#"
+              }
+            ],
+            "default": {}
+          },
+          "definitions": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "metaschema#"
+            },
+            "default": {}
+          },
+          "properties": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "metaschema#"
+            },
+            "default": {}
+          },
+          "patternProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "metaschema#"
+            },
+            "default": {}
+          },
+          "dependencies": {
+            "type": "object",
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "$ref": "metaschema#"
+                },
+                {
+                  "$ref": "metaschema#/definitions/stringArray"
+                }
               ]
             }
+          },
+          "enum": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "default": [
+              ""
+            ]
+          },
+          "type": {
+            "anyOf": [
+              {
+                "$ref": "metaschema#/definitions/simpleTypes"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "metaschema#/definitions/simpleTypes"
+                },
+                "minItems": 1,
+                "uniqueItems": true,
+                "title": "Array of Types",
+                "default": [
+                  "string"
+                ]
+              }
+            ]
+          },
+          "allOf": {
+            "$ref": "metaschema#/definitions/schemaArray"
+          },
+          "anyOf": {
+            "$ref": "metaschema#/definitions/schemaArray"
+          },
+          "oneOf": {
+            "$ref": "metaschema#/definitions/schemaArray"
+          },
+          "not": {
+            "$ref": "metaschema#"
+          }
+        },
+        "dependencies": {
+          "exclusiveMaximum": [
+            "maximum"
+          ],
+          "exclusiveMinimum": [
+            "minimum"
           ]
         },
-        "allOf": {
-          "$ref": "metaschema#/definitions/schemaArray"
-        },
-        "anyOf": {
-          "$ref": "metaschema#/definitions/schemaArray"
-        },
-        "oneOf": {
-          "$ref": "metaschema#/definitions/schemaArray"
-        },
-        "not": {
-          "$ref": "metaschema#"
-        }
+        "default": {}
       },
-      "dependencies": {
-        "exclusiveMaximum": [
-          "maximum"
+      "official": {
+        "type": "boolean",
+        "title": "Official",
+        "description": "Whether this is an official CodeCombat Component.",
+        "default": false
+      },
+      "_id": {
+        "type": [
+          "object",
+          "string"
         ],
-                "exclusiveMinimum": [
-          "minimum"
-        ]
+        "format": "hidden"
       },
-      "default": {}
-    },
-    "official": {
-      "type": "boolean",
-              "title": "Official",
-              "description": "Whether this is an official CodeCombat Component.",
-              "default": false
-    },
-    "_id": {
-      "type": [
-        "object",
-        "string"
-      ],
-              "format": "hidden"
-    },
-    "__v": {
-      "title": "Mongoose Version",
-              "format": "hidden"
-    },
-    "index": {
-      "format": "hidden"
-    },
-    "version": {
-      "default": {
-        "minor": 0,
-                "major": 0,
-                "isLatestMajor": true,
-                "isLatestMinor": true
+      "__v": {
+        "title": "Mongoose Version",
+        "format": "hidden"
       },
-      "format": "version",
-              "title": "Version",
-              "type": "object",
-              "readOnly": true,
-              "additionalProperties": false,
-              "properties": {
-        "major": {
-          "type": "number",
-                  "minimum": 0
+      "index": {
+        "format": "hidden"
+      },
+      "version": {
+        "default": {
+          "minor": 0,
+          "major": 0,
+          "isLatestMajor": true,
+          "isLatestMinor": true
         },
-        "minor": {
-          "type": "number",
-                  "minimum": 0
-        },
-        "isLatestMajor": {
-          "type": "boolean"
-        },
-        "isLatestMinor": {
-          "type": "boolean"
-        }
-      }
-    },
-    "original": {
-      "type": [
-        "object",
-        "string"
-      ],
-              "format": "hidden"
-    },
-    "parent": {
-      "type": [
-        "object",
-        "string"
-      ],
-              "format": "hidden"
-    },
-    "creator": {
-      "type": [
-        "object",
-        "string"
-      ],
-              "format": "hidden"
-    },
-    "created": {
-      "type": "string",
-              "format": "date-time",
-              "title": "Created",
-              "readOnly": true
-    },
-    "commitMessage": {
-      "type": "string",
-              "maxLength": 500,
-              "title": "Commit Message",
-              "readOnly": true
-    },
-    "permissions": {
-      "type": "array",
-              "items": {
+        "format": "version",
+        "title": "Version",
         "type": "object",
-                "additionalProperties": false,
-                "properties": {
-          "target": {},
-          "access": {
-            "type": "string",
-                    "enum": [
-              "read",
-              "write",
-              "owner"
-            ]
+        "readOnly": true,
+        "additionalProperties": false,
+        "properties": {
+          "major": {
+            "type": "number",
+            "minimum": 0
+          },
+          "minor": {
+            "type": "number",
+            "minimum": 0
+          },
+          "isLatestMajor": {
+            "type": "boolean"
+          },
+          "isLatestMinor": {
+            "type": "boolean"
+          }
+        }
+      },
+      "original": {
+        "type": [
+          "object",
+          "string"
+        ],
+        "format": "hidden"
+      },
+      "parent": {
+        "type": [
+          "object",
+          "string"
+        ],
+        "format": "hidden"
+      },
+      "creator": {
+        "type": [
+          "object",
+          "string"
+        ],
+        "format": "hidden"
+      },
+      "created": {
+        "type": "string",
+        "format": "date-time",
+        "title": "Created",
+        "readOnly": true
+      },
+      "commitMessage": {
+        "type": "string",
+        "maxLength": 500,
+        "title": "Commit Message",
+        "readOnly": true
+      },
+      "permissions": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "target": {},
+            "access": {
+              "type": "string",
+              "enum": [
+                "read",
+                "write",
+                "owner"
+              ]
+            }
           }
         }
       }
-    }
-  },
+    },
     "title": "Component",
-          "description": "A Component which can affect Thang behavior.",
-          "required": [
-    "system",
-    "name",
-    "description",
-    "code",
-    "dependencies",
-    "propertyDocumentation",
-    "language"
-  ],
-          "default": {
-    "system": "ai",
-            "name": "AttacksSelf",
-            "description": "This Component makes the Thang attack itself.",
-            "code": "class AttacksSelf extends Component\n  @className: \"AttacksSelf\"\n  chooseAction: ->\n    @attack @",
-            "language": "coffeescript",
-            "dependencies": [],
-            "propertyDocumentation": []
-  },
+    "description": "A Component which can affect Thang behavior.",
+    "required": [
+      "system",
+      "name",
+      "description",
+      "code",
+      "dependencies",
+      "propertyDocumentation",
+      "language"
+    ],
+    "default": {
+      "system": "ai",
+      "name": "AttacksSelf",
+      "description": "This Component makes the Thang attack itself.",
+      "code": "class AttacksSelf extends Component\n  @className: \"AttacksSelf\"\n  chooseAction: ->\n    @attack @",
+      "language": "coffeescript",
+      "dependencies": [],
+      "propertyDocumentation": []
+    },
     "id": "__base__"
   };
   var data = {
     "system": "targeting",
-          "name": "Targets",
-          "description": "This Component makes the Thang attack itself.",
-          "code": "class AttacksSelf extends Component\n  @className: \"AttacksSelf\"\n  chooseAction: ->\n    @attack @",
-          "language": "coffeescript",
-          "dependencies": [],
-          "propertyDocumentation": [],
-          "configSchema": {
-    "additionalProperties": false
-  },
+    "name": "Targets",
+    "description": "This Component makes the Thang attack itself.",
+    "code": "class AttacksSelf extends Component\n  @className: \"AttacksSelf\"\n  chooseAction: ->\n    @attack @",
+    "language": "coffeescript",
+    "dependencies": [],
+    "propertyDocumentation": [],
+    "configSchema": {
+      "additionalProperties": false
+    },
     "official": false,
-          "version": {
-    "minor": 0,
-            "major": 0,
-            "isLatestMajor": true,
-            "isLatestMinor": true
-  }
+    "version": {
+      "minor": 0,
+      "major": 0,
+      "isLatestMajor": true,
+      "isLatestMinor": true
+    }
   };
 
   var el = $('#scratch');
