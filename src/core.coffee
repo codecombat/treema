@@ -194,15 +194,64 @@ do __init = ->
       keysAccountedFor = []
       if @schema.properties
         for key of @schema.properties
-          continue if typeof @data[key] is 'undefined'
+          defaultData = @getDefaultDataForKey(key)
+
+          if $.type(@data[key]) is 'undefined'
+            if defaultData?
+              keysAccountedFor.push(key)
+              children.push({
+                key: key, 
+                schema: TreemaNode.utils.getChildSchema(key, @schema)
+                defaultData: defaultData
+              })
+            continue
+            
           keysAccountedFor.push(key)
           schema = TreemaNode.utils.getChildSchema(key, @schema)
-          children.push({key: key, value: @data[key], schema: schema})
+          children.push({
+            key: key
+            value: @data[key]
+            schema: schema
+            defaultData: defaultData
+          })
 
       for key, value of @data
         continue if key in keysAccountedFor
-        children.push({key: key, value: value, schema: TreemaNode.utils.getChildSchema(key, @schema)})
+        keysAccountedFor.push(key)
+        children.push({
+          key: key
+          value: value
+          schema: TreemaNode.utils.getChildSchema(key, @schema)
+          defaultData: @getDefaultDataForKey(key)
+        })
+
+      if $.isPlainObject(@defaultData)
+        for key of @defaultData
+          continue if key in keysAccountedFor
+          keysAccountedFor.push(key)
+          children.push({
+            key: key
+            schema: TreemaNode.utils.getChildSchema(key, @schema)
+            defaultData: @getDefaultDataForKey(key)
+          })
+
+      if $.isPlainObject(@schema.default)
+        for key of @schema.default
+          continue if key in keysAccountedFor
+          keysAccountedFor.push(key)
+          children.push({
+            key: key
+            schema: TreemaNode.utils.getChildSchema(key, @schema)
+            defaultData: @getDefaultDataForKey(key)
+          })
+
       children
+
+    getDefaultDataForKey: (key) ->
+      childDefaultData = @defaultData?[key] ? @schema.default?[key]
+      if $.isArray(childDefaultData) then childDefaultData = $.extend(true, [], childDefaultData)
+      if $.isPlainObject(childDefaultData) then childDefaultData = $.extend(true, {}, childDefaultData)
+      childDefaultData
 
     buildValueForDisplay: (valEl) ->
       text = []

@@ -1264,11 +1264,11 @@ class TreemaNode
   @setNodeSubclass: (key, NodeClass) -> @nodeMap[key] = NodeClass
 
   @make: (element, options, parent, keyForParent) ->
-    # this is a mess, make a factory which is able to deal with working schemas
-    # and setting defaults.
-    
     if options.schema.default? and not (options.data? or options.defaultData?)
-      options.data = @utils.cloneDeep(options.schema.default)
+      if $.type(options.schema.default) is 'object'
+        options.data = {}
+      else
+        options.data = @utils.cloneDeep(options.schema.default)
       
     workingData = options.data or options.defaultData
     workingSchemas = @utils.buildWorkingSchemas(options.schema, parent?.tv4)

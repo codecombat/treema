@@ -2415,6 +2415,71 @@ TreemaNode = (function() {
     return this.nodeMap[key] = NodeClass;
   };
 
+  TreemaNode.make = function(element, options, parent, keyForParent) {
+    var NodeClass, combinedOps, localClasses, newNode, type, workingData, workingSchema, workingSchemas, _ref;
+    if ((options.schema["default"] != null) && !((options.data != null) || (options.defaultData != null))) {
+      if ($.type(options.schema["default"]) === 'object') {
+        options.data = {};
+      } else {
+        options.data = this.utils.cloneDeep(options.schema["default"]);
+      }
+    }
+    workingData = options.data || options.defaultData;
+    workingSchemas = this.utils.buildWorkingSchemas(options.schema, parent != null ? parent.tv4 : void 0);
+    workingSchema = this.utils.chooseWorkingSchema(workingData, workingSchemas, options.tv4);
+    this.massageData(options, workingSchema);
+    type = $.type((_ref = options.data) != null ? _ref : options.defaultData);
+    localClasses = parent ? parent.settings.nodeClasses : options.nodeClasses;
+    NodeClass = this.getNodeClassForSchema(workingSchema, type, localClasses);
+    combinedOps = {};
+    if (parent) {
+      $.extend(combinedOps, parent.settings);
+    }
+    $.extend(combinedOps, options);
+    newNode = new NodeClass(element, combinedOps, parent);
+    if (keyForParent != null) {
+      newNode.keyForParent = keyForParent;
+    }
+    if (parent) {
+      newNode.setWorkingSchema(workingSchema, workingSchemas);
+    }
+    return newNode;
+  };
+
+  TreemaNode.massageData = function(options, workingSchema) {
+    var dataType, defaultDataType, schemaTypes;
+    if (!(schemaTypes = workingSchema.type)) {
+      return;
+    }
+    if ($.type(schemaTypes) !== 'array') {
+      schemaTypes = [schemaTypes];
+    }
+    dataType = $.type(options.data);
+    defaultDataType = $.type(options.defaultData);
+    if (dataType !== 'undefined' && __indexOf.call(schemaTypes, dataType) < 0) {
+      options.data = this.defaultForType(schemaTypes[0]);
+    }
+    if (defaultDataType !== 'undefined' && __indexOf.call(schemaTypes, defaultDataType) < 0) {
+      delete options.defaultDataType;
+      defaultDataType = 'undefined';
+    }
+    if (dataType === 'undefined' && defaultDataType === 'undefined') {
+      return options.data = this.defaultForType(schemaTypes[0]);
+    }
+  };
+
+  TreemaNode.defaultForType = function(type) {
+    return {
+      'string': '',
+      'number': 0,
+      'null': null,
+      'object': {},
+      'integer': 0,
+      'boolean': false,
+      'array': []
+    }[type];
+  };
+
   TreemaNode.getNodeClassForSchema = function(schema, def, localClasses) {
     var NodeClass, type, typeMismatch, _ref;
     if (def == null) {
@@ -2450,93 +2515,6 @@ TreemaNode = (function() {
       return NodeClass;
     }
     return this.nodeMap['any'];
-  };
-
-  TreemaNode.make = function(element, options, parent, keyForParent) {
-    var NodeClass, combinedOps, d, data, localClasses, newNode, schemaTypes, type, workingSchema, workingSchemas;
-    if (options.data === void 0 && (options.schema["default"] != null)) {
-      d = options.schema["default"];
-      options.data = $.extend(true, {}, {
-        'x': d
-      })['x'];
-    }
-    workingSchemas = [];
-    workingSchema = null;
-    type = null;
-    if (options.schema["default"] !== void 0) {
-      type = $.type(options.schema["default"]);
-    }
-    if (options.data !== void 0) {
-      type = $.type(options.data);
-    }
-    if (type === 'number' && (options.data != null) && options.data % 1 === 0) {
-      type = null;
-    }
-    if (type == null) {
-      schemaTypes = options.schema.type;
-      if ($.isArray(schemaTypes)) {
-        schemaTypes = schemaTypes[0];
-      }
-      type = schemaTypes || null;
-    }
-    localClasses = parent ? parent.settings.nodeClasses : options.nodeClasses;
-    if (parent) {
-      workingSchemas = TreemaNode.utils.buildWorkingSchemas(options.schema, options.tv4);
-      data = options.data;
-      if (data === void 0) {
-        data = options.schema["default"];
-      }
-      workingSchema = TreemaNode.utils.chooseWorkingSchema(data, workingSchemas, options.tv4);
-      if (!type) {
-        type = (workingSchema != null ? workingSchema.type : void 0) || 'string';
-      }
-      if ($.isArray(type)) {
-        type = types[0];
-      }
-      NodeClass = this.getNodeClassForSchema(workingSchema, type, localClasses);
-    } else {
-      if (type == null) {
-        type = 'string';
-      }
-      NodeClass = this.getNodeClassForSchema(options.schema, type, localClasses);
-    }
-    if (options.data === void 0) {
-      type = options.schema.type;
-      if (type == null) {
-        type = workingSchema != null ? workingSchema.type : void 0;
-      }
-      if (type == null) {
-        type = 'string';
-      }
-      if ($.isArray(type)) {
-        type = type[0];
-      }
-      options.data = {
-        'string': '',
-        'number': 0,
-        'null': null,
-        'object': {},
-        'integer': 0,
-        'boolean': false,
-        'array': []
-      }[type];
-    }
-    combinedOps = {};
-    if (parent) {
-      $.extend(combinedOps, parent.settings);
-    }
-    $.extend(combinedOps, options);
-    newNode = new NodeClass(element, combinedOps, parent);
-    if (parent != null) {
-      newNode.tv4 = parent.tv4;
-    }
-    if (keyForParent != null) {
-      newNode.keyForParent = keyForParent;
-    }
-    if (parent) {
-      newNode.setWorkingSchema(workingSchema, workingSchemas);
-    }
-    return newNode;
   };
 
   TreemaNode.extend = function(child) {
@@ -2992,12 +2970,21 @@ TreemaNode = (function() {
     ObjectNode.prototype.directlyEditable = false;
 
     ObjectNode.prototype.getChildren = function() {
-      var children, key, keysAccountedFor, schema, value, _ref7;
+      var children, defaultData, key, keysAccountedFor, schema, value, _ref7;
       children = [];
       keysAccountedFor = [];
       if (this.schema.properties) {
         for (key in this.schema.properties) {
-          if (typeof this.data[key] === 'undefined') {
+          defaultData = this.getDefaultDataForKey(key);
+          if ($.type(this.data[key]) === 'undefined') {
+            if (defaultData != null) {
+              keysAccountedFor.push(key);
+              children.push({
+                key: key,
+                schema: TreemaNode.utils.getChildSchema(key, this.schema),
+                defaultData: defaultData
+              });
+            }
             continue;
           }
           keysAccountedFor.push(key);
@@ -3005,7 +2992,8 @@ TreemaNode = (function() {
           children.push({
             key: key,
             value: this.data[key],
-            schema: schema
+            schema: schema,
+            defaultData: defaultData
           });
         }
       }
@@ -3015,13 +3003,53 @@ TreemaNode = (function() {
         if (__indexOf.call(keysAccountedFor, key) >= 0) {
           continue;
         }
+        keysAccountedFor.push(key);
         children.push({
           key: key,
           value: value,
-          schema: TreemaNode.utils.getChildSchema(key, this.schema)
+          schema: TreemaNode.utils.getChildSchema(key, this.schema),
+          defaultData: this.getDefaultDataForKey(key)
         });
       }
+      if ($.isPlainObject(this.defaultData)) {
+        for (key in this.defaultData) {
+          if (__indexOf.call(keysAccountedFor, key) >= 0) {
+            continue;
+          }
+          keysAccountedFor.push(key);
+          children.push({
+            key: key,
+            schema: TreemaNode.utils.getChildSchema(key, this.schema),
+            defaultData: this.getDefaultDataForKey(key)
+          });
+        }
+      }
+      if ($.isPlainObject(this.schema["default"])) {
+        for (key in this.schema["default"]) {
+          if (__indexOf.call(keysAccountedFor, key) >= 0) {
+            continue;
+          }
+          keysAccountedFor.push(key);
+          children.push({
+            key: key,
+            schema: TreemaNode.utils.getChildSchema(key, this.schema),
+            defaultData: this.getDefaultDataForKey(key)
+          });
+        }
+      }
       return children;
+    };
+
+    ObjectNode.prototype.getDefaultDataForKey = function(key) {
+      var childDefaultData, _ref7, _ref8, _ref9;
+      childDefaultData = (_ref7 = (_ref8 = this.defaultData) != null ? _ref8[key] : void 0) != null ? _ref7 : (_ref9 = this.schema["default"]) != null ? _ref9[key] : void 0;
+      if ($.isArray(childDefaultData)) {
+        childDefaultData = $.extend(true, [], childDefaultData);
+      }
+      if ($.isPlainObject(childDefaultData)) {
+        childDefaultData = $.extend(true, {}, childDefaultData);
+      }
+      return childDefaultData;
     };
 
     ObjectNode.prototype.buildValueForDisplay = function(valEl) {
@@ -3839,7 +3867,7 @@ TreemaNode.utils = {};
 TreemaNode.utils.populateDefaults = function(rootData, rootSchema, tv4) {
   var _this = this;
   if (rootSchema["default"] && !rootData) {
-    rootData = this.deepClone(rootSchema["default"]);
+    rootData = this.cloneDeep(rootSchema["default"]);
   }
   this.walk(rootData, rootSchema, tv4, function(path, data, schema) {
     var def, key, value, _results;
@@ -3850,7 +3878,7 @@ TreemaNode.utils.populateDefaults = function(rootData, rootSchema, tv4) {
     _results = [];
     for (key in def) {
       value = def[key];
-      _results.push(data[key] != null ? data[key] : data[key] = _this.deepClone(value));
+      _results.push(data[key] != null ? data[key] : data[key] = _this.cloneDeep(value));
     }
     return _results;
   });
@@ -4038,7 +4066,7 @@ TreemaNode.utils.combineSchemas = function(schema1, schema2) {
   return schema1;
 };
 
-TreemaNode.utils.deepClone = function(data) {
+TreemaNode.utils.cloneDeep = function(data) {
   var clone, key, type, value;
   clone = data;
   type = this.type(data);
@@ -4051,7 +4079,7 @@ TreemaNode.utils.deepClone = function(data) {
   if (type === 'object' || type === 'array') {
     for (key in data) {
       value = data[key];
-      clone[key] = this.deepClone(value);
+      clone[key] = this.cloneDeep(value);
     }
   }
   return clone;
