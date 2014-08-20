@@ -554,6 +554,7 @@ TreemaNode = (function() {
       this.schema.id = '__base__';
     }
     this.data = options.data;
+    this.defaultData = options.defaultData;
     this.patches = [];
     this.trackedActions = [];
     this.currentStateIndex = 0;
@@ -608,19 +609,11 @@ TreemaNode = (function() {
     if (schema["enum"]) {
       this.limitChoices(schema["enum"]);
     }
+    this.updateDefaultClass();
     return this.$el;
   };
 
-  TreemaNode.prototype.populateData = function() {
-    if (this.data !== void 0) {
-      return;
-    }
-    this.data = this.schema["default"];
-    if (this.data !== void 0) {
-      return;
-    }
-    return this.data = this.getDefaultValue();
-  };
+  TreemaNode.prototype.populateData = function() {};
 
   TreemaNode.prototype.setWorkingSchema = function(workingSchema, workingSchemas) {
     this.workingSchema = workingSchema;
@@ -1311,6 +1304,7 @@ TreemaNode = (function() {
     if (!this.parent) {
       return this.refreshErrors();
     }
+    this.updateDefaultClass();
     this.parent.data[this.keyForParent] = this.data;
     this.parent.refreshErrors();
     parent = this.parent;
@@ -1404,6 +1398,13 @@ TreemaNode = (function() {
     return true;
   };
 
+  TreemaNode.prototype.updateDefaultClass = function() {
+    this.$el.removeClass('treema-default-stub');
+    if (this.isDefaultStub()) {
+      return this.$el.addClass('treema-default-stub');
+    }
+  };
+
   TreemaNode.prototype.toggleOpen = function() {
     if (this.isClosed()) {
       this.open();
@@ -1430,9 +1431,12 @@ TreemaNode = (function() {
         }
         treema = TreemaNode.make(null, {
           schema: child.schema,
-          data: child.value
+          data: child.value,
+          defaultData: child.defaultData
         }, this, child.key);
-        this.integrateChildTreema(treema);
+        if (treema.data !== void 0) {
+          this.integrateChildTreema(treema);
+        }
         childNode = this.createChildNode(treema);
         childrenContainer.append(childNode);
       }
@@ -2310,6 +2314,10 @@ TreemaNode = (function() {
     }
   };
 
+  TreemaNode.prototype.isDefaultStub = function() {
+    return this.data === void 0;
+  };
+
   TreemaNode.prototype.getLastTreema = function() {
     var lastKey, lastTreema, treemaKeys;
     if (!this.childrenTreemas) {
@@ -2413,7 +2421,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.make = function(element, options, parent, keyForParent) {
-    var NodeClass, combinedOps, localClasses, newNode, type, workingData, workingSchema, workingSchemas, _ref;
+    var NodeClass, key, localClasses, newNode, type, value, workingData, workingSchema, workingSchemas, _ref, _ref1;
     if ((options.schema["default"] != null) && !((options.data != null) || (options.defaultData != null))) {
       if ($.type(options.schema["default"]) === 'object') {
         options.data = {};
@@ -2428,12 +2436,17 @@ TreemaNode = (function() {
     type = $.type((_ref = options.data) != null ? _ref : options.defaultData);
     localClasses = parent ? parent.settings.nodeClasses : options.nodeClasses;
     NodeClass = this.getNodeClassForSchema(workingSchema, type, localClasses);
-    combinedOps = {};
     if (parent) {
-      $.extend(combinedOps, parent.settings);
+      _ref1 = parent.settings;
+      for (key in _ref1) {
+        value = _ref1[key];
+        if (key === 'data' || key === 'defaultData' || key === 'schema') {
+          continue;
+        }
+        options[key] = value;
+      }
     }
-    $.extend(combinedOps, options);
-    newNode = new NodeClass(element, combinedOps, parent);
+    newNode = new NodeClass(element, options, parent);
     if (keyForParent != null) {
       newNode.keyForParent = keyForParent;
     }

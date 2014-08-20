@@ -156,6 +156,7 @@ class TreemaNode
     @schema = $.extend {}, @settings.schema
     @schema.id = '__base__' unless (@schema.id or @parent)
     @data = options.data
+    @defaultData = options.defaultData
     @patches = []
     @trackedActions = []
     @currentStateIndex = 0
@@ -186,13 +187,10 @@ class TreemaNode
     @createSchemaSelector() if @workingSchemas?.length > 1
     schema = @workingSchema or @schema
     @limitChoices(schema.enum) if schema.enum
+    @updateDefaultClass()
     @$el
 
   populateData: ->
-    return unless @data is undefined
-    @data = @schema.default
-    return unless @data is undefined
-    @data = @getDefaultValue()
 
   setWorkingSchema: (@workingSchema, @workingSchemas) ->
 
@@ -591,6 +589,7 @@ class TreemaNode
     @getRoot().cachedErrors = null
     @markAsChanged()
     return @refreshErrors() unless @parent
+    @updateDefaultClass()
     @parent.data[@keyForParent] = @data
     @parent.refreshErrors()
     parent = @parent
@@ -654,6 +653,12 @@ class TreemaNode
     @broadcastChanges()
     return true
 
+  # Managing defaults
+
+  updateDefaultClass: ->
+    @$el.removeClass('treema-default-stub')
+    @$el.addClass('treema-default-stub') if @isDefaultStub()
+    
   # Opening/closing collections -----------------------------------------------
   toggleOpen: ->
     if @isClosed() then @open() else @close()
@@ -666,8 +671,12 @@ class TreemaNode
       @childrenTreemas = {}
       for child in @getChildren()
         continue if child.schema.format is 'hidden'
-        treema = TreemaNode.make(null, {schema: child.schema, data:child.value}, @, child.key)
-        @integrateChildTreema(treema)
+        treema = TreemaNode.make(null, {
+          schema: child.schema
+          data:child.value
+          defaultData: child.defaultData
+        }, @, child.key)
+        @integrateChildTreema(treema) unless treema.data is undefined
         childNode = @createChildNode(treema)
         childrenContainer.append(childNode)
       @$el.append(childrenContainer).removeClass('treema-closed').addClass('treema-open')
@@ -1216,6 +1225,7 @@ class TreemaNode
     pathPieces.reverse()
     return '/' + pathPieces.join('/')
   getData: -> if $.type(@data) is 'undefined' then @defaultData else @data
+  isDefaultStub: -> @data is undefined
   getLastTreema: ->
     return @ unless @childrenTreemas
     treemaKeys = Object.keys(@childrenTreemas)
@@ -1276,10 +1286,11 @@ class TreemaNode
     NodeClass = @getNodeClassForSchema(workingSchema, type, localClasses)
 
     # still to redo a bit...
-    combinedOps = {}
-    $.extend(combinedOps, parent.settings) if parent
-    $.extend(combinedOps, options)
-    newNode = new NodeClass(element, combinedOps, parent)
+    if parent
+      for key, value of parent.settings
+        continue if key in ['data', 'defaultData', 'schema']
+        options[key] = value
+    newNode = new NodeClass(element, options, parent)
     newNode.keyForParent = keyForParent if keyForParent?
     if parent
       newNode.setWorkingSchema(workingSchema, workingSchemas)

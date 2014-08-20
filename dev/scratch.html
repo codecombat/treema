@@ -33,13 +33,13 @@
     var el = $('#scratch');
     var schema = {
       type: 'object',
-      default: { key1: 'value1', key2: 'value2' },
+      default: { key1: 'value1' },
       properties: {
         key1: { type: 'string' },
         key2: { type: 'string' }
       }
     };
-    var data = null;
+    var data = { key2: 'value2' };
     var options = { schema:schema, data:data };
     var treema = el.treema(options);
     treema.build();

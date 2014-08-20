@@ -175,6 +175,9 @@
 .treema-filter-hidden {
   display: none; }
 
+.treema-default-stub {
+  opacity: 0.7; }
+
 .treema-string {
   color: #998500; }
 
