@@ -547,26 +547,6 @@ class TreemaNode
       c.prev = list[originIndex-offset]
     return c
 
-  # Undo/redo -----------------------------------------------------------------
-
-  # TODO: implement undo/redo, including saving and restoring which nodes are open
-
-#  patches: []
-#  patchIndex: 0
-#  previousState: null
-#
-#  saveState: ->
-#    @patches = @patches.slice(@patchIndex)
-#    @patchIndex = 0
-#    @patches.splice(0, 0, jsondiffpatch.diff(@previousState, @data))
-#    @previousState = @copyData()
-#    @patches = @patches[..10]
-#
-#  undo: ->
-#    return unless @patches[@patchIndex]
-#    jsondiffpatch.unpatch(@previousState, @patches[@patchIndex])
-
-
   # Editing values ------------------------------------------------------------
   canEdit: ->
     return false if @schema.readOnly or @parent?.schema.readOnly
@@ -909,55 +889,9 @@ class TreemaNode
     @getRoot().trackedActions
   getCurrentStateIndex: ->
     @getRoot().currentStateIndex
-  # Working schemas -----------------------------------------------------------
-
-  # Schemas can be flexible using combinatorial properties and references.
-  # But it simplifies logic if schema props like $ref, allOf, anyOf, and oneOf
-  # are flattened into a list of more straightforward user choices.
-  # These simplifications are called working schemas.
-
-  buildWorkingSchemas: (originalSchema) ->
-    baseSchema = @resolveReference($.extend(true, {}, originalSchema or {}))
-    allOf = baseSchema.allOf
-    anyOf = baseSchema.anyOf
-    oneOf = baseSchema.oneOf
-    delete baseSchema.allOf if baseSchema.allOf?
-    delete baseSchema.anyOf if baseSchema.anyOf?
-    delete baseSchema.oneOf if baseSchema.oneOf?
-
-    if allOf?
-      for schema in allOf
-        $.extend(null, baseSchema, @resolveReference(schema))
-
-    workingSchemas = []
-    singularSchemas = []
-    singularSchemas = singularSchemas.concat(anyOf) if anyOf?
-    singularSchemas = singularSchemas.concat(oneOf) if oneOf?
-
-    for singularSchema in singularSchemas
-      singularSchema = @resolveReference(singularSchema)
-      s = $.extend(true, {}, baseSchema)
-      s = $.extend(true, s, singularSchema)
-      workingSchemas.push(s)
-    workingSchemas = [baseSchema] if workingSchemas.length is 0
-    workingSchemas
-
-  resolveReference: (schema, scrubTitle=false) ->
-    return schema unless schema.$ref?
-    resolved = @tv4.getSchema(schema.$ref)
-    unless resolved
-      console.warn('could not resolve reference', schema.$ref, tv4.getMissingUris())
-    resolved ?= {}
-    delete resolved.title if scrubTitle and resolved.title?
-    resolved
-
-  chooseWorkingSchema: (workingSchemas, data) ->
-    return workingSchemas[0] if workingSchemas.length is 1
-    for schema in workingSchemas
-      result = tv4.validateMultiple(data, schema)
-      return schema if result.valid
-    return workingSchemas[0]
-
+  
+  # Switching types or working schemas
+  
   onSelectSchema: (e) =>
     index = parseInt($(e.target).val())
     workingSchema = @workingSchemas[index]
@@ -1366,10 +1300,10 @@ class TreemaNode
       type = schemaTypes or null
     localClasses = if parent then parent.settings.nodeClasses else options.nodeClasses
     if parent
-      workingSchemas = parent.buildWorkingSchemas(options.schema)
+      workingSchemas = TreemaNode.utils.buildWorkingSchemas(options.schema, options.tv4)
       data = options.data
       data = options.schema.default if data is undefined
-      workingSchema = parent.chooseWorkingSchema(workingSchemas, data)
+      workingSchema = TreemaNode.utils.chooseWorkingSchema(data, workingSchemas, options.tv4)
       if not type then type = workingSchema?.type or 'string'
       type = types[0] if $.isArray(type)
       NodeClass = @getNodeClassForSchema(workingSchema, type, localClasses)

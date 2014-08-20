@@ -1503,84 +1503,6 @@ TreemaNode = (function() {
     return this.getRoot().currentStateIndex;
   };
 
-  TreemaNode.prototype.buildWorkingSchemas = function(originalSchema) {
-    var allOf, anyOf, baseSchema, oneOf, s, schema, singularSchema, singularSchemas, workingSchemas, _i, _j, _len, _len1;
-    baseSchema = this.resolveReference($.extend(true, {}, originalSchema || {}));
-    allOf = baseSchema.allOf;
-    anyOf = baseSchema.anyOf;
-    oneOf = baseSchema.oneOf;
-    if (baseSchema.allOf != null) {
-      delete baseSchema.allOf;
-    }
-    if (baseSchema.anyOf != null) {
-      delete baseSchema.anyOf;
-    }
-    if (baseSchema.oneOf != null) {
-      delete baseSchema.oneOf;
-    }
-    if (allOf != null) {
-      for (_i = 0, _len = allOf.length; _i < _len; _i++) {
-        schema = allOf[_i];
-        $.extend(null, baseSchema, this.resolveReference(schema));
-      }
-    }
-    workingSchemas = [];
-    singularSchemas = [];
-    if (anyOf != null) {
-      singularSchemas = singularSchemas.concat(anyOf);
-    }
-    if (oneOf != null) {
-      singularSchemas = singularSchemas.concat(oneOf);
-    }
-    for (_j = 0, _len1 = singularSchemas.length; _j < _len1; _j++) {
-      singularSchema = singularSchemas[_j];
-      singularSchema = this.resolveReference(singularSchema);
-      s = $.extend(true, {}, baseSchema);
-      s = $.extend(true, s, singularSchema);
-      workingSchemas.push(s);
-    }
-    if (workingSchemas.length === 0) {
-      workingSchemas = [baseSchema];
-    }
-    return workingSchemas;
-  };
-
-  TreemaNode.prototype.resolveReference = function(schema, scrubTitle) {
-    var resolved;
-    if (scrubTitle == null) {
-      scrubTitle = false;
-    }
-    if (schema.$ref == null) {
-      return schema;
-    }
-    resolved = this.tv4.getSchema(schema.$ref);
-    if (!resolved) {
-      console.warn('could not resolve reference', schema.$ref, tv4.getMissingUris());
-    }
-    if (resolved == null) {
-      resolved = {};
-    }
-    if (scrubTitle && (resolved.title != null)) {
-      delete resolved.title;
-    }
-    return resolved;
-  };
-
-  TreemaNode.prototype.chooseWorkingSchema = function(workingSchemas, data) {
-    var result, schema, _i, _len;
-    if (workingSchemas.length === 1) {
-      return workingSchemas[0];
-    }
-    for (_i = 0, _len = workingSchemas.length; _i < _len; _i++) {
-      schema = workingSchemas[_i];
-      result = tv4.validateMultiple(data, schema);
-      if (result.valid) {
-        return schema;
-      }
-    }
-    return workingSchemas[0];
-  };
-
   TreemaNode.prototype.onSelectSchema = function(e) {
     var NodeClass, defaultType, index, workingSchema;
     index = parseInt($(e.target).val());
@@ -2301,12 +2223,12 @@ TreemaNode = (function() {
     }
     localClasses = parent ? parent.settings.nodeClasses : options.nodeClasses;
     if (parent) {
-      workingSchemas = parent.buildWorkingSchemas(options.schema);
+      workingSchemas = TreemaNode.utils.buildWorkingSchemas(options.schema, options.tv4);
       data = options.data;
       if (data === void 0) {
         data = options.schema["default"];
       }
-      workingSchema = parent.chooseWorkingSchema(workingSchemas, data);
+      workingSchema = TreemaNode.utils.chooseWorkingSchema(data, workingSchemas, options.tv4);
       if (!type) {
         type = (workingSchema != null ? workingSchema.type : void 0) || 'string';
       }
