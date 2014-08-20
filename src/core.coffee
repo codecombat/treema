@@ -105,21 +105,17 @@ do __init = ->
     sort: false
 
     getChildren: ->
-      ({key:key, value: value, schema: @getChildSchema(key)} for value, key in @data)
-
-    getChildSchema: (index) ->
-      schema = @workingSchema or @schema
-      return {} unless schema.items? or schema.additionalItems?
-      return @resolveReference(schema.items, true) if $.isPlainObject(schema.items)
-      return @resolveReference(schema[index], true) if index  < schema.length
-      return @resolveReference(schema.additionalItems, true) if $.isPlainObject(schema.additionalItems)
-      return {}
+      ({
+        key: key
+        value: value
+        schema: TreemaNode.utils.getChildSchema(key, @schema)
+      } for value, key in @data)
 
     buildValueForDisplay: (valEl) ->
       text = []
       return unless @data
       for child, index in @data[..2]
-        helperTreema = TreemaNode.make(null, {schema: @getChildSchema(index), data:child}, @)
+        helperTreema = TreemaNode.make(null, {schema: TreemaNode.utils.getChildSchema(index, @schema), data:child}, @)
         val = $('<div></div>')
         helperTreema.buildValueForDisplay(val)
         text.push(val.text())
@@ -141,7 +137,7 @@ do __init = ->
       return unless @canAddChild()
       @open() if @isClosed()
       new_index = Object.keys(@childrenTreemas).length
-      schema = @getChildSchema(new_index)
+      schema = TreemaNode.utils.getChildSchema(new_index, @schema)
       newTreema = TreemaNode.make(undefined, {schema: schema}, @, new_index)
       newTreema.justCreated = true
       newTreema.tv4 = @tv4
@@ -200,22 +196,13 @@ do __init = ->
         for key of @schema.properties
           continue if typeof @data[key] is 'undefined'
           keysAccountedFor.push(key)
-          children.push({key: key, value: @data[key], schema: @getChildSchema(key)})
+          schema = TreemaNode.utils.getChildSchema(key, @schema)
+          children.push({key: key, value: @data[key], schema: schema})
 
       for key, value of @data
         continue if key in keysAccountedFor
-        children.push({key: key, value: value, schema: @getChildSchema(key)})
+        children.push({key: key, value: value, schema: TreemaNode.utils.getChildSchema(key, @schema)})
       children
-
-    getChildSchema: (key_or_title) ->
-      schema = @workingSchema or @schema
-      for key, child_schema of schema.properties
-        return @resolveReference(child_schema, true) if key is key_or_title or child_schema.title is key_or_title
-      for key, child_schema of schema.patternProperties
-        re = new RegExp(key)
-        return @resolveReference(child_schema, true) if key_or_title.match(re)
-      return @resolveReference(schema.additionalProperties, true) if $.isPlainObject(schema.additionalProperties)
-      return {}
 
     buildValueForDisplay: (valEl) ->
       text = []
@@ -234,7 +221,8 @@ do __init = ->
           break
         i += 1
 
-        name = @getChildSchema(key).title or key
+        childSchema = TreemaNode.utils.getChildSchema(key, @schema)
+        name = childSchema.title or key
         if $.isPlainObject(value) or $.isArray(value)
           text.push "#{name}"
           continue
@@ -256,7 +244,7 @@ do __init = ->
       return unless @schema.required
       for key in @schema.required
         continue if @data[key]?
-        helperTreema = TreemaNode.make(null, {schema: @getChildSchema(key)}, @)
+        helperTreema = TreemaNode.make(null, {schema: TreemaNode.utils.getChildSchema(key, @schema)}, @)
         helperTreema.populateData()
         @data[key] = helperTreema.data
 
@@ -385,7 +373,7 @@ do __init = ->
       return
 
     addNewChildForKey: (key) ->
-      schema = @getChildSchema(key)
+      schema = TreemaNode.utils.getChildSchema(key, @schema)
       newTreema = TreemaNode.make(null, {schema: schema}, @, key)
       childNode = @createChildNode(newTreema)
       @findObjectInsertionPoint(key).before(childNode)
@@ -462,7 +450,7 @@ do __init = ->
       NodeClass = TreemaNode.getNodeClassForSchema({type:$.type(@data)})
       @helper = new NodeClass(@schema, {data: @data, options: @options}, @parent)
       @helper.tv4 = @tv4
-      for prop in ['collection', 'ordered', 'keyed', 'getChildSchema', 'getChildren', 'getChildSchema',
+      for prop in ['collection', 'ordered', 'keyed', 'getChildren',
                    'buildValueForDisplay', 'addNewChild', 'childPropertiesAvailable']
         @[prop] = @helper[prop]
 

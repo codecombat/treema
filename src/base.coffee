@@ -85,7 +85,6 @@ class TreemaNode
 
   # collection specific
   getChildren: -> console.error('"getChildren" has not been overridden.') # should return a list of key-value-schema tuples
-  getChildSchema: -> console.error('"getChildSchema" has not been overridden.')
   canAddChild: -> @collection and @editable and not @settings.readOnly
   canAddProperty: -> true
   addingNewProperty: -> false
