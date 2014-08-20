@@ -2,39 +2,38 @@ describe 'Change callback', ->
   tabKeyPress = ($el) -> keyDown($el, 9)
   deleteKeyPress = ($el) -> keyDown($el, 8)
 
-  schema = {
-    type: 'object',
-    properties: {
-      name: { type: 'string' }
-      numbers: { type: 'array', items: { type: 'object' } }
-      tags: { type: 'array', items: { type: 'string' } }
-    }
-  }
-  data = {
-    name: 'Bob',
-    numbers: [
-      {'number':'401-401-1337', 'type':'Home'},
-      {'number':'123-456-7890', 'type':'Work'}
-    ],
-    tags: ['Friend'],
-  }
+  fired = nameTreema = numbersTreema = tagsTreema = treema = null
 
-  fired = {f:true}
-  
-  treema = TreemaNode.make(null, {
-    data: data
-    schema: schema
-    callbacks:
-      change: ->
-        fired.f = true
-  })
-  treema.build()
-  nameTreema = treema.childrenTreemas.name
-  numbersTreema = treema.childrenTreemas.numbers
-  tagsTreema = treema.childrenTreemas.tags
-  
   beforeEach ->
-    fired.f = false
+    schema = {
+      type: 'object',
+      properties: {
+        name: { type: 'string' }
+        numbers: { type: 'array', items: { type: 'object' } }
+        tags: { type: 'array', items: { type: 'string' } }
+      }
+    }
+    data = {
+      name: 'Bob',
+      numbers: [
+        {'number':'401-401-1337', 'type':'Home'},
+        {'number':'123-456-7890', 'type':'Work'}
+      ],
+      tags: ['Friend'],
+    }
+  
+    treema = TreemaNode.make(null, {
+      data: data
+      schema: schema
+      callbacks:
+        change: ->
+          fired.f = true
+    })
+    treema.build()
+    nameTreema = treema.childrenTreemas.name
+    numbersTreema = treema.childrenTreemas.numbers
+    tagsTreema = treema.childrenTreemas.tags
+    fired = {f:false}
 
   it 'fires when editing a field', ->
     valEl = nameTreema.getValEl()
@@ -90,6 +89,9 @@ describe 'Change callback', ->
     expect(fired.f).toBe(true)
  
   it 'fires when you delete an element in an array', ->
+    tagsTreema.open()
+    tagsTreema.$el.find('.treema-add-child').click()
+    tabKeyPress(treema.$el.find('input').val('Star'))
     treema.endExistingEdits()
     tagTreema = tagsTreema.childrenTreemas[0]
     tagTreema.select()
