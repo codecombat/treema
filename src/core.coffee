@@ -7,10 +7,10 @@ do __init = ->
                    'email', 'month', 'range', 'search',
                    'tel', 'text', 'time', 'url', 'week']
 
-    buildValueForDisplay: (valEl) -> @buildValueForDisplaySimply(valEl, "\"#{@data}\"")
+    buildValueForDisplay: (valEl, data) -> @buildValueForDisplaySimply(valEl, "\"#{data}\"")
 
-    buildValueForEditing: (valEl) ->
-      input = @buildValueForEditingSimply(valEl, @data)
+    buildValueForEditing: (valEl, data) ->
+      input = @buildValueForEditingSimply(valEl, data)
       input.attr('maxlength', @schema.maxLength) if @schema.maxLength
       input.attr('type', @schema.format) if @schema.format in StringNode.inputTypes
 
@@ -24,10 +24,10 @@ do __init = ->
     valueClass: 'treema-number'
     getDefaultValue: -> 0
 
-    buildValueForDisplay: (valEl) -> @buildValueForDisplaySimply(valEl, JSON.stringify(@data))
+    buildValueForDisplay: (valEl, data) -> @buildValueForDisplaySimply(valEl, JSON.stringify(data))
 
-    buildValueForEditing: (valEl) ->
-      input = @buildValueForEditingSimply(valEl, JSON.stringify(@data), 'number')
+    buildValueForEditing: (valEl, data) ->
+      input = @buildValueForEditingSimply(valEl, JSON.stringify(data), 'number')
       input.attr('max', @schema.maximum) if @schema.maximum
       input.attr('min', @schema.minimum) if @schema.minimum
 
@@ -41,10 +41,10 @@ do __init = ->
     valueClass: 'treema-integer'
     getDefaultValue: -> 0
 
-    buildValueForDisplay: (valEl) -> @buildValueForDisplaySimply(valEl, JSON.stringify(@data))
+    buildValueForDisplay: (valEl, data) -> @buildValueForDisplaySimply(valEl, JSON.stringify(data))
 
-    buildValueForEditing: (valEl) ->
-      input = @buildValueForEditingSimply(valEl, JSON.stringify(@data), 'number')
+    buildValueForEditing: (valEl, data) ->
+      input = @buildValueForEditingSimply(valEl, JSON.stringify(data), 'number')
       input.attr('max', @schema.maximum) if @schema.maximum
       input.attr('min', @schema.minimum) if @schema.minimum
 
@@ -60,27 +60,25 @@ do __init = ->
     editable: false
     buildValueForDisplay: (valEl) -> @buildValueForDisplaySimply(valEl, 'null')
 
-
-
   TreemaNode.setNodeSubclass 'boolean', class BooleanNode extends TreemaNode
     valueClass: 'treema-boolean'
     getDefaultValue: -> false
 
-    buildValueForDisplay: (valEl) -> 
-      @buildValueForDisplaySimply(valEl, JSON.stringify(@data))
+    buildValueForDisplay: (valEl, data) ->
+      @buildValueForDisplaySimply(valEl, JSON.stringify(data))
       @select()
 
-    buildValueForEditing: (valEl) ->
-      input = @buildValueForEditingSimply(valEl, JSON.stringify(@data))
+    buildValueForEditing: (valEl, data) ->
+      input = @buildValueForEditingSimply(valEl, JSON.stringify(data))
       $('<span></span>').text(JSON.stringify(@data)).insertBefore(input)
       input.focus()
 
     toggleValue: (newValue=null) ->
-      oldData = @data
+      oldData = @getData()
       @data = not @data
       @data = newValue if newValue?
       valEl = @getValEl().empty()
-      if @isDisplaying() then @buildValueForDisplay(valEl) else @buildValueForEditing(valEl)
+      if @isDisplaying() then @buildValueForDisplay(valEl, @getData()) else @buildValueForEditing(valEl, @getData())
       @addTrackedAction {'oldData':oldData, 'newData':@data, 'path':@getPath(), 'action':'edit'}
       @select()
       @flushChanges()
@@ -111,21 +109,21 @@ do __init = ->
         schema: TreemaNode.utils.getChildSchema(key, @schema)
       } for value, key in @data)
 
-    buildValueForDisplay: (valEl) ->
+    buildValueForDisplay: (valEl, data) ->
       text = []
-      return unless @data
-      for child, index in @data[..2]
+      return unless data
+      for child, index in data[..2]
         helperTreema = TreemaNode.make(null, {schema: TreemaNode.utils.getChildSchema(index, @schema), data:child}, @)
         val = $('<div></div>')
-        helperTreema.buildValueForDisplay(val)
+        helperTreema.buildValueForDisplay(val, helperTreema.getData())
         text.push(val.text())
-      text.push('...') if @data.length > 3
+      text.push('...') if data.length > 3
 
       empty = if @schema.title? then "(empty #{@schema.title})" else '(empty)'
       text = if text.length then text.join(' | ') else empty
       @buildValueForDisplaySimply(valEl, text)
 
-    buildValueForEditing: (valEl) -> @buildValueForEditingSimply(valEl, JSON.stringify(@data))
+    buildValueForEditing: (valEl, data) -> @buildValueForEditingSimply(valEl, JSON.stringify(data))
 
     canAddChild: ->
       return false if @settings.readOnly or @schema.readOnly
@@ -139,7 +137,6 @@ do __init = ->
       new_index = Object.keys(@childrenTreemas).length
       schema = TreemaNode.utils.getChildSchema(new_index, @schema)
       newTreema = TreemaNode.make(undefined, {schema: schema}, @, new_index)
-      newTreema.justCreated = true
       newTreema.tv4 = @tv4
       childNode = @createChildNode(newTreema)
       @addTrackedAction {'data':newTreema.data, 'path':newTreema.getPath(), 'parentPath':@getPath(), 'action':'insert'}
@@ -155,16 +152,11 @@ do __init = ->
     open: ->
       @data.sort(@sortFunction) if @sort
       super(arguments...)
-      shouldShorten = @buildValueForDisplay is ArrayNode.prototype.buildValueForDisplay
-      shouldShorten = false
-      if shouldShorten
-        valEl = @getValEl().empty()
-        @buildValueForDisplaySimply(valEl, '[...]') if shouldShorten
 
     close: ->
       super(arguments...)
       valEl = @getValEl().empty()
-      @buildValueForDisplay(valEl)
+      @buildValueForDisplay(valEl, @getData())
 
     # auto sorting methods
 
@@ -253,18 +245,18 @@ do __init = ->
       if $.isPlainObject(childDefaultData) then childDefaultData = $.extend(true, {}, childDefaultData)
       childDefaultData
 
-    buildValueForDisplay: (valEl) ->
+    buildValueForDisplay: (valEl, data) ->
       text = []
-      return unless @data
+      return unless data
 
-      displayValue = @data[@schema.displayProperty]
+      displayValue = data[@schema.displayProperty]
       if displayValue
         text = displayValue
         return @buildValueForDisplaySimply(valEl, text)
 
       i = 0
       schema = @workingSchema or @schema
-      for key, value of @data
+      for key, value of data
         if i is 3
           text.push('...')
           break
@@ -286,8 +278,6 @@ do __init = ->
       text = if text.length then text.join(', ') else empty
       @buildValueForDisplaySimply(valEl, text)
 
-    buildValueForEditing: (valEl) -> @buildValueForEditingSimply(valEl, JSON.stringify(@data))
-
     populateData: ->
       super()
       return unless @schema.required
@@ -297,18 +287,9 @@ do __init = ->
         helperTreema.populateData()
         @data[key] = helperTreema.data
 
-    open: ->
-      super(arguments...)
-      shouldShorten = @buildValueForDisplay is ObjectNode.prototype.buildValueForDisplay
-      shouldShorten = false
-      if shouldShorten
-        valEl = @getValEl().empty()
-        @buildValueForDisplaySimply(valEl, '{...}') if shouldShorten
-
     close: ->
       super(arguments...)
-      valEl = @getValEl().empty()
-      @buildValueForDisplay(valEl)
+      @buildValueForDisplay(@getValEl().empty(), @getData())
 
     # adding children ---------------------------------------------------------
 
@@ -473,7 +454,7 @@ do __init = ->
       super(splat...)
       @updateShadowMethods()
 
-    buildValueForEditing: (valEl) -> @buildValueForEditingSimply(valEl, JSON.stringify(@data))
+    buildValueForEditing: (valEl, data) -> @buildValueForEditingSimply(valEl, JSON.stringify(data))
     saveChanges: (valEl) ->
       oldData = @data
       @data = $('input', valEl).val()

@@ -35,7 +35,7 @@ class TreemaNode
   # dynamically managed properties
   keyForParent: null
   childrenTreemas: null
-  justCreated: true
+  integrated: false
   removed: false
   workingSchema: null
 
@@ -80,7 +80,7 @@ class TreemaNode
   getDefaultValue: -> null
   buildValueForDisplay: -> console.error('"buildValueForDisplay" has not been overridden.')
   buildValueForEditing: ->
-    return unless @editable
+    return unless @editable and @directlyEditable
     console.error('"buildValueForEditing" has not been overridden.')
 
   # collection specific
@@ -127,10 +127,10 @@ class TreemaNode
 
   limitChoices: (options) ->
     @enum = options
-    @buildValueForEditing = (valEl) =>
+    @buildValueForEditing = (valEl, data) =>
       input = $('<select></select>')
       input.append($('<option></option>').text(option)) for option in @enum
-      index = @enum.indexOf(@data)
+      index = @enum.indexOf(data)
       input.prop('selectedIndex', index) if index >= 0
       valEl.append(input)
       input.focus()
@@ -173,12 +173,11 @@ class TreemaNode
     @$el.data('instance', @)
     @$el.addClass('treema-root') unless @parent
     @$el.attr('tabindex', 9001) unless @parent
-    @justCreated = false unless @parent
     @$el.append($(@childrenTemplate)).addClass('treema-closed') if @collection
     valEl = @getValEl()
     valEl.addClass(@valueClass) if @valueClass
     valEl.addClass('treema-display') if @directlyEditable
-    @buildValueForDisplay(valEl)
+    @buildValueForDisplay(valEl, @getData())
     @open() if @collection and not @parent
     @setUpGlobalEvents() unless @parent
     @setUpLocalEvents() if @parent
@@ -407,7 +406,7 @@ class TreemaNode
 
   onEscapePressed: ->
     return unless @isEditing()
-    return @remove() if @justCreated
+    return @remove() if @parent and (not @integrated) and @defaultData is undefined
     @display() if @isEditing()
     @select() unless @isRoot()
     @keepFocus()
@@ -572,10 +571,10 @@ class TreemaNode
     valEl.removeClass('treema-display').removeClass('treema-edit').addClass(toClass)
 
     valEl.empty()
-    @buildValueForDisplay(valEl) if @isDisplaying()
+    @buildValueForDisplay(valEl, @getData()) if @isDisplaying()
 
     if @isEditing()
-      @buildValueForEditing(valEl)
+      @buildValueForEditing(valEl, @getData())
       @deselectAll()
 
   endExistingEdits: ->
@@ -587,9 +586,9 @@ class TreemaNode
       @markAsChanged()
 
   flushChanges: ->
-    @parent.integrateChildTreema(@) if @parent and @justCreated
+    if @parent and (not @integrated) and @data isnt undefined
+      @parent.integrateChildTreema(@)
     @getRoot().cachedErrors = null
-    @justCreated = false
     @markAsChanged()
     return @refreshErrors() unless @parent
     @parent.data[@keyForParent] = @data
@@ -597,7 +596,7 @@ class TreemaNode
     parent = @parent
     while parent
 #      unless parent.valueClass in ['treema-array', 'treema-object']
-      parent.buildValueForDisplay(parent.getValEl().empty())
+      parent.buildValueForDisplay(parent.getValEl().empty(), parent.getData())
       parent = parent.parent
 
   focusLastInput: ->
@@ -651,7 +650,7 @@ class TreemaNode
     @parent.refreshErrors()
     @parent.updateMyAddButton()
     @parent.markAsChanged()
-    @parent.buildValueForDisplay(@parent.getValEl().empty())
+    @parent.buildValueForDisplay(@parent.getValEl().empty(), @parent.getData())
     @broadcastChanges()
     return true
 
@@ -703,7 +702,7 @@ class TreemaNode
     @$el.addClass('treema-closed').removeClass('treema-open')
     @childrenTreemas = null
     @refreshErrors()
-    @buildValueForDisplay(@getValEl().empty())
+    @buildValueForDisplay(@getValEl().empty(), @getData())
 
   # Selecting/deselecting nodes -----------------------------------------------
   select: ->
@@ -934,7 +933,7 @@ class TreemaNode
 
   # Child node utilities ------------------------------------------------------
   integrateChildTreema: (treema) ->
-    treema.justCreated = false # no longer in limbo
+    treema.integrated = true # no longer in limbo
     @childrenTreemas[treema.keyForParent] = treema
     treema.populateData()
     @data[treema.keyForParent] = treema.data
@@ -961,7 +960,7 @@ class TreemaNode
     @showErrors()
 
   showErrors: ->
-    return if @justCreated
+    return if @parent and not @integrated
     errors = @getErrors()
     erroredTreemas = []
     for error in errors
@@ -1174,9 +1173,7 @@ class TreemaNode
 
   refreshDisplay: ->
     if @isDisplaying()
-      valEl = @getValEl()
-      valEl.empty()
-      @buildValueForDisplay(valEl)
+      @buildValueForDisplay(@getValEl().empty(), @getData())
 
     else
       @display()
@@ -1218,7 +1215,7 @@ class TreemaNode
       pointer = pointer.parent
     pathPieces.reverse()
     return '/' + pathPieces.join('/')
-  getData: -> @data
+  getData: -> if $.type(@data) is 'undefined' then @defaultData else @data
   getLastTreema: ->
     return @ unless @childrenTreemas
     treemaKeys = Object.keys(@childrenTreemas)

@@ -3,11 +3,11 @@ do ->
     valueClass: 'treema-point2d'
     getDefaultValue: -> {x:0, y:0}
 
-    buildValueForDisplay: (valEl) -> @buildValueForDisplaySimply(valEl, "(#{@data.x}, #{@data.y})")
+    buildValueForDisplay: (valEl, data) -> @buildValueForDisplaySimply(valEl, "(#{data.x}, #{data.y})")
 
-    buildValueForEditing: (valEl) ->
-      xInput = $('<input />').val(@data.x).attr('placeholder', 'x')
-      yInput = $('<input />').val(@data.y).attr('placeholder', 'y')
+    buildValueForEditing: (valEl, data) ->
+      xInput = $('<input />').val(data.x).attr('placeholder', 'x')
+      yInput = $('<input />').val(data.y).attr('placeholder', 'y')
       valEl.append('(').append(xInput).append(', ').append(yInput).append(')')
       valEl.find('input:first').focus().select()
 
@@ -19,13 +19,13 @@ do ->
     valueClass: 'treema-point3d'
     getDefaultValue: -> {x:0, y:0, z:0}
 
-    buildValueForDisplay: (valEl) ->
+    buildValueForDisplay: (valEl, data) ->
       @buildValueForDisplaySimply(valEl, "(#{@data.x}, #{@data.y}, #{@data.z})")
 
-    buildValueForEditing: (valEl) ->
-      xInput = $('<input />').val(@data.x).attr('placeholder', 'x')
-      yInput = $('<input />').val(@data.y).attr('placeholder', 'y')
-      zInput = $('<input />').val(@data.z).attr('placeholder', 'z')
+    buildValueForEditing: (valEl, data) ->
+      xInput = $('<input />').val(data.x).attr('placeholder', 'x')
+      yInput = $('<input />').val(data.y).attr('placeholder', 'y')
+      zInput = $('<input />').val(data.z).attr('placeholder', 'z')
       valEl.append('(').append(xInput).append(', ').append(yInput).append(', ').append(zInput).append(')')
       valEl.find('input:first').focus().select()
 
@@ -42,19 +42,19 @@ do ->
     url: null
     lastTerm: null
 
-    buildValueForDisplay: (valEl) ->
-      val = if @data then @formatDocument(@data) else 'None'
+    buildValueForDisplay: (valEl, data) ->
+      val = if @data then @formatDocument(data) else 'None'
       @buildValueForDisplaySimply(valEl, val)
 
     formatDocument: (doc) ->
       return doc if $.isString(doc)
       JSON.stringify(doc)
 
-    buildValueForEditing: (valEl) ->
+    buildValueForEditing: (valEl, data) ->
       valEl.html(@searchValueTemplate)
       input = valEl.find('input')
       input.focus().keyup @search
-      input.attr('placeholder', @formatDocument(@data)) if @data
+      input.attr('placeholder', @formatDocument(data)) if data
 
     search: =>
       term = @getValEl().find('input').val()
@@ -143,7 +143,7 @@ do ->
     getDefaultValue: -> ''
 
     initEditor: (valEl) ->
-      d = $('<div></div>').text(@data)
+      d = $('<div></div>').text(@getData())
       valEl.append(d)
       @editor = ace.edit(d[0])
       session = @editor.getSession()
@@ -178,14 +178,13 @@ do ->
 
     getDefaultValue: -> ''
 
-    buildValueForDisplay: (valEl) ->
-      text = @data
-      text = text.replace(/\n/g, '<br />')
+    buildValueForDisplay: (valEl, data) ->
+      text = data.replace(/\n/g, '<br />')
       valEl.append($("<div></div>").html(text))
 
-    buildValueForEditing: (valEl) ->
+    buildValueForEditing: (valEl, data) ->
       input = $('<textarea />')
-      input.val(@data) unless @data is null
+      input.val(data) unless @data is null
       valEl.append(input)
       input.focus().select()
       input.blur @onEditInputBlur
