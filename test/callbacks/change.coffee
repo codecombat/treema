@@ -2,7 +2,8 @@ describe 'Change callback', ->
   tabKeyPress = ($el) -> keyDown($el, 9)
   deleteKeyPress = ($el) -> keyDown($el, 8)
 
-  fired = nameTreema = numbersTreema = tagsTreema = treema = null
+  fired = {}
+  nameTreema = numbersTreema = tagsTreema = treema = null
 
   beforeEach ->
     schema = {
@@ -33,8 +34,8 @@ describe 'Change callback', ->
     nameTreema = treema.childrenTreemas.name
     numbersTreema = treema.childrenTreemas.numbers
     tagsTreema = treema.childrenTreemas.tags
-    fired = {f:false}
-
+    fired.f = false
+  
   it 'fires when editing a field', ->
     valEl = nameTreema.getValEl()
     valEl.click()

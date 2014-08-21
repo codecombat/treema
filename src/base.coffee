@@ -36,7 +36,6 @@ class TreemaNode
   keyForParent: null
   childrenTreemas: null
   integrated: false
-  removed: false
   workingSchema: null
 
   # Node name to be used in undo-redo descriptions
@@ -306,7 +305,7 @@ class TreemaNode
       TreemaNode.didSelect = false
       @callbacks.select(e, @getSelectedTreemas())
     if TreemaNode.changedTreemas.length
-      changes = (t for t in TreemaNode.changedTreemas when not t.removed)
+      changes = (t for t in TreemaNode.changedTreemas when t.integrated or not t.parent)
       @callbacks.change?(e, jQuery.unique(changes))
       TreemaNode.changedTreemas = []
 
@@ -637,20 +636,16 @@ class TreemaNode
       tempError = @createTemporaryError('read only')
       @$el.prepend(tempError)
       return false
+      
+    if @defaultData isnt undefined
+      @data = undefined
+      @parent.segregateChildTreema(@)
+      @updateDefaultClass()
+      return true
 
-    root = @getRootEl()
     @$el.remove()
-    @removed = true
     @keepFocus() if document.activeElement is $('body')[0]
-    return true unless @parent?
-    delete @parent.childrenTreemas[@keyForParent]
-    delete @parent.data[@keyForParent]
-    @parent.orderDataFromUI() if @parent.ordered
-    @parent.refreshErrors()
-    @parent.updateMyAddButton()
-    @parent.markAsChanged()
-    @parent.buildValueForDisplay(@parent.getValEl().empty(), @parent.getData())
-    @broadcastChanges()
+    @parent.segregateChildTreema(@) if @parent
     return true
 
   # Managing defaults
@@ -696,7 +691,7 @@ class TreemaNode
     @data = if $.isArray(@data) then [] else {}
     for child in children
       treema = $(child).data('instance')
-      continue unless treema
+      continue unless treema?.data
       treema.keyForParent = index
       @childrenTreemas[index] = treema
       @data[index] = treema.data
@@ -942,10 +937,30 @@ class TreemaNode
 
   # Child node utilities ------------------------------------------------------
   integrateChildTreema: (treema) ->
+    treema.populateData()
+    newData = @data[treema.keyForParent] isnt treema.data
     treema.integrated = true # no longer in limbo
     @childrenTreemas[treema.keyForParent] = treema
-    treema.populateData()
     @data[treema.keyForParent] = treema.data
+    if newData
+      @orderDataFromUI() if @ordered
+      @refreshErrors()
+      @updateMyAddButton()
+      @markAsChanged()
+      @buildValueForDisplay(@getValEl().empty(), @getData())
+      @broadcastChanges()
+    treema
+    
+  segregateChildTreema: (treema) ->
+    treema.integrated = false
+    delete @childrenTreemas[treema.keyForParent]
+    delete @data[treema.keyForParent]
+    @orderDataFromUI() if @ordered
+    @refreshErrors()
+    @updateMyAddButton()
+    @markAsChanged()
+    @buildValueForDisplay(@getValEl().empty(), @getData())
+    @broadcastChanges()
     treema
 
   createChildNode: (treema) ->

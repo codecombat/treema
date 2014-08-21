@@ -58,8 +58,6 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.integrated = false;
 
-  TreemaNode.prototype.removed = false;
-
   TreemaNode.prototype.workingSchema = null;
 
   TreemaNode.prototype.nodeDescription = 'Node';
@@ -531,7 +529,7 @@ TreemaNode = (function() {
         _results = [];
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           t = _ref[_i];
-          if (!t.removed) {
+          if (t.integrated || !t.parent) {
             _results.push(t);
           }
         }
@@ -1105,7 +1103,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.remove = function() {
-    var readOnly, required, root, tempError, _ref, _ref1;
+    var readOnly, required, tempError, _ref, _ref1;
     required = this.parent && (this.parent.schema.required != null) && (_ref = this.keyForParent, __indexOf.call(this.parent.schema.required, _ref) >= 0);
     if (required) {
       tempError = this.createTemporaryError('required');
@@ -1118,25 +1116,19 @@ TreemaNode = (function() {
       this.$el.prepend(tempError);
       return false;
     }
-    root = this.getRootEl();
+    if (this.defaultData !== void 0) {
+      this.data = void 0;
+      this.parent.segregateChildTreema(this);
+      this.updateDefaultClass();
+      return true;
+    }
     this.$el.remove();
-    this.removed = true;
     if (document.activeElement === $('body')[0]) {
       this.keepFocus();
     }
-    if (this.parent == null) {
-      return true;
+    if (this.parent) {
+      this.parent.segregateChildTreema(this);
     }
-    delete this.parent.childrenTreemas[this.keyForParent];
-    delete this.parent.data[this.keyForParent];
-    if (this.parent.ordered) {
-      this.parent.orderDataFromUI();
-    }
-    this.parent.refreshErrors();
-    this.parent.updateMyAddButton();
-    this.parent.markAsChanged();
-    this.parent.buildValueForDisplay(this.parent.getValEl().empty(), this.parent.getData());
-    this.broadcastChanges();
     return true;
   };
 
@@ -1214,7 +1206,7 @@ TreemaNode = (function() {
     for (_i = 0, _len = children.length; _i < _len; _i++) {
       child = children[_i];
       treema = $(child).data('instance');
-      if (!treema) {
+      if (!(treema != null ? treema.data : void 0)) {
         continue;
       }
       treema.keyForParent = index;
@@ -1570,10 +1562,37 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.integrateChildTreema = function(treema) {
+    var newData;
+    treema.populateData();
+    newData = this.data[treema.keyForParent] !== treema.data;
     treema.integrated = true;
     this.childrenTreemas[treema.keyForParent] = treema;
-    treema.populateData();
     this.data[treema.keyForParent] = treema.data;
+    if (newData) {
+      if (this.ordered) {
+        this.orderDataFromUI();
+      }
+      this.refreshErrors();
+      this.updateMyAddButton();
+      this.markAsChanged();
+      this.buildValueForDisplay(this.getValEl().empty(), this.getData());
+      this.broadcastChanges();
+    }
+    return treema;
+  };
+
+  TreemaNode.prototype.segregateChildTreema = function(treema) {
+    treema.integrated = false;
+    delete this.childrenTreemas[treema.keyForParent];
+    delete this.data[treema.keyForParent];
+    if (this.ordered) {
+      this.orderDataFromUI();
+    }
+    this.refreshErrors();
+    this.updateMyAddButton();
+    this.markAsChanged();
+    this.buildValueForDisplay(this.getValEl().empty(), this.getData());
+    this.broadcastChanges();
     return treema;
   };
 
