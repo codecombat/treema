@@ -658,7 +658,8 @@ class TreemaNode
 
   updateDefaultClass: ->
     @$el.removeClass('treema-default-stub')
-    @$el.addClass('treema-default-stub') if @isDefaultStub()
+    @$el.addClass('treema-default-stub') if @isDefaultStub() and not @parent.isDefaultStub()
+    child.updateDefaultClass() for key, child of @childrenTreemas
     
   # Opening/closing collections -----------------------------------------------
   toggleOpen: ->
@@ -678,6 +679,7 @@ class TreemaNode
           defaultData: child.defaultData
         }, @, child.key)
         @integrateChildTreema(treema) unless treema.data is undefined
+        @childrenTreemas[treema.keyForParent] = treema
         childNode = @createChildNode(treema)
         childrenContainer.append(childNode)
       @$el.append(childrenContainer).removeClass('treema-closed').addClass('treema-open')
@@ -948,7 +950,8 @@ class TreemaNode
     if @parent and not @integrated
       @data = if $.isArray(@defaultData) then [] else {}
       @parent.integrateChildTreema(@)
-      @updateDefaultClass()
+    else
+      treema.updateDefaultClass()
     newData = @data[treema.keyForParent] isnt treema.data
     treema.integrated = true # no longer in limbo
     @childrenTreemas[treema.keyForParent] = treema
@@ -1161,10 +1164,6 @@ class TreemaNode
       @data.push(newData)
       @refreshDisplay()
       @flushChanges()
-
-      parentPath = @getPath()
-      childPath = @getPath() + '/' + (@data.length-1).toString()
-      lastTreema = @getLastTreema()
       return true
 
     return @digDeeper(path, 'insertRecursive', false, [newData]) if @childrenTreemas?
@@ -1203,7 +1202,7 @@ class TreemaNode
   digDeeper: (path, func, def, args) ->
     seg = @normalizeKey(path[0], @data)
     childTreema = @childrenTreemas[seg]
-    return def if childTreema is undefined
+    return def if childTreema is undefined or not childTreema.integrated
     return childTreema[func](path[1..], args...)
 
   refreshDisplay: ->
@@ -1252,12 +1251,6 @@ class TreemaNode
     return '/' + pathPieces.join('/')
   getData: -> if $.type(@data) is 'undefined' then @defaultData else @data
   isDefaultStub: -> @data is undefined
-  getLastTreema: ->
-    return @ unless @childrenTreemas
-    treemaKeys = Object.keys(@childrenTreemas)
-    lastKey = treemaKeys[treemaKeys.length-1]
-    lastTreema = @childrenTreemas[lastKey]
-    return lastTreema
   @getLastTreemaWithFocus: ->
     return @lastTreemaWithFocus
 

@@ -257,6 +257,8 @@ do __init = ->
       i = 0
       schema = @workingSchema or @schema
       for key, value of data
+        continue if value is undefined
+          
         if i is 3
           text.push('...')
           break

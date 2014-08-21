@@ -1405,10 +1405,18 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.updateDefaultClass = function() {
+    var child, key, _ref, _results;
     this.$el.removeClass('treema-default-stub');
-    if (this.isDefaultStub()) {
-      return this.$el.addClass('treema-default-stub');
+    if (this.isDefaultStub() && !this.parent.isDefaultStub()) {
+      this.$el.addClass('treema-default-stub');
     }
+    _ref = this.childrenTreemas;
+    _results = [];
+    for (key in _ref) {
+      child = _ref[key];
+      _results.push(child.updateDefaultClass());
+    }
+    return _results;
   };
 
   TreemaNode.prototype.toggleOpen = function() {
@@ -1443,6 +1451,7 @@ TreemaNode = (function() {
         if (treema.data !== void 0) {
           this.integrateChildTreema(treema);
         }
+        this.childrenTreemas[treema.keyForParent] = treema;
         childNode = this.createChildNode(treema);
         childrenContainer.append(childNode);
       }
@@ -1836,7 +1845,8 @@ TreemaNode = (function() {
     if (this.parent && !this.integrated) {
       this.data = $.isArray(this.defaultData) ? [] : {};
       this.parent.integrateChildTreema(this);
-      this.updateDefaultClass();
+    } else {
+      treema.updateDefaultClass();
     }
     newData = this.data[treema.keyForParent] !== treema.data;
     treema.integrated = true;
@@ -2168,7 +2178,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.insertRecursive = function(path, newData) {
-    var childPath, data, i, lastTreema, parentPath, seg, _i, _len;
+    var data, i, parentPath, seg, _i, _len;
     path = this.normalizePath(path);
     if (path.length === 0) {
       if (!$.isArray(this.data)) {
@@ -2177,9 +2187,6 @@ TreemaNode = (function() {
       this.data.push(newData);
       this.refreshDisplay();
       this.flushChanges();
-      parentPath = this.getPath();
-      childPath = this.getPath() + '/' + (this.data.length - 1).toString();
-      lastTreema = this.getLastTreema();
       return true;
     }
     if (this.childrenTreemas != null) {
@@ -2245,7 +2252,7 @@ TreemaNode = (function() {
     var childTreema, seg;
     seg = this.normalizeKey(path[0], this.data);
     childTreema = this.childrenTreemas[seg];
-    if (childTreema === void 0) {
+    if (childTreema === void 0 || !childTreema.integrated) {
       return def;
     }
     return childTreema[func].apply(childTreema, [path.slice(1)].concat(__slice.call(args)));
@@ -2351,17 +2358,6 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.isDefaultStub = function() {
     return this.data === void 0;
-  };
-
-  TreemaNode.prototype.getLastTreema = function() {
-    var lastKey, lastTreema, treemaKeys;
-    if (!this.childrenTreemas) {
-      return this;
-    }
-    treemaKeys = Object.keys(this.childrenTreemas);
-    lastKey = treemaKeys[treemaKeys.length - 1];
-    lastTreema = this.childrenTreemas[lastKey];
-    return lastTreema;
   };
 
   TreemaNode.getLastTreemaWithFocus = function() {
@@ -3133,6 +3129,9 @@ TreemaNode = (function() {
       schema = this.workingSchema || this.schema;
       for (key in data) {
         value = data[key];
+        if (value === void 0) {
+          continue;
+        }
         if (i === 3) {
           text.push('...');
           break;
