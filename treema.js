@@ -1557,33 +1557,31 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.shiftSelect = function() {
-    var allNodes, lastSelected, node, started, _i, _len;
+    var allNodes, endNodes, lastSelected, node, started, _i, _len;
     lastSelected = this.getRootEl().find('.treema-last-selected');
+    this.select();
     if (!lastSelected.length) {
-      this.select();
+      return;
     }
     this.deselectAll();
     allNodes = this.getRootEl().find('.treema-node');
+    endNodes = [this, lastSelected.data('instance')];
     started = false;
     for (_i = 0, _len = allNodes.length; _i < _len; _i++) {
       node = allNodes[_i];
       node = $(node).data('instance');
       if (!started) {
-        if (node === this || node.wasSelectedLast()) {
-          started = true;
-        }
-        if (started) {
+        if (__indexOf.call(endNodes, node) >= 0) {
           node.$el.addClass('treema-selected');
+          started = true;
         }
         continue;
       }
-      if (started && (node === this || node.wasSelectedLast())) {
+      node.$el.addClass('treema-selected');
+      if (started && (__indexOf.call(endNodes, node) >= 0)) {
         break;
       }
-      node.$el.addClass('treema-selected');
     }
-    this.$el.addClass('treema-selected');
-    lastSelected.addClass('treema-selected');
     lastSelected.removeClass('treema-last-selected');
     this.$el.addClass('treema-last-selected');
     return TreemaNode.didSelect = true;
@@ -1840,8 +1838,6 @@ TreemaNode = (function() {
     }
     newData = this.data[treema.keyForParent] !== treema.data;
     treema.integrated = true;
-    window.hmmm = this;
-    console.log('setting treema', treema, 'to', this.childrenTreemas, 'for', treema.keyForParent);
     this.childrenTreemas[treema.keyForParent] = treema;
     this.data[treema.keyForParent] = treema.data;
     if (newData) {
@@ -1859,7 +1855,6 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.segregateChildTreema = function(treema) {
     treema.integrated = false;
-    console.log('segregating child treemas?', window.hmmyes = this, this.childrenTreemas, treema.keyForParent);
     delete this.childrenTreemas[treema.keyForParent];
     delete this.data[treema.keyForParent];
     if (this.ordered) {
@@ -2473,7 +2468,6 @@ TreemaNode = (function() {
     this.massageData(options, workingSchema);
     type = $.type((_ref = options.data) != null ? _ref : options.defaultData);
     localClasses = parent ? parent.settings.nodeClasses : options.nodeClasses;
-    console.log('chose type', type, 'for schema', keyForParent, workingSchema);
     NodeClass = this.getNodeClassForSchema(workingSchema, type, localClasses);
     if (parent) {
       _ref1 = parent.settings;

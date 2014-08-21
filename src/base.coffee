@@ -742,20 +742,22 @@ class TreemaNode
 
   shiftSelect: ->
     lastSelected = @getRootEl().find('.treema-last-selected')
-    @select() if not lastSelected.length
+    @select()
+    return unless lastSelected.length
     @deselectAll()
     allNodes = @getRootEl().find('.treema-node')
+    endNodes = [@, lastSelected.data('instance')]
     started = false
     for node in allNodes
       node = $(node).data('instance')
       if not started
-        started = true if node is @ or node.wasSelectedLast()
-        node.$el.addClass('treema-selected') if started
+        if node in endNodes
+          node.$el.addClass('treema-selected')
+          started = true 
         continue
-      break if started and (node is @ or node.wasSelectedLast())
       node.$el.addClass('treema-selected')
-    @$el.addClass('treema-selected')
-    lastSelected.addClass('treema-selected')
+      if started and (node in endNodes)
+        break 
     lastSelected.removeClass('treema-last-selected')
     @$el.addClass('treema-last-selected')
     TreemaNode.didSelect = true
