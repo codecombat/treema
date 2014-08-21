@@ -220,7 +220,7 @@ class TreemaNode
     schema = @workingSchema or @schema
     return if schema.enum
     select = $('<select></select>').addClass('treema-type-select')
-    currentType = $.type(@data)
+    currentType = $.type(@getData())
     currentType = 'integer' if @valueClass is 'treema-integer'
     for type in types
       option = $('<option></option>').attr('value', type).text(@getTypeName(type))
@@ -640,7 +640,11 @@ class TreemaNode
     if @defaultData isnt undefined
       @data = undefined
       @parent.segregateChildTreema(@)
-      @updateDefaultClass()
+      options = $.extend({}, @settings, { defaultData: @defaultData, schema: @schema }, )
+      newNode = TreemaNode.make(null, options, @parent, @keyForParent)
+      @parent.createChildNode(newNode)
+      @$el.replaceWith(newNode.$el)
+      @addTrackedAction {'oldNode':@, 'newNode':newNode, 'path':@getPath(), 'action':'replace'}
       return true
 
     @$el.remove()
@@ -937,7 +941,10 @@ class TreemaNode
 
   # Child node utilities ------------------------------------------------------
   integrateChildTreema: (treema) ->
-    treema.populateData()
+    if @parent and not @integrated
+      @data = if $.isArray(@defaultData) then [] else {}
+      @parent.integrateChildTreema(@)
+      @updateDefaultClass()
     newData = @data[treema.keyForParent] isnt treema.data
     treema.integrated = true # no longer in limbo
     @childrenTreemas[treema.keyForParent] = treema

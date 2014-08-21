@@ -666,7 +666,7 @@ TreemaNode = (function() {
       return;
     }
     select = $('<select></select>').addClass('treema-type-select');
-    currentType = $.type(this.data);
+    currentType = $.type(this.getData());
     if (this.valueClass === 'treema-integer') {
       currentType = 'integer';
     }
@@ -1361,7 +1361,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.remove = function() {
-    var readOnly, required, tempError, _ref, _ref1;
+    var newNode, options, readOnly, required, tempError, _ref, _ref1;
     required = this.parent && (this.parent.schema.required != null) && (_ref = this.keyForParent, __indexOf.call(this.parent.schema.required, _ref) >= 0);
     if (required) {
       tempError = this.createTemporaryError('required');
@@ -1377,7 +1377,19 @@ TreemaNode = (function() {
     if (this.defaultData !== void 0) {
       this.data = void 0;
       this.parent.segregateChildTreema(this);
-      this.updateDefaultClass();
+      options = $.extend({}, this.settings, {
+        defaultData: this.defaultData,
+        schema: this.schema
+      });
+      newNode = TreemaNode.make(null, options, this.parent, this.keyForParent);
+      this.parent.createChildNode(newNode);
+      this.$el.replaceWith(newNode.$el);
+      this.addTrackedAction({
+        'oldNode': this,
+        'newNode': newNode,
+        'path': this.getPath(),
+        'action': 'replace'
+      });
       return true;
     }
     this.$el.remove();
@@ -1821,9 +1833,15 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.integrateChildTreema = function(treema) {
     var newData;
-    treema.populateData();
+    if (this.parent && !this.integrated) {
+      this.data = $.isArray(this.defaultData) ? [] : {};
+      this.parent.integrateChildTreema(this);
+      this.updateDefaultClass();
+    }
     newData = this.data[treema.keyForParent] !== treema.data;
     treema.integrated = true;
+    window.hmmm = this;
+    console.log('setting treema', treema, 'to', this.childrenTreemas, 'for', treema.keyForParent);
     this.childrenTreemas[treema.keyForParent] = treema;
     this.data[treema.keyForParent] = treema.data;
     if (newData) {
@@ -1841,6 +1859,7 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.segregateChildTreema = function(treema) {
     treema.integrated = false;
+    console.log('segregating child treemas?', window.hmmyes = this, this.childrenTreemas, treema.keyForParent);
     delete this.childrenTreemas[treema.keyForParent];
     delete this.data[treema.keyForParent];
     if (this.ordered) {
@@ -2454,6 +2473,7 @@ TreemaNode = (function() {
     this.massageData(options, workingSchema);
     type = $.type((_ref = options.data) != null ? _ref : options.defaultData);
     localClasses = parent ? parent.settings.nodeClasses : options.nodeClasses;
+    console.log('chose type', type, 'for schema', keyForParent, workingSchema);
     NodeClass = this.getNodeClassForSchema(workingSchema, type, localClasses);
     if (parent) {
       _ref1 = parent.settings;

@@ -33,7 +33,7 @@
     var el = $('#scratch');
     var schema = {
       type: 'object',
-      default: { key1: 'value1' },
+      default: { key1: 'value1', innerObject: { prop1: 1, prop2: 2 } },
       properties: {
         key1: { type: 'string' },
         key2: { type: 'string' }
