@@ -471,7 +471,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.manageCopyAndPaste = function(e) {
-    var el, target, x, y, _ref, _ref1, _ref2, _ref3,
+    var el, target, _ref, _ref1, _ref2,
       _this = this;
     el = document.activeElement;
     if ((el != null) && (el.tagName.toLowerCase() === 'input' && el.type === 'text') || (el.tagName.toLowerCase() === 'textarea' && !$(el).hasClass('treema-clipboard'))) {
@@ -480,10 +480,10 @@ TreemaNode = (function() {
     target = (_ref = this.getLastSelectedTreema()) != null ? _ref : this;
     if (e.which === 86 && $(e.target).hasClass('treema-clipboard')) {
       if (e.shiftKey && $(e.target).hasClass('treema-clipboard')) {
-        _ref1 = [window.scrollX, window.scrollY], x = _ref1[0], y = _ref1[1];
+        this.saveScrolls();
         return setTimeout((function() {
           var newData, result;
-          _this.keepFocus(x, y);
+          _this.loadScrolls();
           if (!(newData = _this.$clipboard.val())) {
             return;
           }
@@ -499,20 +499,22 @@ TreemaNode = (function() {
           } else {
             return console.log("not pasting", newData, "because it's not valid:", result);
           }
-        }), 10);
+        }), 0);
       } else {
         return e.preventDefault();
       }
     } else if (e.shiftKey) {
-      return this.$clipboardContainer.find('.treema-clipboard').focus().select();
-    } else if (!(((_ref2 = window.getSelection()) != null ? _ref2.toString() : void 0) || ((_ref3 = document.selection) != null ? _ref3.createRange().text : void 0))) {
-      return setTimeout((function() {
-        if (_this.$clipboardContainer == null) {
-          _this.$clipboardContainer = $('<div class="treema-clipboard-container"></div>').appendTo(_this.$el);
-        }
-        _this.$clipboardContainer.empty().show();
-        return _this.$clipboard = $('<textarea class="treema-clipboard"></textarea>').val(JSON.stringify(target.data)).appendTo(_this.$clipboardContainer).focus().select();
-      }), 0);
+      this.saveScrolls();
+      this.$clipboardContainer.find('.treema-clipboard').focus().select();
+      return this.loadScrolls();
+    } else if (!(((_ref1 = window.getSelection()) != null ? _ref1.toString() : void 0) || ((_ref2 = document.selection) != null ? _ref2.createRange().text : void 0))) {
+      this.saveScrolls();
+      if (this.$clipboardContainer == null) {
+        this.$clipboardContainer = $('<div class="treema-clipboard-container"></div>').appendTo(this.$el);
+      }
+      this.$clipboardContainer.empty().show();
+      this.$clipboard = $('<textarea class="treema-clipboard"></textarea>').val(JSON.stringify(target.data)).appendTo(this.$clipboardContainer).focus().select();
+      return this.loadScrolls();
     }
   };
 
@@ -694,7 +696,7 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.inputFocused = function() {
     var _ref;
-    if ((_ref = document.activeElement.nodeName) === 'INPUT' || _ref === 'TEXTAREA' || _ref === 'SELECT') {
+    if (((_ref = document.activeElement.nodeName) === 'INPUT' || _ref === 'TEXTAREA' || _ref === 'SELECT') && !$(document.activeElement).hasClass('treema-clipboard')) {
       return true;
     }
   };
@@ -2167,13 +2169,44 @@ TreemaNode = (function() {
     return !this.$el.hasClass(this.treemaFilterHiddenClass);
   };
 
-  TreemaNode.prototype.keepFocus = function(x, y) {
-    var _ref;
-    if (!((x != null) && (y != null))) {
-      _ref = [window.scrollX, window.scrollY], x = _ref[0], y = _ref[1];
+  TreemaNode.prototype.saveScrolls = function() {
+    var parent, rootEl, _results;
+    this.scrolls = [];
+    rootEl = this.getRootEl();
+    parent = rootEl;
+    _results = [];
+    while (parent[0]) {
+      this.scrolls.push({
+        el: parent,
+        scrollTop: parent.scrollTop(),
+        scrollLeft: parent.scrollLeft()
+      });
+      if (parent.prop('tagName').toLowerCase() === 'body') {
+        break;
+      }
+      _results.push(parent = parent.parent());
     }
+    return _results;
+  };
+
+  TreemaNode.prototype.loadScrolls = function() {
+    var scroll, _i, _len, _ref;
+    if (!this.scrolls) {
+      return;
+    }
+    _ref = this.scrolls;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      scroll = _ref[_i];
+      scroll.el.scrollTop(scroll.scrollTop);
+      scroll.el.scrollLeft(scroll.scrollLeft);
+    }
+    return this.scrolls = null;
+  };
+
+  TreemaNode.prototype.keepFocus = function() {
+    this.saveScrolls();
     this.getRootEl().focus();
-    return window.scrollTo(x, y);
+    return this.loadScrolls();
   };
 
   TreemaNode.prototype.copyData = function() {

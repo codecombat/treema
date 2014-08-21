@@ -272,9 +272,9 @@ class TreemaNode
     if e.which is 86 and $(e.target).hasClass 'treema-clipboard'
       # Ctrl+V -- we might want the paste data
       if e.shiftKey and $(e.target).hasClass 'treema-clipboard'
-        [x, y] = [window.scrollX, window.scrollY]
-        setTimeout (=>
-          @keepFocus x, y
+        @saveScrolls()
+        setTimeout (=> # must happen after data has actually been pasted in, so defer with a timeout
+          @loadScrolls()
           return unless newData = @$clipboard.val()
           try
             newData = JSON.parse newData
@@ -285,20 +285,22 @@ class TreemaNode
             target.set('/', newData)
           else
             console.log "not pasting", newData, "because it's not valid:", result
-        ), 10  # This doesn't always preserve scroll; TODO
+        ), 0
       else
         # We don't want the paste data to our clipboard textarea, so let's not even let it happen so we don't scroll
         e.preventDefault()
     else if e.shiftKey
       # Get ready for a possible Shift+Ctrl+V paste (hacky, I know)
+      @saveScrolls()
       @$clipboardContainer.find('.treema-clipboard').focus().select()
+      @loadScrolls()
     else unless window.getSelection()?.toString() or document.selection?.createRange().text
       # Get ready for a possible Ctrl+C copy
-      setTimeout (=>
-        @$clipboardContainer ?= $('<div class="treema-clipboard-container"></div>').appendTo(@$el)
-        @$clipboardContainer.empty().show()
-        @$clipboard = $('<textarea class="treema-clipboard"></textarea>').val(JSON.stringify(target.data)).appendTo(@$clipboardContainer).focus().select()
-      ), 0
+      @saveScrolls()
+      @$clipboardContainer ?= $('<div class="treema-clipboard-container"></div>').appendTo(@$el)
+      @$clipboardContainer.empty().show()
+      @$clipboard = $('<textarea class="treema-clipboard"></textarea>').val(JSON.stringify(target.data)).appendTo(@$clipboardContainer).focus().select()
+      @loadScrolls()
 
   broadcastChanges: (e) ->
     if @callbacks.select and TreemaNode.didSelect
@@ -384,7 +386,7 @@ class TreemaNode
     e.preventDefault()
 
   inputFocused: ->
-    return true if document.activeElement.nodeName in ['INPUT', 'TEXTAREA', 'SELECT']
+    return true if document.activeElement.nodeName in ['INPUT', 'TEXTAREA', 'SELECT'] and not $(document.activeElement).hasClass('treema-clipboard')
 
   onSpacePressed: ->
   onTPressed: ->
@@ -1280,11 +1282,27 @@ class TreemaNode
     ($(el).data('instance') for el in @getRootEl().find('.treema-node').not('.' + @treemaFilterHiddenClass))
   isFilterVisible: -> !@$el.hasClass(@treemaFilterHiddenClass)
 
-  keepFocus: (x, y) ->
-    # We want to keep Treema receiving events, so we focus on the root, but we preserve scroll position to do it invisibly.
-    [x, y] = [window.scrollX, window.scrollY] unless x? and y?
+  saveScrolls: ->
+    @scrolls = []
+    rootEl = @getRootEl()
+    parent = rootEl
+    while parent[0]
+      @scrolls.push {el: parent, scrollTop: parent.scrollTop(), scrollLeft: parent.scrollLeft()}
+      break if parent.prop('tagName').toLowerCase() is 'body'
+      parent = parent.parent()
+  
+  loadScrolls: ->
+    return unless @scrolls
+    for scroll in @scrolls
+      scroll.el.scrollTop(scroll.scrollTop)
+      scroll.el.scrollLeft(scroll.scrollLeft)
+    @scrolls = null
+
+  keepFocus: ->
+    @saveScrolls()
     @getRootEl().focus()
-    window.scrollTo x, y
+    @loadScrolls()
+    
   copyData: -> $.extend(null, {}, {'d': @data})['d']
   updateMyAddButton: ->
     @$el.removeClass('treema-full')
