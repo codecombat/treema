@@ -35,7 +35,7 @@
       type: 'object',
       default: { key1: 'value1', innerObject: { prop1: 1, prop2: 2 } },
       properties: {
-        key1: { type: 'string' },
+        key1: { oneOf: [{ title: 'Number Schema', type: 'number' }, { title: 'String Schema', type: 'string' }] },
         key2: { type: 'string' }
       }
     };

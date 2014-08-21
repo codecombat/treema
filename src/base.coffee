@@ -166,7 +166,14 @@ class TreemaNode
     @setUpValidator()
     @populateData()
     @previousState = @copyData()
+    @unloadNodeSpecificSettings()
 
+  unloadNodeSpecificSettings: ->
+    # moves node-specific data from the options dict to the node itself, removing them from the options.
+    for key in ['data', 'defaultData', 'schema', 'workingSchemas', 'workingSchema', 'type']
+      @[key] = @settings[key]
+      delete @settings[key]
+        
   build: ->
     @$el.addClass('treema-node').addClass('treema-clearfix')
     @$el.empty().append($(@nodeTemplate))
@@ -640,13 +647,9 @@ class TreemaNode
       return false
       
     if @defaultData isnt undefined
-      @data = undefined
-      @parent.segregateChildTreema(@)
       options = $.extend({}, @settings, { defaultData: @defaultData, schema: @schema }, )
       newNode = TreemaNode.make(null, options, @parent, @keyForParent)
-      @parent.createChildNode(newNode)
-      @$el.replaceWith(newNode.$el)
-      @addTrackedAction {'oldNode':@, 'newNode':newNode, 'path':@getPath(), 'action':'replace'}
+      @replaceNode(newNode)
       return true
 
     @$el.remove()
@@ -821,7 +824,7 @@ class TreemaNode
           @set restoreChange.path, restoreChange.oldData
 
       when 'replace'
-        restoreChange.newNode.replaceNode restoreChange.oldNode.constructor
+        restoreChange.newNode.replaceNode restoreChange.oldNode
         @set restoreChange.path, restoreChange.oldNode.data
 
       when 'insert'
@@ -853,7 +856,7 @@ class TreemaNode
         @set restoreChange.path, restoreChange.newData
 
       when 'replace'
-        restoreChange.oldNode.replaceNode restoreChange.newNode.constructor
+        restoreChange.oldNode.replaceNode restoreChange.newNode
         @set restoreChange.path, restoreChange.newNode.data
 
       when 'insert'
@@ -908,42 +911,40 @@ class TreemaNode
   onSelectSchema: (e) =>
     index = parseInt($(e.target).val())
     workingSchema = @workingSchemas[index]
-    defaultType = "null"
-    defaultType = $.type(workingSchema.default) if workingSchema.default?
-    defaultType = workingSchema.type if workingSchema.type?
-    defaultType = defaultType[0] if $.isArray(defaultType)
-    NodeClass = TreemaNode.getNodeClassForSchema(workingSchema, defaultType, @settings.nodeClasses)
-    @workingSchema = workingSchema
-    @replaceNode(NodeClass)
+    settings = $.extend(true, {}, @settings)
+    settings = $.extend(settings, {
+      workingSchemas: @workingSchemas
+      workingSchema: workingSchema
+      data: @data
+      defaultData: @defaultData
+      schema: @schema
+    })
+    newNode = TreemaNode.make(null, settings, @parent, @keyForParent)
+    @replaceNode(newNode)
 
   onSelectType: (e) =>
     newType = $(e.target).val()
-    NodeClass = TreemaNode.getNodeClassForSchema(@workingSchema, newType, @settings.nodeClasses)
-    @replaceNode(NodeClass)
+    settings = $.extend(true, {}, @settings, {
+      workingSchemas: @workingSchemas
+      workingSchema: @workingSchema
+      type: newType
+      data: @data
+      defaultData: @defaultData
+      schema: @schema
+    })
+    if $.type(@data) isnt newType
+      settings.data = TreemaNode.defaultForType(newType)
 
-  replaceNode: (NodeClass) ->
-    settings = $.extend(true, {}, @settings)
-    oldData = @data
-    delete settings.data if settings.data
-    newNode = new NodeClass(null, settings, @parent)
-    newNode.data = newNode.getDefaultValue()
-    newNode.data = @workingSchema.default if @workingSchema.default?
-    if $.type(oldData) is 'string' and $.type(newNode.data) is 'number'
-      newNode.data = parseFloat(oldData) or 0
-    if $.type(oldData) is 'number' and $.type(newNode.data) is 'string'
-      newNode.data = oldData.toString()
-    if $.type(oldData) is 'number' and $.type(newNode.data) is 'number'
-      newNode.data = oldData
-      if newNode.valueClass is 'treema-integer'
-        newNode.data = parseInt(newNode.data)
+    newNode = TreemaNode.make(null, settings, @parent, @keyForParent)
+    @replaceNode(newNode)
+    
+  replaceNode: (newNode) ->
     newNode.tv4 = @tv4
     newNode.keyForParent = @keyForParent if @keyForParent?
-    newNode.setWorkingSchema(@workingSchema, @workingSchemas)
     @parent.createChildNode(newNode)
     @$el.replaceWith(newNode.$el)
     newNode.flushChanges() # should integrate
     @addTrackedAction {'oldNode':@, 'newNode':newNode, 'path':@getPath(), 'action':'replace'}
-
 
   # Child node utilities ------------------------------------------------------
   integrateChildTreema: (treema) ->
@@ -1313,13 +1314,13 @@ class TreemaNode
         options.data = @utils.cloneDeep(options.schema.default)
       
     workingData = options.data or options.defaultData
-    workingSchemas = @utils.buildWorkingSchemas(options.schema, parent?.tv4)
-    workingSchema = @utils.chooseWorkingSchema(workingData, workingSchemas, options.tv4)
+    workingSchemas = options.workingSchemas or @utils.buildWorkingSchemas(options.schema, parent?.tv4)
+    workingSchema = options.workingSchema or @utils.chooseWorkingSchema(workingData, workingSchemas, options.tv4)
     @massageData(options, workingSchema) # make sure the data at least meshes with the working schema type
-    type = $.type(options.data ? options.defaultData)
+    type = options.type or $.type(options.data ? options.defaultData)
     localClasses = if parent then parent.settings.nodeClasses else options.nodeClasses
     NodeClass = @getNodeClassForSchema(workingSchema, type, localClasses)
-
+    
     # still to redo a bit...
     if parent
       for key, value of parent.settings
@@ -1327,8 +1328,7 @@ class TreemaNode
         options[key] = value
     newNode = new NodeClass(element, options, parent)
     newNode.keyForParent = keyForParent if keyForParent?
-    if parent
-      newNode.setWorkingSchema(workingSchema, workingSchemas)
+    newNode.setWorkingSchema(workingSchema, workingSchemas)
     newNode
     
   @massageData: (options, workingSchema) ->
@@ -1342,11 +1342,7 @@ class TreemaNode
     if dataType isnt 'undefined' and dataType not in schemaTypes
       options.data = @defaultForType(schemaTypes[0])
       
-    if defaultDataType isnt 'undefined' and defaultDataType not in schemaTypes
-      delete options.defaultDataType
-      defaultDataType = 'undefined'
-      
-    if dataType is 'undefined' and defaultDataType is 'undefined'
+    if dataType is 'undefined' and (defaultDataType is 'undefined' or defaultDataType not in schemaTypes)
       options.data = @defaultForType(schemaTypes[0])
               
   @defaultForType: (type) ->

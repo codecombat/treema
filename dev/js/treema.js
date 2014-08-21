@@ -305,7 +305,20 @@ TreemaNode = (function() {
     this.setUpValidator();
     this.populateData();
     this.previousState = this.copyData();
+    this.unloadNodeSpecificSettings();
   }
+
+  TreemaNode.prototype.unloadNodeSpecificSettings = function() {
+    var key, _i, _len, _ref, _results;
+    _ref = ['data', 'defaultData', 'schema', 'workingSchemas', 'workingSchema', 'type'];
+    _results = [];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      key = _ref[_i];
+      this[key] = this.settings[key];
+      _results.push(delete this.settings[key]);
+    }
+    return _results;
+  };
 
   TreemaNode.prototype.build = function() {
     var schema, valEl, _ref;
@@ -1119,21 +1132,12 @@ TreemaNode = (function() {
       return false;
     }
     if (this.defaultData !== void 0) {
-      this.data = void 0;
-      this.parent.segregateChildTreema(this);
       options = $.extend({}, this.settings, {
         defaultData: this.defaultData,
         schema: this.schema
       });
       newNode = TreemaNode.make(null, options, this.parent, this.keyForParent);
-      this.parent.createChildNode(newNode);
-      this.$el.replaceWith(newNode.$el);
-      this.addTrackedAction({
-        'oldNode': this,
-        'newNode': newNode,
-        'path': this.getPath(),
-        'action': 'replace'
-      });
+      this.replaceNode(newNode);
       return true;
     }
     this.$el.remove();
@@ -1409,7 +1413,7 @@ TreemaNode = (function() {
         }
         break;
       case 'replace':
-        restoreChange.newNode.replaceNode(restoreChange.oldNode.constructor);
+        restoreChange.newNode.replaceNode(restoreChange.oldNode);
         this.set(restoreChange.path, restoreChange.oldNode.data);
         break;
       case 'insert':
@@ -1448,7 +1452,7 @@ TreemaNode = (function() {
         this.set(restoreChange.path, restoreChange.newData);
         break;
       case 'replace':
-        restoreChange.oldNode.replaceNode(restoreChange.newNode.constructor);
+        restoreChange.oldNode.replaceNode(restoreChange.newNode);
         this.set(restoreChange.path, restoreChange.newNode.data);
         break;
       case 'insert':
@@ -1517,60 +1521,44 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.onSelectSchema = function(e) {
-    var NodeClass, defaultType, index, workingSchema;
+    var index, newNode, settings, workingSchema;
     index = parseInt($(e.target).val());
     workingSchema = this.workingSchemas[index];
-    defaultType = "null";
-    if (workingSchema["default"] != null) {
-      defaultType = $.type(workingSchema["default"]);
-    }
-    if (workingSchema.type != null) {
-      defaultType = workingSchema.type;
-    }
-    if ($.isArray(defaultType)) {
-      defaultType = defaultType[0];
-    }
-    NodeClass = TreemaNode.getNodeClassForSchema(workingSchema, defaultType, this.settings.nodeClasses);
-    this.workingSchema = workingSchema;
-    return this.replaceNode(NodeClass);
+    settings = $.extend(true, {}, this.settings);
+    settings = $.extend(settings, {
+      workingSchemas: this.workingSchemas,
+      workingSchema: workingSchema,
+      data: this.data,
+      defaultData: this.defaultData,
+      schema: this.schema
+    });
+    newNode = TreemaNode.make(null, settings, this.parent, this.keyForParent);
+    return this.replaceNode(newNode);
   };
 
   TreemaNode.prototype.onSelectType = function(e) {
-    var NodeClass, newType;
+    var newNode, newType, settings;
     newType = $(e.target).val();
-    NodeClass = TreemaNode.getNodeClassForSchema(this.workingSchema, newType, this.settings.nodeClasses);
-    return this.replaceNode(NodeClass);
+    settings = $.extend(true, {}, this.settings, {
+      workingSchemas: this.workingSchemas,
+      workingSchema: this.workingSchema,
+      type: newType,
+      data: this.data,
+      defaultData: this.defaultData,
+      schema: this.schema
+    });
+    if ($.type(this.data) !== newType) {
+      settings.data = TreemaNode.defaultForType(newType);
+    }
+    newNode = TreemaNode.make(null, settings, this.parent, this.keyForParent);
+    return this.replaceNode(newNode);
   };
 
-  TreemaNode.prototype.replaceNode = function(NodeClass) {
-    var newNode, oldData, settings;
-    settings = $.extend(true, {}, this.settings);
-    oldData = this.data;
-    if (settings.data) {
-      delete settings.data;
-    }
-    newNode = new NodeClass(null, settings, this.parent);
-    newNode.data = newNode.getDefaultValue();
-    if (this.workingSchema["default"] != null) {
-      newNode.data = this.workingSchema["default"];
-    }
-    if ($.type(oldData) === 'string' && $.type(newNode.data) === 'number') {
-      newNode.data = parseFloat(oldData) || 0;
-    }
-    if ($.type(oldData) === 'number' && $.type(newNode.data) === 'string') {
-      newNode.data = oldData.toString();
-    }
-    if ($.type(oldData) === 'number' && $.type(newNode.data) === 'number') {
-      newNode.data = oldData;
-      if (newNode.valueClass === 'treema-integer') {
-        newNode.data = parseInt(newNode.data);
-      }
-    }
+  TreemaNode.prototype.replaceNode = function(newNode) {
     newNode.tv4 = this.tv4;
     if (this.keyForParent != null) {
       newNode.keyForParent = this.keyForParent;
     }
-    newNode.setWorkingSchema(this.workingSchema, this.workingSchemas);
     this.parent.createChildNode(newNode);
     this.$el.replaceWith(newNode.$el);
     newNode.flushChanges();
@@ -2234,10 +2222,10 @@ TreemaNode = (function() {
       }
     }
     workingData = options.data || options.defaultData;
-    workingSchemas = this.utils.buildWorkingSchemas(options.schema, parent != null ? parent.tv4 : void 0);
-    workingSchema = this.utils.chooseWorkingSchema(workingData, workingSchemas, options.tv4);
+    workingSchemas = options.workingSchemas || this.utils.buildWorkingSchemas(options.schema, parent != null ? parent.tv4 : void 0);
+    workingSchema = options.workingSchema || this.utils.chooseWorkingSchema(workingData, workingSchemas, options.tv4);
     this.massageData(options, workingSchema);
-    type = $.type((_ref = options.data) != null ? _ref : options.defaultData);
+    type = options.type || $.type((_ref = options.data) != null ? _ref : options.defaultData);
     localClasses = parent ? parent.settings.nodeClasses : options.nodeClasses;
     NodeClass = this.getNodeClassForSchema(workingSchema, type, localClasses);
     if (parent) {
@@ -2254,9 +2242,7 @@ TreemaNode = (function() {
     if (keyForParent != null) {
       newNode.keyForParent = keyForParent;
     }
-    if (parent) {
-      newNode.setWorkingSchema(workingSchema, workingSchemas);
-    }
+    newNode.setWorkingSchema(workingSchema, workingSchemas);
     return newNode;
   };
 
@@ -2273,11 +2259,7 @@ TreemaNode = (function() {
     if (dataType !== 'undefined' && __indexOf.call(schemaTypes, dataType) < 0) {
       options.data = this.defaultForType(schemaTypes[0]);
     }
-    if (defaultDataType !== 'undefined' && __indexOf.call(schemaTypes, defaultDataType) < 0) {
-      delete options.defaultDataType;
-      defaultDataType = 'undefined';
-    }
-    if (dataType === 'undefined' && defaultDataType === 'undefined') {
+    if (dataType === 'undefined' && (defaultDataType === 'undefined' || __indexOf.call(schemaTypes, defaultDataType) < 0)) {
       return options.data = this.defaultForType(schemaTypes[0]);
     }
   };
