@@ -26,6 +26,13 @@
     if (path == null) {
       path = '';
     }
+    if (!tv4) {
+      tv4 = this.getGlobalTv4().freshApi();
+      tv4.addSchema('#', schema);
+      if (schema.id) {
+        tv4.addSchema(schema.id, schema);
+      }
+    }
     workingSchemas = this.buildWorkingSchemas(schema, tv4);
     workingSchema = this.chooseWorkingSchema(data, workingSchemas, tv4);
     callback(path, data, workingSchema);

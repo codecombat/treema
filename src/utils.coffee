@@ -15,6 +15,11 @@
     rootData
   
   utils.walk = (data, schema, tv4, callback, path='') ->
+    if not tv4
+      tv4 = @getGlobalTv4().freshApi()
+      tv4.addSchema('#', schema)
+      tv4.addSchema(schema.id, schema) if schema.id
+    
     workingSchemas = @buildWorkingSchemas(schema, tv4)
     workingSchema = @chooseWorkingSchema(data, workingSchemas, tv4)
     
