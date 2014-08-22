@@ -101,7 +101,7 @@ do __init = ->
       ({
         key: key
         value: value
-        schema: TreemaNode.utils.getChildSchema(key, @schema)
+        schema: @getChildSchema(key)
       } for value, key in @data)
 
     buildValueForDisplay: (valEl, data) ->
@@ -181,13 +181,13 @@ do __init = ->
               keysAccountedFor.push(key)
               children.push({
                 key: key, 
-                schema: TreemaNode.utils.getChildSchema(key, @schema)
+                schema: @getChildSchema(key)
                 defaultData: defaultData
               })
             continue
             
           keysAccountedFor.push(key)
-          schema = TreemaNode.utils.getChildSchema(key, @schema)
+          schema = @getChildSchema(key)
           children.push({
             key: key
             value: @data[key]
@@ -201,7 +201,7 @@ do __init = ->
         children.push({
           key: key
           value: value
-          schema: TreemaNode.utils.getChildSchema(key, @schema)
+          schema: @getChildSchema(key)
           defaultData: @getDefaultDataForKey(key)
         })
 
@@ -211,7 +211,7 @@ do __init = ->
           keysAccountedFor.push(key)
           children.push({
             key: key
-            schema: TreemaNode.utils.getChildSchema(key, @schema)
+            schema: @getChildSchema(key)
             defaultData: @getDefaultDataForKey(key)
           })
 
@@ -221,7 +221,7 @@ do __init = ->
           keysAccountedFor.push(key)
           children.push({
             key: key
-            schema: TreemaNode.utils.getChildSchema(key, @schema)
+            schema: @getChildSchema(key)
             defaultData: @getDefaultDataForKey(key)
           })
 
@@ -252,7 +252,7 @@ do __init = ->
           break
         i += 1
 
-        childSchema = TreemaNode.utils.getChildSchema(key, @schema)
+        childSchema = @getChildSchema(key)
         name = childSchema.title or key
         if $.isPlainObject(value) or $.isArray(value)
           text.push "#{name}"
@@ -273,7 +273,7 @@ do __init = ->
       return unless @schema.required
       for key in @schema.required
         continue if @data[key]?
-        helperTreema = TreemaNode.make(null, {schema: TreemaNode.utils.getChildSchema(key, @schema)}, @)
+        helperTreema = TreemaNode.make(null, {schema: @getChildSchema(key)}, @)
         helperTreema.populateData()
         @data[key] = helperTreema.data
 
@@ -393,7 +393,7 @@ do __init = ->
       return
 
     addNewChildForKey: (key) ->
-      schema = TreemaNode.utils.getChildSchema(key, @schema)
+      schema = @getChildSchema(key)
       newTreema = TreemaNode.make(null, {schema: schema}, @, key)
       childNode = @createChildNode(newTreema)
       @findObjectInsertionPoint(key).before(childNode)

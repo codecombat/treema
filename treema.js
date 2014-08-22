@@ -389,6 +389,10 @@ TreemaNode = (function() {
     });
   };
 
+  TreemaNode.prototype.getChildSchema = function(key) {
+    return TreemaNode.utils.getChildSchema(key, this.schema);
+  };
+
   TreemaNode.prototype.buildValueForDisplay = function() {
     return console.error('"buildValueForDisplay" has not been overridden.');
   };
@@ -2859,7 +2863,7 @@ TreemaNode = (function() {
         _results.push({
           key: key,
           value: value,
-          schema: TreemaNode.utils.getChildSchema(key, this.schema)
+          schema: this.getChildSchema(key)
         });
       }
       return _results;
@@ -2997,14 +3001,14 @@ TreemaNode = (function() {
               keysAccountedFor.push(key);
               children.push({
                 key: key,
-                schema: TreemaNode.utils.getChildSchema(key, this.schema),
+                schema: this.getChildSchema(key),
                 defaultData: defaultData
               });
             }
             continue;
           }
           keysAccountedFor.push(key);
-          schema = TreemaNode.utils.getChildSchema(key, this.schema);
+          schema = this.getChildSchema(key);
           children.push({
             key: key,
             value: this.data[key],
@@ -3023,7 +3027,7 @@ TreemaNode = (function() {
         children.push({
           key: key,
           value: value,
-          schema: TreemaNode.utils.getChildSchema(key, this.schema),
+          schema: this.getChildSchema(key),
           defaultData: this.getDefaultDataForKey(key)
         });
       }
@@ -3035,7 +3039,7 @@ TreemaNode = (function() {
           keysAccountedFor.push(key);
           children.push({
             key: key,
-            schema: TreemaNode.utils.getChildSchema(key, this.schema),
+            schema: this.getChildSchema(key),
             defaultData: this.getDefaultDataForKey(key)
           });
         }
@@ -3048,7 +3052,7 @@ TreemaNode = (function() {
           keysAccountedFor.push(key);
           children.push({
             key: key,
-            schema: TreemaNode.utils.getChildSchema(key, this.schema),
+            schema: this.getChildSchema(key),
             defaultData: this.getDefaultDataForKey(key)
           });
         }
@@ -3091,7 +3095,7 @@ TreemaNode = (function() {
           break;
         }
         i += 1;
-        childSchema = TreemaNode.utils.getChildSchema(key, this.schema);
+        childSchema = this.getChildSchema(key);
         name = childSchema.title || key;
         if ($.isPlainObject(value) || $.isArray(value)) {
           text.push("" + name);
@@ -3128,7 +3132,7 @@ TreemaNode = (function() {
           continue;
         }
         helperTreema = TreemaNode.make(null, {
-          schema: TreemaNode.utils.getChildSchema(key, this.schema)
+          schema: this.getChildSchema(key)
         }, this);
         helperTreema.populateData();
         _results.push(this.data[key] = helperTreema.data);
@@ -3326,7 +3330,7 @@ TreemaNode = (function() {
 
     ObjectNode.prototype.addNewChildForKey = function(key) {
       var child, childNode, children, newTreema, schema;
-      schema = TreemaNode.utils.getChildSchema(key, this.schema);
+      schema = this.getChildSchema(key);
       newTreema = TreemaNode.make(null, {
         schema: schema
       }, this, key);
