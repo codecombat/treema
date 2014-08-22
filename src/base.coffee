@@ -1308,6 +1308,10 @@ class TreemaNode
   @setNodeSubclass: (key, NodeClass) -> @nodeMap[key] = NodeClass
 
   @make: (element, options, parent, keyForParent) ->
+    if options.schema.$ref
+      tv4 = options.tv4 or parent?.tv4
+      options.schema = @utils.resolveReference(options.schema, tv4)
+    
     if options.schema.default? and not (options.data? or options.defaultData?)
       if $.type(options.schema.default) is 'object'
         options.data = {}

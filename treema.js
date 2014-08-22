@@ -2475,7 +2475,11 @@ TreemaNode = (function() {
   };
 
   TreemaNode.make = function(element, options, parent, keyForParent) {
-    var NodeClass, key, localClasses, newNode, type, value, workingData, workingSchema, workingSchemas, _ref, _ref1;
+    var NodeClass, key, localClasses, newNode, tv4, type, value, workingData, workingSchema, workingSchemas, _ref, _ref1;
+    if (options.schema.$ref) {
+      tv4 = options.tv4 || (parent != null ? parent.tv4 : void 0);
+      options.schema = this.utils.resolveReference(options.schema, tv4);
+    }
     if ((options.schema["default"] != null) && !((options.data != null) || (options.defaultData != null))) {
       if ($.type(options.schema["default"]) === 'object') {
         options.data = {};
