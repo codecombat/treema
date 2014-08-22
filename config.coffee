@@ -13,6 +13,7 @@ exports.config =
         'treema.js': /^src/
         'dev/js/treema.js': /^src/
         'dev/js/treema.spec.js': /^test/
+        'treema-utils.js': /^src\/utils/
       order:
         before: [
           'src/node.coffee',
