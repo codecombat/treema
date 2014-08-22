@@ -1060,7 +1060,9 @@ TreemaNode = (function() {
       return this.refreshErrors();
     }
     this.updateDefaultClass();
-    this.parent.data[this.keyForParent] = this.data;
+    if (this.data !== void 0) {
+      this.parent.data[this.keyForParent] = this.data;
+    }
     this.parent.refreshErrors();
     parent = this.parent;
     _results = [];
@@ -1119,6 +1121,7 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.remove = function() {
     var newNode, options, readOnly, required, tempError, _ref, _ref1;
+    console.log('remove?');
     required = this.parent && (this.parent.schema.required != null) && (_ref = this.keyForParent, __indexOf.call(this.parent.schema.required, _ref) >= 0);
     if (required) {
       tempError = this.createTemporaryError('required');
@@ -1137,6 +1140,9 @@ TreemaNode = (function() {
         schema: this.schema
       });
       newNode = TreemaNode.make(null, options, this.parent, this.keyForParent);
+      if (this.parent) {
+        this.parent.segregateChildTreema(this);
+      }
       this.replaceNode(newNode);
       return true;
     }
@@ -1559,6 +1565,9 @@ TreemaNode = (function() {
     if (this.keyForParent != null) {
       newNode.keyForParent = this.keyForParent;
     }
+    if (this.parent) {
+      this.parent.childrenTreemas[this.keyForParent] = newNode;
+    }
     this.parent.createChildNode(newNode);
     this.$el.replaceWith(newNode.$el);
     newNode.flushChanges();
@@ -1572,6 +1581,7 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.integrateChildTreema = function(treema) {
     var newData;
+    console.log('integrate!');
     if (this.parent && !this.integrated) {
       this.data = $.isArray(this.defaultData) ? [] : {};
       this.parent.integrateChildTreema(this);

@@ -598,7 +598,7 @@ class TreemaNode
     @markAsChanged()
     return @refreshErrors() unless @parent
     @updateDefaultClass()
-    @parent.data[@keyForParent] = @data
+    @parent.data[@keyForParent] = @data if @data isnt undefined
     @parent.refreshErrors()
     parent = @parent
     while parent
@@ -649,6 +649,7 @@ class TreemaNode
     if @defaultData isnt undefined
       options = $.extend({}, @settings, { defaultData: @defaultData, schema: @schema }, )
       newNode = TreemaNode.make(null, options, @parent, @keyForParent)
+      @parent.segregateChildTreema(@) if @parent
       @replaceNode(newNode)
       return true
 
@@ -941,6 +942,7 @@ class TreemaNode
   replaceNode: (newNode) ->
     newNode.tv4 = @tv4
     newNode.keyForParent = @keyForParent if @keyForParent?
+    @parent.childrenTreemas[@keyForParent] = newNode if @parent
     @parent.createChildNode(newNode)
     @$el.replaceWith(newNode.$el)
     newNode.flushChanges() # should integrate
