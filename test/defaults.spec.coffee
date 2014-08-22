@@ -43,3 +43,10 @@ describe 'defaults', ->
     treema.childrenTreemas.innerObject.open()
     treema.childrenTreemas.innerObject.childrenTreemas.key1.set('', 'newValue')
     expect(JSON.stringify(treema.data)).toBe(JSON.stringify({innerObject: {key1: 'newValue'}}))
+    
+  it 'takes defaultData from the make options', ->
+    data = { }
+    schema = { }
+    treema = TreemaNode.make(null, {data: data, schema: schema, defaultData: { key: 'value' }})
+    treema.build()
+    expect(treema.childrenTreemas.key).toBeDefined()
