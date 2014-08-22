@@ -2,7 +2,6 @@ do __init = ->
 
   TreemaNode.setNodeSubclass 'string', class StringNode extends TreemaNode
     valueClass: 'treema-string'
-    getDefaultValue: -> ''
     @inputTypes = ['color', 'date', 'datetime', 'datetime-local',
                    'email', 'month', 'range', 'search',
                    'tel', 'text', 'time', 'url', 'week']
@@ -22,7 +21,6 @@ do __init = ->
 
   TreemaNode.setNodeSubclass 'number', class NumberNode extends TreemaNode
     valueClass: 'treema-number'
-    getDefaultValue: -> 0
 
     buildValueForDisplay: (valEl, data) -> @buildValueForDisplaySimply(valEl, JSON.stringify(data))
 
@@ -39,8 +37,7 @@ do __init = ->
 
   TreemaNode.setNodeSubclass 'integer', class IntegerNode extends TreemaNode
     valueClass: 'treema-integer'
-    getDefaultValue: -> 0
-
+    
     buildValueForDisplay: (valEl, data) -> @buildValueForDisplaySimply(valEl, JSON.stringify(data))
 
     buildValueForEditing: (valEl, data) ->
@@ -62,8 +59,7 @@ do __init = ->
 
   TreemaNode.setNodeSubclass 'boolean', class BooleanNode extends TreemaNode
     valueClass: 'treema-boolean'
-    getDefaultValue: -> false
-
+    
     buildValueForDisplay: (valEl, data) ->
       @buildValueForDisplaySimply(valEl, JSON.stringify(data))
       @select()
@@ -96,7 +92,6 @@ do __init = ->
 
   TreemaNode.setNodeSubclass 'array', class ArrayNode extends TreemaNode
     valueClass: 'treema-array'
-    getDefaultValue: -> []
     collection: true
     ordered: true
     directlyEditable: false
@@ -169,13 +164,6 @@ do __init = ->
 
   TreemaNode.setNodeSubclass 'object', class ObjectNode extends TreemaNode
     valueClass: 'treema-object'
-    getDefaultValue: ->
-      d = {}
-      return d unless @schema?.properties
-      for childKey, childSchema of @schema.properties
-        d[childKey] = childSchema.default if childSchema.default
-      d
-
     collection: true
     keyed: true
     directlyEditable: false

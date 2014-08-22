@@ -76,7 +76,6 @@ class TreemaNode
   saveChanges: (oldData)-> 
     return if oldData is @data
     @addTrackedAction {'oldData':oldData, 'newData':@data, 'path':@getPath(), 'action':'edit'}
-  getDefaultValue: -> null
   buildValueForDisplay: -> console.error('"buildValueForDisplay" has not been overridden.')
   buildValueForEditing: ->
     return unless @editable and @directlyEditable

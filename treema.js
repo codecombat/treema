@@ -389,10 +389,6 @@ TreemaNode = (function() {
     });
   };
 
-  TreemaNode.prototype.getDefaultValue = function() {
-    return null;
-  };
-
   TreemaNode.prototype.buildValueForDisplay = function() {
     return console.error('"buildValueForDisplay" has not been overridden.');
   };
@@ -1379,7 +1375,6 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.remove = function() {
     var newNode, options, readOnly, required, tempError, _ref, _ref1;
-    console.log('remove?');
     required = this.parent && (this.parent.schema.required != null) && (_ref = this.keyForParent, __indexOf.call(this.parent.schema.required, _ref) >= 0);
     if (required) {
       tempError = this.createTemporaryError('required');
@@ -1839,7 +1834,6 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.integrateChildTreema = function(treema) {
     var newData;
-    console.log('integrate!');
     if (this.parent && !this.integrated) {
       this.data = $.isArray(this.defaultData) ? [] : {};
       this.parent.integrateChildTreema(this);
@@ -2642,10 +2636,6 @@ TreemaNode = (function() {
 
     StringNode.prototype.valueClass = 'treema-string';
 
-    StringNode.prototype.getDefaultValue = function() {
-      return '';
-    };
-
     StringNode.inputTypes = ['color', 'date', 'datetime', 'datetime-local', 'email', 'month', 'range', 'search', 'tel', 'text', 'time', 'url', 'week'];
 
     StringNode.prototype.buildValueForDisplay = function(valEl, data) {
@@ -2683,10 +2673,6 @@ TreemaNode = (function() {
 
     NumberNode.prototype.valueClass = 'treema-number';
 
-    NumberNode.prototype.getDefaultValue = function() {
-      return 0;
-    };
-
     NumberNode.prototype.buildValueForDisplay = function(valEl, data) {
       return this.buildValueForDisplaySimply(valEl, JSON.stringify(data));
     };
@@ -2721,10 +2707,6 @@ TreemaNode = (function() {
     }
 
     IntegerNode.prototype.valueClass = 'treema-integer';
-
-    IntegerNode.prototype.getDefaultValue = function() {
-      return 0;
-    };
 
     IntegerNode.prototype.buildValueForDisplay = function(valEl, data) {
       return this.buildValueForDisplaySimply(valEl, JSON.stringify(data));
@@ -2779,10 +2761,6 @@ TreemaNode = (function() {
     }
 
     BooleanNode.prototype.valueClass = 'treema-boolean';
-
-    BooleanNode.prototype.getDefaultValue = function() {
-      return false;
-    };
 
     BooleanNode.prototype.buildValueForDisplay = function(valEl, data) {
       this.buildValueForDisplaySimply(valEl, JSON.stringify(data));
@@ -2859,10 +2837,6 @@ TreemaNode = (function() {
     }
 
     ArrayNode.prototype.valueClass = 'treema-array';
-
-    ArrayNode.prototype.getDefaultValue = function() {
-      return [];
-    };
 
     ArrayNode.prototype.collection = true;
 
@@ -3000,22 +2974,6 @@ TreemaNode = (function() {
     }
 
     ObjectNode.prototype.valueClass = 'treema-object';
-
-    ObjectNode.prototype.getDefaultValue = function() {
-      var childKey, childSchema, d, _ref7, _ref8;
-      d = {};
-      if (!((_ref7 = this.schema) != null ? _ref7.properties : void 0)) {
-        return d;
-      }
-      _ref8 = this.schema.properties;
-      for (childKey in _ref8) {
-        childSchema = _ref8[childKey];
-        if (childSchema["default"]) {
-          d[childKey] = childSchema["default"];
-        }
-      }
-      return d;
-    };
 
     ObjectNode.prototype.collection = true;
 
@@ -3530,13 +3488,6 @@ TreemaNode = (function() {
 
     Point2DNode.prototype.valueClass = 'treema-point2d';
 
-    Point2DNode.prototype.getDefaultValue = function() {
-      return {
-        x: 0,
-        y: 0
-      };
-    };
-
     Point2DNode.prototype.buildValueForDisplay = function(valEl, data) {
       return this.buildValueForDisplaySimply(valEl, "(" + data.x + ", " + data.y + ")");
     };
@@ -3566,14 +3517,6 @@ TreemaNode = (function() {
     }
 
     Point3DNode.prototype.valueClass = 'treema-point3d';
-
-    Point3DNode.prototype.getDefaultValue = function() {
-      return {
-        x: 0,
-        y: 0,
-        z: 0
-      };
-    };
 
     Point3DNode.prototype.buildValueForDisplay = function(valEl, data) {
       return this.buildValueForDisplaySimply(valEl, "(" + this.data.x + ", " + this.data.y + ", " + this.data.z + ")");
@@ -3782,10 +3725,6 @@ TreemaNode = (function() {
 
     AceNode.prototype.valueClass = 'treema-ace treema-multiline';
 
-    AceNode.prototype.getDefaultValue = function() {
-      return '';
-    };
-
     AceNode.prototype.initEditor = function(valEl) {
       var d, session;
       d = $('<div></div>').text(this.getData());
@@ -3849,10 +3788,6 @@ TreemaNode = (function() {
     }
 
     LongStringNode.prototype.valueClass = 'treema-long-string treema-multiline';
-
-    LongStringNode.prototype.getDefaultValue = function() {
-      return '';
-    };
 
     LongStringNode.prototype.buildValueForDisplay = function(valEl, data) {
       var text;

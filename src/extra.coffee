@@ -1,8 +1,7 @@
 do ->
   TreemaNode.setNodeSubclass 'point2d', class Point2DNode extends TreemaNode
     valueClass: 'treema-point2d'
-    getDefaultValue: -> {x:0, y:0}
-
+    
     buildValueForDisplay: (valEl, data) -> @buildValueForDisplaySimply(valEl, "(#{data.x}, #{data.y})")
 
     buildValueForEditing: (valEl, data) ->
@@ -17,8 +16,7 @@ do ->
 
   TreemaNode.setNodeSubclass 'point3d', class Point3DNode extends TreemaNode
     valueClass: 'treema-point3d'
-    getDefaultValue: -> {x:0, y:0, z:0}
-
+    
     buildValueForDisplay: (valEl, data) ->
       @buildValueForDisplaySimply(valEl, "(#{@data.x}, #{@data.y}, #{@data.z})")
 
@@ -140,8 +138,6 @@ do ->
   TreemaNode.setNodeSubclass 'ace', class AceNode extends TreemaNode
     valueClass: 'treema-ace treema-multiline'
 
-    getDefaultValue: -> ''
-
     initEditor: (valEl) ->
       d = $('<div></div>').text(@getData())
       valEl.append(d)
@@ -175,8 +171,6 @@ do ->
 
   TreemaNode.setNodeSubclass 'long-string', class LongStringNode extends TreemaNode
     valueClass: 'treema-long-string treema-multiline'
-
-    getDefaultValue: -> ''
 
     buildValueForDisplay: (valEl, data) ->
       text = data.replace(/\n/g, '<br />')
