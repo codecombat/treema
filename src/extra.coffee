@@ -18,7 +18,7 @@ do ->
     valueClass: 'treema-point3d'
     
     buildValueForDisplay: (valEl, data) ->
-      @buildValueForDisplaySimply(valEl, "(#{@data.x}, #{@data.y}, #{@data.z})")
+      @buildValueForDisplaySimply(valEl, "(#{data.x}, #{data.y}, #{data.z})")
 
     buildValueForEditing: (valEl, data) ->
       xInput = $('<input />').val(data.x).attr('placeholder', 'x')
@@ -41,7 +41,7 @@ do ->
     lastTerm: null
 
     buildValueForDisplay: (valEl, data) ->
-      val = if @data then @formatDocument(data) else 'None'
+      val = if data then @formatDocument(data) else 'None'
       @buildValueForDisplaySimply(valEl, val)
 
     formatDocument: (doc) ->
@@ -112,7 +112,7 @@ do ->
       @display()
 
     shouldTryToRemoveFromParent: ->
-      return if @data?
+      return if @getData()?
       selected = @getSelectedResultEl()
       return not selected.length
 
@@ -178,7 +178,7 @@ do ->
 
     buildValueForEditing: (valEl, data) ->
       input = $('<textarea />')
-      input.val(data) unless @data is null
+      input.val(data) unless data is null
       valEl.append(input)
       input.focus().select()
       input.blur @onEditInputBlur
