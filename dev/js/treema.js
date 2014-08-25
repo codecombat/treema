@@ -845,7 +845,7 @@ TreemaNode = (function() {
     }
     ctx = this.traversalContext(offset);
     if (!ctx) {
-      return this.getRoot().addChild();
+      return;
     }
     if (!ctx.origin) {
       targetEl = offset > 0 ? ctx.first : ctx.last;
@@ -3269,7 +3269,7 @@ TreemaNode = (function() {
     Point3DNode.prototype.valueClass = 'treema-point3d';
 
     Point3DNode.prototype.buildValueForDisplay = function(valEl, data) {
-      return this.buildValueForDisplaySimply(valEl, "(" + this.data.x + ", " + this.data.y + ", " + this.data.z + ")");
+      return this.buildValueForDisplaySimply(valEl, "(" + data.x + ", " + data.y + ", " + data.z + ")");
     };
 
     Point3DNode.prototype.buildValueForEditing = function(valEl, data) {
@@ -3312,7 +3312,7 @@ TreemaNode = (function() {
 
     DatabaseSearchTreemaNode.prototype.buildValueForDisplay = function(valEl, data) {
       var val;
-      val = this.data ? this.formatDocument(data) : 'None';
+      val = data ? this.formatDocument(data) : 'None';
       return this.buildValueForDisplaySimply(valEl, val);
     };
 
@@ -3431,7 +3431,7 @@ TreemaNode = (function() {
 
     DatabaseSearchTreemaNode.prototype.shouldTryToRemoveFromParent = function() {
       var selected;
-      if (this.data != null) {
+      if (this.getData() != null) {
         return;
       }
       selected = this.getSelectedResultEl();
@@ -3548,7 +3548,7 @@ TreemaNode = (function() {
     LongStringNode.prototype.buildValueForEditing = function(valEl, data) {
       var input;
       input = $('<textarea />');
-      if (this.data !== null) {
+      if (data !== null) {
         input.val(data);
       }
       valEl.append(input);
