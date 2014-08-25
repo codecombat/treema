@@ -33,8 +33,43 @@ describe 'utilities', ->
       
       expect(result).toBeDefined()
       expect(result.innerObject).toBeDefined()
-#      expect(result.innerObject.key1).toBe('value1')
-#      expect(result.innerObject.key2).toBe('value2')
+      expect(result.innerObject.key1).toBe('value1')
+      expect(result.innerObject.key2).toBe('value2')
+      
+    it 'merges in default objects that are adjacent to extant data', ->
+      schema = {
+        type: 'object'
+        properties:
+          innerObject: { default: { key1: 'value1', key2: 'value2' }}
+      }
+
+      data = { innerObject: { key1: 'extantData' }}
+
+      result = TreemaNode.utils.populateDefaults(data, schema)
+
+      expect(result).toBeDefined()
+      expect(result.innerObject).toBeDefined()
+      expect(result.innerObject.key1).toBe('extantData')
+      expect(result.innerObject.key2).toBe('value2')
+
+      
+    # In order to support the default structure below, would need to
+    # make populateData a bit more complicated, with some custom merging logic.
+    # Going to see if we can get away without it first.
+      
+#    it 'merges default objects from parent schemas down to child extant data', ->
+#      schema = {
+#        type: 'object'
+#        default: { innerObject: { key1: 'value1', key2: 'value2' } }
+#      }
+#
+#      data = { innerObject: { prop1: 'extantData' } }
+#
+#      result = TreemaNode.utils.populateDefaults(data, schema)
+#
+#      expect(result.innerObject).toBeDefined()
+#      expect(result.innerObject.prop1).toBe('extantData')
+#      expect(result.innerObject.prop2).toBe('2')
       
   describe 'walk', ->
     it 'calls a callback on every piece of data in a JSON object, providing path, data and working schema', ->
