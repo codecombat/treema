@@ -479,7 +479,7 @@ class TreemaNode
       @select()
 
     ctx = @traversalContext(offset)
-    return @getRoot().addChild() unless ctx
+    return unless ctx
     if not ctx.origin
       targetEl = if offset > 0 then ctx.first else ctx.last
       @selectOrActivateElement(targetEl)
