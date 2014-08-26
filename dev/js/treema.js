@@ -1260,7 +1260,9 @@ TreemaNode = (function() {
       _ref = this.childrenTreemas;
       for (key in _ref) {
         treema = _ref[key];
-        this.data[key] = treema.data;
+        if (treema.integrated) {
+          this.data[key] = treema.data;
+        }
       }
     }
     this.$el.find('.treema-children').empty();

@@ -712,7 +712,7 @@ class TreemaNode
   close: (saveChildData=true) ->
     return unless @isOpen()
     if saveChildData
-      @data[key] = treema.data for key, treema of @childrenTreemas
+      @data[key] = treema.data for key, treema of @childrenTreemas when treema.integrated
     @$el.find('.treema-children').empty()
     @$el.addClass('treema-closed').removeClass('treema-open')
     @childrenTreemas = null

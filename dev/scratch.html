@@ -33,10 +33,17 @@
     var el = $('#scratch');
     var schema = {
       type: 'object',
-      default: { key1: 'value1', innerObject: { prop1: 1, prop2: 2 } },
+      default: { key1: 'value1', innerObject: { prop1: 1, prop2: 2, aBool: false } },
       properties: {
         key1: { oneOf: [{ title: 'Number Schema', type: 'number' }, { title: 'String Schema', type: 'string' }] },
-        key2: { type: 'string' }
+        key2: { type: 'string' },
+        innerObject: {
+          type: 'object',
+          properties: {
+            prop1: { type: 'number' },
+            aBool: { type: 'boolean' }
+          }
+        }
       }
     };
     var data = { key2: 'value2', bool: true };
