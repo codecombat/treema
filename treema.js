@@ -3511,6 +3511,9 @@ TreemaNode = (function() {
     };
 
     Point2DNode.prototype.saveChanges = function(valEl) {
+      if (this.data == null) {
+        this.data = {};
+      }
       this.data.x = parseFloat(valEl.find('input:first').val());
       return this.data.y = parseFloat(valEl.find('input:last').val());
     };
@@ -3544,6 +3547,9 @@ TreemaNode = (function() {
     Point3DNode.prototype.saveChanges = function() {
       var inputs;
       inputs = this.getInputs();
+      if (this.data == null) {
+        this.data = {};
+      }
       this.data.x = parseFloat($(inputs[0]).val());
       this.data.y = parseFloat($(inputs[1]).val());
       return this.data.z = parseFloat($(inputs[2]).val());
