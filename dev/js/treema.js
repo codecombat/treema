@@ -2863,6 +2863,9 @@ TreemaNode = (function() {
     ObjectNode.prototype.populateData = function() {
       var helperTreema, key, _i, _len, _ref7, _results;
       ObjectNode.__super__.populateData.call(this);
+      if (!this.data) {
+        return;
+      }
       if (!this.schema.required) {
         return;
       }
@@ -2943,7 +2946,7 @@ TreemaNode = (function() {
     };
 
     ObjectNode.prototype.childPropertiesAvailable = function() {
-      var childSchema, properties, property, schema, _ref7;
+      var childSchema, properties, property, schema, _ref7, _ref8;
       schema = this.workingSchema || this.schema;
       if (!schema.properties) {
         return [];
@@ -2952,7 +2955,7 @@ TreemaNode = (function() {
       _ref7 = schema.properties;
       for (property in _ref7) {
         childSchema = _ref7[property];
-        if (this.data[property] != null) {
+        if (((_ref8 = this.data) != null ? _ref8[property] : void 0) != null) {
           continue;
         }
         if (childSchema.format === 'hidden') {

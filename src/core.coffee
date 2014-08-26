@@ -270,6 +270,7 @@ do __init = ->
 
     populateData: ->
       super()
+      return unless @data
       return unless @schema.required
       for key in @schema.required
         continue if @data[key]?
@@ -315,7 +316,7 @@ do __init = ->
       return [] unless schema.properties
       properties = []
       for property, childSchema of schema.properties
-        continue if @data[property]?
+        continue if @data?[property]?
         continue if childSchema.format is 'hidden'
         continue if childSchema.readOnly
         properties.push(childSchema.title or property)
