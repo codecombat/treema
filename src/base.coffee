@@ -479,12 +479,11 @@ class TreemaNode
       @select()
 
     ctx = @traversalContext(offset)
-    return unless ctx
-    if not ctx.origin
-      targetEl = if offset > 0 then ctx.first else ctx.last
-      @selectOrActivateElement(targetEl)
-
+    return unless ctx?.origin
     selected = $(ctx.origin).data('instance')
+    # Super defensive, this happens when an outside force removes this treema in a callback
+    # Need to have Treema send out events only after everything else is done. 
+    return unless selected 
     if offset > 0 and aggressive and selected.collection and selected.isClosed()
       return selected.open()
 

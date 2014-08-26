@@ -1102,14 +1102,13 @@ TreemaNode = (function() {
       this.select();
     }
     ctx = this.traversalContext(offset);
-    if (!ctx) {
+    if (!(ctx != null ? ctx.origin : void 0)) {
       return;
     }
-    if (!ctx.origin) {
-      targetEl = offset > 0 ? ctx.first : ctx.last;
-      this.selectOrActivateElement(targetEl);
-    }
     selected = $(ctx.origin).data('instance');
+    if (!selected) {
+      return;
+    }
     if (offset > 0 && aggressive && selected.collection && selected.isClosed()) {
       return selected.open();
     }
