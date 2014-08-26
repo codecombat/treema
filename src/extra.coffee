@@ -11,6 +11,7 @@ do ->
       valEl.find('input:first').focus().select()
 
     saveChanges: (valEl) ->
+      @data ?= {}
       @data.x = parseFloat(valEl.find('input:first').val())
       @data.y = parseFloat(valEl.find('input:last').val())
 
@@ -29,6 +30,7 @@ do ->
 
     saveChanges: ->
       inputs = @getInputs()
+      @data ?= {}
       @data.x = parseFloat($(inputs[0]).val())
       @data.y = parseFloat($(inputs[1]).val())
       @data.z = parseFloat($(inputs[2]).val())
