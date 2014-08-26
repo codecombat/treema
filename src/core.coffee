@@ -62,7 +62,7 @@ do __init = ->
     
     buildValueForDisplay: (valEl, data) ->
       @buildValueForDisplaySimply(valEl, JSON.stringify(data))
-      @select()
+      @keepFocus()
 
     buildValueForEditing: (valEl, data) ->
       input = @buildValueForEditingSimply(valEl, JSON.stringify(data))
@@ -76,7 +76,7 @@ do __init = ->
       valEl = @getValEl().empty()
       if @isDisplaying() then @buildValueForDisplay(valEl, @getData()) else @buildValueForEditing(valEl, @getData())
       @addTrackedAction {'oldData':oldData, 'newData':@data, 'path':@getPath(), 'action':'edit'}
-      @select()
+      @keepFocus()
       @flushChanges()
 
     onSpacePressed: -> @toggleValue()
