@@ -2855,7 +2855,7 @@ TreemaNode = (function() {
 
     ArrayNode.prototype.getChildren = function() {
       var key, value, _i, _len, _ref6, _results;
-      _ref6 = this.data;
+      _ref6 = this.getData();
       _results = [];
       for (key = _i = 0, _len = _ref6.length; _i < _len; key = ++_i) {
         value = _ref6[key];
@@ -2901,10 +2901,10 @@ TreemaNode = (function() {
       if (this.settings.readOnly || this.schema.readOnly) {
         return false;
       }
-      if (this.schema.additionalItems === false && this.data.length >= this.schema.items.length) {
+      if (this.schema.additionalItems === false && this.getData().length >= this.schema.items.length) {
         return false;
       }
-      if ((this.schema.maxItems != null) && this.data.length >= this.schema.maxItems) {
+      if ((this.schema.maxItems != null) && this.getData().length >= this.schema.maxItems) {
         return false;
       }
       return true;
@@ -2943,7 +2943,7 @@ TreemaNode = (function() {
     };
 
     ArrayNode.prototype.open = function() {
-      if (this.sort) {
+      if (this.data && this.sort) {
         this.data.sort(this.sortFunction);
       }
       return ArrayNode.__super__.open.apply(this, arguments);
@@ -2995,7 +2995,7 @@ TreemaNode = (function() {
       if (this.schema.properties) {
         for (key in this.schema.properties) {
           defaultData = this.getDefaultDataForKey(key);
-          if ($.type(this.data[key]) === 'undefined') {
+          if ($.type(this.getData()[key]) === 'undefined') {
             if (defaultData != null) {
               keysAccountedFor.push(key);
               children.push({
@@ -3010,13 +3010,13 @@ TreemaNode = (function() {
           schema = this.getChildSchema(key);
           children.push({
             key: key,
-            value: this.data[key],
+            value: this.getData()[key],
             schema: schema,
             defaultData: defaultData
           });
         }
       }
-      _ref7 = this.data;
+      _ref7 = this.getData();
       for (key in _ref7) {
         value = _ref7[key];
         if (__indexOf.call(keysAccountedFor, key) >= 0) {
@@ -3187,7 +3187,7 @@ TreemaNode = (function() {
       if (this.settings.readOnly || this.schema.readOnly) {
         return false;
       }
-      if ((this.schema.maxProperties != null) && Object.keys(this.data).length >= this.schema.maxProperties) {
+      if ((this.schema.maxProperties != null) && Object.keys(this.getData()).length >= this.schema.maxProperties) {
         return false;
       }
       if (this.schema.additionalProperties !== false) {
@@ -3203,16 +3203,17 @@ TreemaNode = (function() {
     };
 
     ObjectNode.prototype.childPropertiesAvailable = function() {
-      var childSchema, properties, property, schema, _ref7, _ref8;
+      var childSchema, data, properties, property, schema, _ref7;
       schema = this.workingSchema || this.schema;
       if (!schema.properties) {
         return [];
       }
       properties = [];
+      data = this.getData();
       _ref7 = schema.properties;
       for (property in _ref7) {
         childSchema = _ref7[property];
-        if (((_ref8 = this.data) != null ? _ref8[property] : void 0) != null) {
+        if ((data != null ? data[property] : void 0) != null) {
           continue;
         }
         if (childSchema.format === 'hidden') {

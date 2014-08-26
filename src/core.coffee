@@ -102,7 +102,7 @@ do __init = ->
         key: key
         value: value
         schema: @getChildSchema(key)
-      } for value, key in @data)
+      } for value, key in @getData())
 
     buildValueForDisplay: (valEl, data) ->
       text = []
@@ -122,8 +122,8 @@ do __init = ->
 
     canAddChild: ->
       return false if @settings.readOnly or @schema.readOnly
-      return false if @schema.additionalItems is false and @data.length >= @schema.items.length
-      return false if @schema.maxItems? and @data.length >= @schema.maxItems
+      return false if @schema.additionalItems is false and @getData().length >= @schema.items.length
+      return false if @schema.maxItems? and @getData().length >= @schema.maxItems
       return true
 
     addNewChild: ->
@@ -145,7 +145,7 @@ do __init = ->
       newTreema
 
     open: ->
-      @data.sort(@sortFunction) if @sort
+      @data.sort(@sortFunction) if @data and @sort
       super(arguments...)
 
     close: ->
@@ -176,7 +176,7 @@ do __init = ->
         for key of @schema.properties
           defaultData = @getDefaultDataForKey(key)
 
-          if $.type(@data[key]) is 'undefined'
+          if $.type(@getData()[key]) is 'undefined'
             if defaultData?
               keysAccountedFor.push(key)
               children.push({
@@ -190,12 +190,12 @@ do __init = ->
           schema = @getChildSchema(key)
           children.push({
             key: key
-            value: @data[key]
+            value: @getData()[key]
             schema: schema
             defaultData: defaultData
           })
 
-      for key, value of @data
+      for key, value of @getData()
         continue if key in keysAccountedFor
         keysAccountedFor.push(key)
         children.push({
@@ -305,7 +305,7 @@ do __init = ->
 
     canAddChild: ->
       return false if @settings.readOnly or @schema.readOnly
-      return false if @schema.maxProperties? and Object.keys(@data).length >= @schema.maxProperties
+      return false if @schema.maxProperties? and Object.keys(@getData()).length >= @schema.maxProperties
       return true if @schema.additionalProperties isnt false
       return true if @schema.patternProperties?
       return true if @childPropertiesAvailable().length
@@ -315,8 +315,9 @@ do __init = ->
       schema = @workingSchema or @schema
       return [] unless schema.properties
       properties = []
+      data = @getData()
       for property, childSchema of schema.properties
-        continue if @data?[property]?
+        continue if data?[property]?
         continue if childSchema.format is 'hidden'
         continue if childSchema.readOnly
         properties.push(childSchema.title or property)
