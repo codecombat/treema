@@ -292,7 +292,7 @@ class TreemaNode
             target.set('/', newData)
           else
             console.log "not pasting", newData, "because it's not valid:", result
-        ), 0
+        ), 5
       else
         # We don't want the paste data to our clipboard textarea, so let's not even let it happen so we don't scroll
         e.preventDefault()
