@@ -512,7 +512,7 @@ TreemaNode = (function() {
           } else {
             return console.log("not pasting", newData, "because it's not valid:", result);
           }
-        }), 0);
+        }), 5);
       } else {
         return e.preventDefault();
       }
