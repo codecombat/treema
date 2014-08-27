@@ -10,24 +10,23 @@ keyDown = function($el, which) {
   return $el.trigger(event);
 };
 ;describe('Schemas with multiple types', function() {
-  var data, schema, tabKeyPress, treema;
-  tabKeyPress = function($el) {
-    return keyDown($el, 9);
-  };
-  schema = {
-    type: 'array',
-    items: {
-      "type": ["boolean", "integer", "number", "null", "string"]
-    }
-  };
-  data = [];
-  treema = TreemaNode.make(null, {
-    data: data,
-    schema: schema
-  });
-  treema.build();
   return it('chooses the first one in the type list', function() {
-    var newChild;
+    var data, newChild, schema, tabKeyPress, treema;
+    tabKeyPress = function($el) {
+      return keyDown($el, 9);
+    };
+    schema = {
+      type: 'array',
+      items: {
+        "type": ["boolean", "integer", "number", "null", "string"]
+      }
+    };
+    data = [];
+    treema = TreemaNode.make(null, {
+      data: data,
+      schema: schema
+    });
+    treema.build();
     treema.addNewChild();
     newChild = treema.$el.find('.treema-node').data('instance');
     newChild.endExistingEdits();
@@ -36,63 +35,63 @@ keyDown = function($el, which) {
   });
 });
 ;describe('Change callback', function() {
-  var data, deleteKeyPress, fired, nameTreema, numbersTreema, schema, tabKeyPress, tagsTreema, treema;
+  var deleteKeyPress, fired, nameTreema, numbersTreema, tabKeyPress, tagsTreema, treema;
   tabKeyPress = function($el) {
     return keyDown($el, 9);
   };
   deleteKeyPress = function($el) {
     return keyDown($el, 8);
   };
-  schema = {
-    type: 'object',
-    properties: {
-      name: {
-        type: 'string'
-      },
-      numbers: {
-        type: 'array',
-        items: {
-          type: 'object'
-        }
-      },
-      tags: {
-        type: 'array',
-        items: {
-          type: 'string'
-        }
-      }
-    }
-  };
-  data = {
-    name: 'Bob',
-    numbers: [
-      {
-        'number': '401-401-1337',
-        'type': 'Home'
-      }, {
-        'number': '123-456-7890',
-        'type': 'Work'
-      }
-    ],
-    tags: ['Friend']
-  };
-  fired = {
-    f: true
-  };
-  treema = TreemaNode.make(null, {
-    data: data,
-    schema: schema,
-    callbacks: {
-      change: function() {
-        return fired.f = true;
-      }
-    }
-  });
-  treema.build();
-  nameTreema = treema.childrenTreemas.name;
-  numbersTreema = treema.childrenTreemas.numbers;
-  tagsTreema = treema.childrenTreemas.tags;
+  fired = {};
+  nameTreema = numbersTreema = tagsTreema = treema = null;
   beforeEach(function() {
+    var data, schema;
+    schema = {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string'
+        },
+        numbers: {
+          type: 'array',
+          items: {
+            type: 'object'
+          }
+        },
+        tags: {
+          type: 'array',
+          items: {
+            type: 'string'
+          }
+        }
+      }
+    };
+    data = {
+      name: 'Bob',
+      numbers: [
+        {
+          'number': '401-401-1337',
+          'type': 'Home'
+        }, {
+          'number': '123-456-7890',
+          'type': 'Work'
+        }
+      ],
+      tags: ['Friend']
+    };
+    treema = TreemaNode.make(null, {
+      data: data,
+      schema: schema,
+      callbacks: {
+        change: function() {
+          return fired.f = true;
+        }
+      }
+    });
+    treema.build();
+    nameTreema = treema.childrenTreemas.name;
+    numbersTreema = treema.childrenTreemas.numbers;
+    tagsTreema = treema.childrenTreemas.tags;
     return fired.f = false;
   });
   it('fires when editing a field', function() {
@@ -152,6 +151,9 @@ keyDown = function($el, which) {
   });
   it('fires when you delete an element in an array', function() {
     var tagTreema;
+    tagsTreema.open();
+    tagsTreema.$el.find('.treema-add-child').click();
+    tabKeyPress(treema.$el.find('input').val('Star'));
     treema.endExistingEdits();
     tagTreema = tagsTreema.childrenTreemas[0];
     tagTreema.select();
@@ -162,6 +164,115 @@ keyDown = function($el, which) {
     nameTreema.select();
     deleteKeyPress(treema.$el);
     return expect(fired.f).toBe(true);
+  });
+});
+;describe('defaults', function() {
+  it('shows properties for object nodes which are specified in a default object that are not included in the data', function() {
+    var data, schema, treema;
+    data = {};
+    schema = {
+      "default": {
+        key: 'value'
+      }
+    };
+    treema = TreemaNode.make(null, {
+      data: data,
+      schema: schema
+    });
+    treema.build();
+    return expect(treema.childrenTreemas.key).toBeDefined();
+  });
+  it('does not put default data into the containing data object', function() {
+    var data, schema, treema;
+    data = {};
+    schema = {
+      "default": {
+        key: 'value'
+      }
+    };
+    treema = TreemaNode.make(null, {
+      data: data,
+      schema: schema
+    });
+    treema.build();
+    return expect(treema.data.key).toBeUndefined();
+  });
+  it('puts data into the containing data object when its value is changed', function() {
+    var data, schema, treema;
+    data = {};
+    schema = {
+      "default": {
+        key: 'value'
+      }
+    };
+    treema = TreemaNode.make(null, {
+      data: data,
+      schema: schema
+    });
+    treema.build();
+    treema.set('key', 'testValue');
+    expect(treema.data.key).toBe('testValue');
+    expect(treema.childrenTreemas.key.integrated).toBe(true);
+    return expect(treema.$el.find('.treema-node').length).toBe(1);
+  });
+  it('keeps a default node around when you delete one with backup default data', function() {
+    var data, schema, treema;
+    data = {
+      key: 'setValue'
+    };
+    schema = {
+      "default": {
+        key: 'value'
+      }
+    };
+    treema = TreemaNode.make(null, {
+      data: data,
+      schema: schema
+    });
+    treema.build();
+    treema["delete"]('key');
+    expect(treema.data.key).toBeUndefined();
+    expect(treema.childrenTreemas.key).toBeDefined();
+    expect(treema.childrenTreemas.key.integrated).toBe(false);
+    return expect(Object.keys(treema.data).length).toBe(0);
+  });
+  it('integrates up the chain when setting an inner default value', function() {
+    var data, schema, treema;
+    data = {};
+    schema = {
+      "default": {
+        innerObject: {
+          key1: 'value1',
+          key2: 'value2'
+        }
+      }
+    };
+    treema = TreemaNode.make(null, {
+      data: data,
+      schema: schema
+    });
+    treema.build();
+    treema.childrenTreemas.innerObject.open();
+    treema.childrenTreemas.innerObject.childrenTreemas.key1.set('', 'newValue');
+    return expect(JSON.stringify(treema.data)).toBe(JSON.stringify({
+      innerObject: {
+        key1: 'newValue'
+      }
+    }));
+  });
+  return it('takes defaultData from the make options', function() {
+    var data, schema, treema;
+    data = {};
+    schema = {};
+    treema = TreemaNode.make(null, {
+      data: data,
+      schema: schema,
+      defaultData: {
+        key: 'value'
+      }
+    });
+    treema.build();
+    return expect(treema.childrenTreemas.key).toBeDefined();
   });
 });
 ;describe('Children Filter', function() {
@@ -1280,7 +1391,8 @@ describe('Schemaless', function() {
   });
 });
 ;describe('Mouse click behavior', function() {
-  var data, metaClick, nameTreema, phoneTreema, schema, shiftClick, treema;
+  var metaClick, nameTreema, phoneTreema, schema, shiftClick, treema;
+  treema = nameTreema = phoneTreema = null;
   schema = {
     type: 'object',
     properties: {
@@ -1295,17 +1407,20 @@ describe('Schemaless', function() {
       }
     }
   };
-  data = {
-    name: 'Bob',
-    numbers: ['401-401-1337', '123-456-7890']
-  };
-  treema = TreemaNode.make(null, {
-    data: data,
-    schema: schema
+  beforeEach(function() {
+    var data;
+    data = {
+      name: 'Bob',
+      numbers: ['401-401-1337', '123-456-7890']
+    };
+    treema = TreemaNode.make(null, {
+      data: data,
+      schema: schema
+    });
+    treema.build();
+    nameTreema = treema.childrenTreemas.name;
+    return phoneTreema = treema.childrenTreemas.numbers;
   });
-  treema.build();
-  nameTreema = treema.childrenTreemas.name;
-  phoneTreema = treema.childrenTreemas.numbers;
   shiftClick = function($el) {
     var event;
     event = jQuery.Event("click");
@@ -1319,155 +1434,48 @@ describe('Schemaless', function() {
     return $el.trigger(event);
   };
   it('starts editing if you click the value', function() {
-    expect(nameTreema.isDisplaying()).toBeTruthy();
+    expect(nameTreema.isDisplaying()).toBe(true);
     nameTreema.$el.find('.treema-value').click();
-    expect(nameTreema.isEditing()).toBeTruthy();
-    return nameTreema.display();
+    return expect(nameTreema.isEditing()).toBe(true);
   });
   it('opens a collection if you click the value', function() {
-    expect(phoneTreema.isClosed()).toBeTruthy();
+    expect(phoneTreema.isClosed()).toBe(true);
     phoneTreema.$el.find('.treema-value').click();
-    expect(phoneTreema.isOpen()).toBeTruthy();
-    return phoneTreema.close();
+    return expect(phoneTreema.isOpen()).toBe(true);
   });
   it('selects and unselects the row if you click something other than the value', function() {
-    expect(nameTreema.isSelected()).toBeFalsy();
+    expect(nameTreema.isSelected()).toBe(false);
     nameTreema.$el.click();
-    expect(nameTreema.isSelected()).toBeTruthy();
+    expect(nameTreema.isSelected()).toBe(true);
     nameTreema.$el.click();
-    return expect(nameTreema.isSelected()).toBeFalsy();
+    return expect(nameTreema.isSelected()).toBe(false);
   });
   it('selects along all open rows if you shift click', function() {
     phoneTreema.open();
     nameTreema.$el.click();
-    shiftClick(phoneTreema.childrenTreemas[1].$el);
-    expect(nameTreema.isSelected());
-    expect(phoneTreema.isSelected());
-    expect(phoneTreema.childrenTreemas[0].isSelected());
-    expect(phoneTreema.childrenTreemas[1].isSelected());
-    treema.deselectAll();
-    return phoneTreema.close();
+    shiftClick(phoneTreema.childrenTreemas[0].$el);
+    expect(nameTreema.isSelected()).toBe(true);
+    expect(phoneTreema.isSelected()).toBe(true);
+    expect(phoneTreema.childrenTreemas[0].isSelected()).toBe(true);
+    return expect(phoneTreema.childrenTreemas[1].isSelected()).toBe(false);
   });
   it('keeps the clicked row selected if there are multiple selections to begin with', function() {
     nameTreema.$el.click();
     shiftClick(phoneTreema.$el);
-    expect(nameTreema.isSelected()).toBeTruthy();
-    expect(phoneTreema.isSelected()).toBeTruthy();
+    expect(nameTreema.isSelected()).toBe(true);
+    expect(phoneTreema.isSelected()).toBe(true);
     nameTreema.$el.click();
-    expect(nameTreema.isSelected()).toBeTruthy();
-    expect(phoneTreema.isSelected()).toBeFalsy();
-    return treema.deselectAll();
+    expect(nameTreema.isSelected()).toBe(true);
+    return expect(phoneTreema.isSelected()).toBe(false);
   });
   return it('toggles the select state if you ctrl/meta click', function() {
     nameTreema.$el.click();
     metaClick(phoneTreema.$el);
-    expect(nameTreema.isSelected()).toBeTruthy();
-    expect(phoneTreema.isSelected()).toBeTruthy();
+    expect(nameTreema.isSelected()).toBe(true);
+    expect(phoneTreema.isSelected()).toBe(true);
     metaClick(nameTreema.$el);
-    expect(nameTreema.isSelected()).toBeFalsy();
-    expect(phoneTreema.isSelected()).toBeTruthy();
-    return treema.deselectAll();
-  });
-});
-;describe('Treema populating values', function() {
-  var data, schema, treema;
-  schema = {
-    "type": "object",
-    "additionalProperties": false,
-    "properties": {
-      "0": {
-        type: "integer"
-      },
-      "1": {
-        type: "string"
-      },
-      "2": {
-        type: "number"
-      },
-      "3": {
-        type: "null"
-      },
-      "4": {
-        type: "boolean"
-      },
-      "5": {
-        type: "array",
-        items: {
-          type: 'number',
-          "default": 42
-        }
-      },
-      "6": {
-        type: "object"
-      },
-      "7": {
-        'default': 1337
-      }
-    },
-    "required": ['0', '1', '2', '3', '4', '5', '6', '7']
-  };
-  data = {};
-  treema = TreemaNode.make(null, {
-    data: data,
-    schema: schema
-  });
-  treema.build();
-  it('populates all required values with generic data', function() {
-    expect(treema.get('/0')).toBe(0);
-    expect(treema.get('/1')).toBe('');
-    expect(treema.get('/2')).toBe(0);
-    expect(treema.get('/3')).toBe(null);
-    expect(treema.get('/4')).toBe(false);
-    expect(JSON.stringify(treema.get('/5'))).toBe(JSON.stringify([]));
-    return expect(JSON.stringify(treema.get('/6'))).toBe(JSON.stringify({}));
-  });
-  return it('populates required values with defaults', function() {
-    expect(treema.get('/7')).toBe(1337);
-    treema.childrenTreemas['5'].addNewChild();
-    return expect(treema.$el.find('input').val()).toBe('42');
-  });
-});
-;describe('Property Schemas', function() {
-  beforeEach(function() {
-    this.schema = {
-      type: 'object',
-      properties: {
-        name: {
-          type: 'string',
-          "default": 'Merlin'
-        }
-      },
-      patternProperties: {
-        '^[a-zA-Z]*$': {
-          type: 'string',
-          description: 'alpha'
-        },
-        '^[0-9]*$': {
-          type: 'string',
-          description: 'num'
-        }
-      }
-    };
-    this.data = {
-      name: 'Monroe',
-      full_name: 'Marilyn Monroe',
-      hobby: 'Painting',
-      '9573': 'Super secret code'
-    };
-    return this.treema = TreemaNode.make(null, {
-      data: this.data,
-      schema: this.schema
-    });
-  });
-  it('allowed property schema', function() {
-    return expect(this.treema.getChildSchema('name')).toEqual(this.schema.properties.name);
-  });
-  it('allowed pattern property schema', function() {
-    expect(this.treema.getChildSchema('hobby')).toEqual(this.schema.patternProperties['^[a-zA-Z]*$']);
-    return expect(this.treema.getChildSchema('9573')).toEqual(this.schema.patternProperties['^[0-9]*$']);
-  });
-  return it('empty schema for no match', function() {
-    return expect(this.treema.getChildSchema('full_name')).toEqual({});
+    expect(nameTreema.isSelected()).toBe(false);
+    return expect(phoneTreema.isSelected()).toBe(true);
   });
 });
 ;describe('readOnly in schema', function() {
@@ -1567,6 +1575,135 @@ describe('Schemaless', function() {
     return expect(treema.childrenTreemas.map.childrenTreemas.string.canEdit()).toBe(false);
   });
 });
+;describe('schema property "required"', function() {
+  var treema;
+  treema = null;
+  beforeEach(function() {
+    var data, schema;
+    schema = {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "0": {
+          type: "integer"
+        },
+        "1": {
+          type: "string"
+        },
+        "2": {
+          type: "number"
+        },
+        "3": {
+          type: "null"
+        },
+        "4": {
+          type: "boolean"
+        },
+        "5": {
+          type: "array",
+          items: {
+            type: 'number',
+            "default": 42
+          }
+        },
+        "6": {
+          type: "object"
+        },
+        "7": {
+          'default': 1337
+        }
+      },
+      "required": ['0', '1', '2', '3', '4', '5', '6', '7']
+    };
+    data = {};
+    treema = TreemaNode.make(null, {
+      data: data,
+      schema: schema
+    });
+    return treema.build();
+  });
+  it('populates all required values with generic data', function() {
+    expect(treema.get('/0')).toBe(0);
+    expect(treema.get('/1')).toBe('');
+    expect(treema.get('/2')).toBe(0);
+    expect(treema.get('/3')).toBe(null);
+    expect(treema.get('/4')).toBe(false);
+    expect(JSON.stringify(treema.get('/5'))).toBe(JSON.stringify([]));
+    return expect(JSON.stringify(treema.get('/6'))).toBe(JSON.stringify({}));
+  });
+  return it('populates required values with defaults', function() {
+    expect(treema.get('/7')).toBe(1337);
+    treema.childrenTreemas['5'].addNewChild();
+    return expect(treema.$el.find('input').val()).toBe('42');
+  });
+});
+
+describe('schema property "required"', function() {
+  it('populates data from the object\'s default property', function() {
+    var schema, treema;
+    schema = {
+      type: 'object',
+      "default": {
+        key1: 'object default'
+      },
+      required: ['key1']
+    };
+    treema = $('<div></div>').treema({
+      schema: schema,
+      data: {}
+    });
+    treema.build();
+    return expect(treema.data.key1).toBe('object default');
+  });
+  it('populates data based on the child schema type', function() {
+    var schema, treema;
+    schema = {
+      type: 'object',
+      required: ['key2'],
+      properties: {
+        key2: {
+          type: 'number'
+        }
+      }
+    };
+    treema = $('<div></div>').treema({
+      schema: schema,
+      data: {}
+    });
+    treema.build();
+    return expect(treema.data.key2).toBe(0);
+  });
+  it('populates data from the child schema\'s default property', function() {
+    var schema, treema;
+    schema = {
+      type: 'object',
+      required: ['key3'],
+      properties: {
+        key3: {
+          "default": 'inner default'
+        }
+      }
+    };
+    treema = $('<div></div>').treema({
+      schema: schema,
+      data: {}
+    });
+    treema.build();
+    return expect(treema.data.key3).toBe('inner default');
+  });
+  return it('populates data as an empty string if nothing else is available', function() {
+    var schema, treema;
+    schema = {
+      required: ['key4']
+    };
+    treema = $('<div></div>').treema({
+      schema: schema,
+      data: {}
+    });
+    treema.build();
+    return expect(treema.data.key4).toBe('');
+  });
+});
 ;(function() {
   var data, expectClosed, expectOpen, schema, treema;
   expectOpen = function(t) {
@@ -1624,23 +1761,6 @@ describe('Schemaless', function() {
     });
   });
 })();
-;describe('TV4 Interface', function() {
-  var data, schema, treema;
-  schema = {
-    type: 'number'
-  };
-  data = 'NaN';
-  treema = TreemaNode.make(null, {
-    data: data,
-    schema: schema
-  });
-  it('can check data validity', function() {
-    return expect(treema.isValid()).toBe(false);
-  });
-  return it('returns errors', function() {
-    return expect(treema.getErrors().length).toBe(1);
-  });
-});
 ;describe('Undo-redo behavior', function() {
   var addressTreema, completedTreema, data, nameTreema, numbersTreema, originalData, schema, treema;
   schema = {
@@ -1765,6 +1885,270 @@ describe('Schemaless', function() {
     return expect(treema.get('/numbers')).toBeUndefined();
   });
 });
-;
+;var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+
+describe('utilities', function() {
+  var backupJQuery;
+  backupJQuery = $;
+  beforeEach(function() {
+    window.jQuery = void 0;
+    return window.$ = void 0;
+  });
+  afterEach(function() {
+    window.jQuery = backupJQuery;
+    return window.$ = backupJQuery;
+  });
+  describe('tests', function() {
+    return it('run in an environment without jQuery', function() {
+      var hadError;
+      hadError = false;
+      try {
+        $('body');
+      } catch (_error) {
+        hadError = true;
+      }
+      return expect(hadError).toBe(true);
+    });
+  });
+  describe('populateDefaults', function() {
+    it('walks through data and applies schema defaults to data', function() {
+      var data, result, schema;
+      schema = {
+        type: 'object',
+        "default": {
+          innerObject: {},
+          someProp: 1
+        },
+        properties: {
+          innerObject: {
+            "default": {
+              key1: 'value1',
+              key2: 'value2'
+            }
+          }
+        }
+      };
+      data = null;
+      result = TreemaNode.utils.populateDefaults(data, schema);
+      expect(result).toBeDefined();
+      expect(result.innerObject).toBeDefined();
+      expect(result.innerObject.key1).toBe('value1');
+      return expect(result.innerObject.key2).toBe('value2');
+    });
+    return it('merges in default objects that are adjacent to extant data', function() {
+      var data, result, schema;
+      schema = {
+        type: 'object',
+        properties: {
+          innerObject: {
+            "default": {
+              key1: 'value1',
+              key2: 'value2'
+            }
+          }
+        }
+      };
+      data = {
+        innerObject: {
+          key1: 'extantData'
+        }
+      };
+      result = TreemaNode.utils.populateDefaults(data, schema);
+      expect(result).toBeDefined();
+      expect(result.innerObject).toBeDefined();
+      expect(result.innerObject.key1).toBe('extantData');
+      return expect(result.innerObject.key2).toBe('value2');
+    });
+  });
+  describe('walk', function() {
+    return it('calls a callback on every piece of data in a JSON object, providing path, data and working schema', function() {
+      var data, paths, schema, values, _ref, _ref1;
+      schema = {
+        type: 'object',
+        properties: {
+          key1: {
+            title: 'Number 1'
+          },
+          key2: {
+            title: 'Number 2'
+          }
+        }
+      };
+      data = {
+        key1: 1,
+        key2: 2
+      };
+      paths = [];
+      values = [];
+      TreemaNode.utils.walk(data, schema, null, function(path, data, schema) {
+        paths.push(path);
+        return values.push(data);
+      });
+      expect(paths.length).toBe(3);
+      expect(__indexOf.call(paths, '') >= 0).toBe(true);
+      expect(__indexOf.call(paths, 'key1') >= 0).toBe(true);
+      expect(__indexOf.call(paths, 'key2') >= 0).toBe(true);
+      expect(__indexOf.call(values, data) >= 0).toBe(true);
+      expect((_ref = data.key1, __indexOf.call(values, _ref) >= 0)).toBe(true);
+      return expect((_ref1 = data.key2, __indexOf.call(values, _ref1) >= 0)).toBe(true);
+    });
+  });
+  describe('getChildSchema', function() {
+    it('returns child schemas from properties', function() {
+      var childSchema, schema;
+      schema = {
+        properties: {
+          key1: {
+            title: 'some title'
+          }
+        }
+      };
+      childSchema = TreemaNode.utils.getChildSchema('key1', schema);
+      return expect(childSchema.title).toBe('some title');
+    });
+    it('returns child schemas from additionalProperties', function() {
+      var childSchema, schema;
+      schema = {
+        additionalProperties: {
+          title: 'some title'
+        }
+      };
+      childSchema = TreemaNode.utils.getChildSchema('key1', schema);
+      return expect(childSchema.title).toBe('some title');
+    });
+    it('returns child schemas from patternProperties', function() {
+      var childSchema, schema;
+      schema = {
+        patternProperties: {
+          '^[a-z]+$': {
+            title: 'some title'
+          }
+        }
+      };
+      childSchema = TreemaNode.utils.getChildSchema('key', schema);
+      expect(childSchema.title).toBe('some title');
+      childSchema = TreemaNode.utils.getChildSchema('123', schema);
+      return expect(childSchema.title).toBeUndefined();
+    });
+    it('returns child schemas from an items schema', function() {
+      var childSchema, schema;
+      schema = {
+        items: {
+          title: 'some title'
+        }
+      };
+      childSchema = TreemaNode.utils.getChildSchema(0, schema);
+      return expect(childSchema.title).toBe('some title');
+    });
+    it('returns child schemas from an items array of schemas', function() {
+      var childSchema, schema;
+      schema = {
+        items: [
+          {
+            title: 'some title'
+          }
+        ]
+      };
+      childSchema = TreemaNode.utils.getChildSchema(0, schema);
+      expect(childSchema.title).toBe('some title');
+      childSchema = TreemaNode.utils.getChildSchema(1, schema);
+      return expect(childSchema.title).toBeUndefined();
+    });
+    return it('returns child schemas from additionalItems', function() {
+      var childSchema, schema;
+      schema = {
+        items: [
+          {
+            title: 'some title'
+          }
+        ],
+        additionalItems: {
+          title: 'another title'
+        }
+      };
+      childSchema = TreemaNode.utils.getChildSchema(1, schema);
+      return expect(childSchema.title).toBe('another title');
+    });
+  });
+  return describe('buildWorkingSchemas', function() {
+    it('returns the same single schema if there are no combinatorials or references', function() {
+      var schema, workingSchemas;
+      schema = {};
+      workingSchemas = TreemaNode.utils.buildWorkingSchemas(schema);
+      return expect(workingSchemas[0] === schema).toBeTruthy();
+    });
+    it('combines allOf into a single schema', function() {
+      var schema, workingSchema, workingSchemas;
+      schema = {
+        title: 'title',
+        allOf: [
+          {
+            description: 'description'
+          }, {
+            type: 'number'
+          }
+        ]
+      };
+      workingSchemas = TreemaNode.utils.buildWorkingSchemas(schema);
+      expect(workingSchemas.length).toBe(1);
+      workingSchema = workingSchemas[0];
+      expect(workingSchema.title).toBe('title');
+      expect(workingSchema.description).toBe('description');
+      return expect(workingSchema.type).toBe('number');
+    });
+    it('creates a separate working schema for each anyOf', function() {
+      var schema, types, workingSchemas;
+      schema = {
+        title: 'title',
+        anyOf: [
+          {
+            type: 'string'
+          }, {
+            type: 'number'
+          }
+        ]
+      };
+      workingSchemas = TreemaNode.utils.buildWorkingSchemas(schema);
+      expect(workingSchemas.length).toBe(2);
+      types = (function() {
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = workingSchemas.length; _i < _len; _i++) {
+          schema = workingSchemas[_i];
+          _results.push(schema.type);
+        }
+        return _results;
+      })();
+      expect(__indexOf.call(types, 'string') >= 0).toBe(true);
+      return expect(__indexOf.call(types, 'number') >= 0).toBe(true);
+    });
+    return it('creates a separate working schema for each oneOf', function() {
+      var schema, types, workingSchemas;
+      schema = {
+        title: 'title',
+        oneOf: [
+          {
+            type: 'string'
+          }, {
+            type: 'number'
+          }
+        ]
+      };
+      workingSchemas = TreemaNode.utils.buildWorkingSchemas(schema);
+      expect(workingSchemas.length).toBe(2);
+      types = (function() {
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = workingSchemas.length; _i < _len; _i++) {
+          schema = workingSchemas[_i];
+          _results.push(schema.type);
+        }
+        return _results;
+      })();
+      expect(__indexOf.call(types, 'string') >= 0).toBe(true);
+      return expect(__indexOf.call(types, 'number') >= 0).toBe(true);
+    });
+  });
+});
 ;
 //# sourceMappingURL=treema.spec.js.map
