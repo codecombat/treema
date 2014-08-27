@@ -1350,8 +1350,7 @@ class TreemaNode
     if dataType is 'undefined' and (defaultDataType is 'undefined' or defaultDataType not in schemaTypes)
       options.data = @defaultForType(schemaTypes[0])
               
-  @defaultForType: (type) ->
-    {'string':'', 'number':0, 'null': null, 'object': {}, 'integer': 0, 'boolean': false, 'array':[]}[type]
+  @defaultForType: (type) -> TreemaNode.utils.defaultForType(type)
 
   @getNodeClassForSchema: (schema, def='string', localClasses=null) ->
     typeMismatch = false

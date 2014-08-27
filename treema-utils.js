@@ -21,6 +21,47 @@
     });
     return rootData;
   };
+  utils.populateRequireds = function(rootData, rootSchema, tv4) {
+    var _this = this;
+    if (rootData == null) {
+      rootData = {};
+    }
+    this.walk(rootData, rootSchema, tv4, function(path, data, schema) {
+      var childSchema, key, schemaDefault, type, workingSchema, _i, _len, _ref, _ref1, _results;
+      if (!(schema.required && _this.type(data) === 'object')) {
+        return;
+      }
+      _ref = schema.required;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        key = _ref[_i];
+        if (data[key] != null) {
+          continue;
+        }
+        if (schemaDefault = (_ref1 = schema["default"]) != null ? _ref1[key] : void 0) {
+          _results.push(data[key] = _this.cloneDeep(schemaDefault));
+        } else {
+          childSchema = _this.getChildSchema(key, schema);
+          workingSchema = _this.buildWorkingSchemas(childSchema, tv4)[0];
+          schemaDefault = workingSchema["default"];
+          if (schemaDefault != null) {
+            _results.push(data[key] = _this.cloneDeep(schemaDefault));
+          } else {
+            type = workingSchema.type;
+            if (_this.type(type) === 'array') {
+              type = type[0];
+            }
+            if (!type) {
+              type = 'string';
+            }
+            _results.push(data[key] = TreemaNode.defaultForType(type));
+          }
+        }
+      }
+      return _results;
+    });
+    return rootData;
+  };
   utils.walk = function(data, schema, tv4, callback, path) {
     var childPath, childSchema, key, value, workingSchema, workingSchemas, _ref, _results;
     if (path == null) {
@@ -233,6 +274,17 @@
       return classToType[strType] || "object";
     };
   })();
+  utils.defaultForType = function(type) {
+    return {
+      string: '',
+      number: 0,
+      "null": null,
+      object: {},
+      integer: 0,
+      boolean: false,
+      array: []
+    }[type];
+  };
   if (typeof TreemaNode !== 'undefined') {
     TreemaNode.utils = utils;
   }

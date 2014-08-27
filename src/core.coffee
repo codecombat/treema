@@ -270,13 +270,7 @@ do __init = ->
 
     populateData: ->
       super()
-      return unless @data
-      return unless @schema.required
-      for key in @schema.required
-        continue if @data[key]?
-        helperTreema = TreemaNode.make(null, {schema: @getChildSchema(key)}, @)
-        helperTreema.populateData()
-        @data[key] = helperTreema.data
+      TreemaNode.utils.populateRequireds(@data, @schema, @tv4)
 
     close: ->
       super(arguments...)

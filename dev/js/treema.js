@@ -2278,15 +2278,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.defaultForType = function(type) {
-    return {
-      'string': '',
-      'number': 0,
-      'null': null,
-      'object': {},
-      'integer': 0,
-      'boolean': false,
-      'array': []
-    }[type];
+    return TreemaNode.utils.defaultForType(type);
   };
 
   TreemaNode.getNodeClassForSchema = function(schema, def, localClasses) {
@@ -2862,28 +2854,8 @@ TreemaNode = (function() {
     };
 
     ObjectNode.prototype.populateData = function() {
-      var helperTreema, key, _i, _len, _ref7, _results;
       ObjectNode.__super__.populateData.call(this);
-      if (!this.data) {
-        return;
-      }
-      if (!this.schema.required) {
-        return;
-      }
-      _ref7 = this.schema.required;
-      _results = [];
-      for (_i = 0, _len = _ref7.length; _i < _len; _i++) {
-        key = _ref7[_i];
-        if (this.data[key] != null) {
-          continue;
-        }
-        helperTreema = TreemaNode.make(null, {
-          schema: this.getChildSchema(key)
-        }, this);
-        helperTreema.populateData();
-        _results.push(this.data[key] = helperTreema.data);
-      }
-      return _results;
+      return TreemaNode.utils.populateRequireds(this.data, this.schema, this.tv4);
     };
 
     ObjectNode.prototype.close = function() {
@@ -3611,6 +3583,47 @@ TreemaNode = (function() {
     });
     return rootData;
   };
+  utils.populateRequireds = function(rootData, rootSchema, tv4) {
+    var _this = this;
+    if (rootData == null) {
+      rootData = {};
+    }
+    this.walk(rootData, rootSchema, tv4, function(path, data, schema) {
+      var childSchema, key, schemaDefault, type, workingSchema, _i, _len, _ref, _ref1, _results;
+      if (!(schema.required && _this.type(data) === 'object')) {
+        return;
+      }
+      _ref = schema.required;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        key = _ref[_i];
+        if (data[key] != null) {
+          continue;
+        }
+        if (schemaDefault = (_ref1 = schema["default"]) != null ? _ref1[key] : void 0) {
+          _results.push(data[key] = _this.cloneDeep(schemaDefault));
+        } else {
+          childSchema = _this.getChildSchema(key, schema);
+          workingSchema = _this.buildWorkingSchemas(childSchema, tv4)[0];
+          schemaDefault = workingSchema["default"];
+          if (schemaDefault != null) {
+            _results.push(data[key] = _this.cloneDeep(schemaDefault));
+          } else {
+            type = workingSchema.type;
+            if (_this.type(type) === 'array') {
+              type = type[0];
+            }
+            if (!type) {
+              type = 'string';
+            }
+            _results.push(data[key] = TreemaNode.defaultForType(type));
+          }
+        }
+      }
+      return _results;
+    });
+    return rootData;
+  };
   utils.walk = function(data, schema, tv4, callback, path) {
     var childPath, childSchema, key, value, workingSchema, workingSchemas, _ref, _results;
     if (path == null) {
@@ -3823,6 +3836,17 @@ TreemaNode = (function() {
       return classToType[strType] || "object";
     };
   })();
+  utils.defaultForType = function(type) {
+    return {
+      string: '',
+      number: 0,
+      "null": null,
+      object: {},
+      integer: 0,
+      boolean: false,
+      array: []
+    }[type];
+  };
   if (typeof TreemaNode !== 'undefined') {
     TreemaNode.utils = utils;
   }

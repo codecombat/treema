@@ -33,20 +33,15 @@
     var el = $('#scratch');
     var schema = {
       type: 'object',
-      default: { key1: 'value1', innerObject: { prop1: 1, prop2: 2, aBool: false } },
+      default: { key1: 'object default' },
+      required: ['key1', 'key2', 'key3', 'key4'],
       properties: {
-        key1: { oneOf: [{ title: 'Number Schema', type: 'number' }, { title: 'String Schema', type: 'string' }] },
-        key2: { type: 'string' },
-        innerObject: {
-          type: 'object',
-          properties: {
-            prop1: { type: 'number' },
-            aBool: { type: 'boolean' }
-          }
-        }
+        key1: { },
+        key2: { type: 'number' },
+        key3: { default: 'inner default' },
       }
     };
-    var data = { key2: 'value2', bool: true };
+    var data = { };
     var options = { schema:schema, data:data };
     var treema = el.treema(options);
     treema.build();

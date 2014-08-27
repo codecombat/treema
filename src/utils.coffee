@@ -13,6 +13,29 @@
         data[key] ?= @cloneDeep(value)
         
     rootData
+    
+  utils.populateRequireds = (rootData, rootSchema, tv4) ->
+    rootData ?= {}
+
+    @walk rootData, rootSchema, tv4, (path, data, schema) =>
+      return unless schema.required and @type(data) is 'object'
+      for key in schema.required
+        continue if data[key]?
+        if schemaDefault = schema.default?[key]
+          data[key] = @cloneDeep(schemaDefault)
+        else
+          childSchema = @getChildSchema(key, schema)
+          workingSchema = @buildWorkingSchemas(childSchema, tv4)[0]
+          schemaDefault = workingSchema.default
+          if schemaDefault?
+            data[key] = @cloneDeep(schemaDefault)
+          else
+            type = workingSchema.type
+            if @type(type) is 'array' then type = type[0]
+            if not type then type = 'string'
+            data[key] = TreemaNode.defaultForType(type)
+
+    rootData
   
   utils.walk = (data, schema, tv4, callback, path='') ->
     if not tv4
@@ -120,7 +143,7 @@
       return global.tv4
   
   # UTILITY UTILITIES
-  # Normally I'd use jQuery or lodash for these, but this file should be completely library/context agnostic.
+  # Normally I'd use jQuery or lodash for most of these, but this file should be completely library/context agnostic.
   # These are fairly simplified because data is assumed to not include non-plain objects.
   
   utils.cloneSchema = (schema) ->
@@ -154,7 +177,10 @@
     (obj) ->
       strType = Object::toString.call(obj)
       classToType[strType] or "object"
-      
+
+  utils.defaultForType = (type) ->
+    {string:'', number:0, null: null, object: {}, integer: 0, boolean: false, array:[]}[type]
+    
   # Export either to TreemaNode if it exists, or to module.exports for node
 
   if typeof TreemaNode isnt 'undefined'
