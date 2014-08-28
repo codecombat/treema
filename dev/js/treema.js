@@ -3618,7 +3618,7 @@ TreemaUtils = (function() {
             if (!type) {
               type = 'string';
             }
-            _results.push(data[key] = TreemaNode.defaultForType(type));
+            _results.push(data[key] = _this.defaultForType(type));
           }
         }
       }

@@ -33,7 +33,7 @@ TreemaUtils = (->
             type = workingSchema.type
             if @type(type) is 'array' then type = type[0]
             if not type then type = 'string'
-            data[key] = TreemaNode.defaultForType(type)
+            data[key] = @defaultForType(type)
 
     rootData
   
