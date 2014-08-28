@@ -3818,7 +3818,9 @@ TreemaNode = (function() {
     return TreemaNode.make(element, options);
   };
 })(jQuery);
-;(function() {
+;var TreemaUtils;
+
+TreemaUtils = (function() {
   var utils;
   utils = {};
   utils.populateDefaults = function(rootData, rootSchema, tv4) {
@@ -4106,10 +4108,11 @@ TreemaNode = (function() {
     }[type];
   };
   if (typeof TreemaNode !== 'undefined') {
-    TreemaNode.utils = utils;
-  }
-  if (typeof module !== 'undefined' && module.exports) {
+    return TreemaNode.utils = utils;
+  } else if (typeof module !== 'undefined' && module.exports) {
     return module.exports = utils;
+  } else {
+    return utils;
   }
 })();
 ;

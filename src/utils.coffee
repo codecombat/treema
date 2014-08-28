@@ -1,4 +1,4 @@
-(->
+TreemaUtils = (->
   
   utils = {}
   
@@ -186,7 +186,10 @@
   if typeof TreemaNode isnt 'undefined'
     TreemaNode.utils = utils
 
-  if typeof module isnt 'undefined' and module.exports
+  else if typeof module isnt 'undefined' and module.exports
     module.exports = utils
+    
+  else
+    return utils
 
 )()
