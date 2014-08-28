@@ -3788,6 +3788,9 @@ TreemaUtils = (function() {
     if (typeof global !== 'undefined') {
       return global.tv4;
     }
+    if (typeof tv4 !== 'undefined') {
+      return tv4;
+    }
   };
   utils.cloneSchema = function(schema) {
     var clone, key, value;

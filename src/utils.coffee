@@ -141,6 +141,8 @@ TreemaUtils = (->
       return window.tv4
     if typeof global isnt 'undefined'
       return global.tv4
+    if typeof tv4 isnt 'undefined'
+      return tv4
   
   # UTILITY UTILITIES
   # Normally I'd use jQuery or lodash for most of these, but this file should be completely library/context agnostic.
