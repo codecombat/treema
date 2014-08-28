@@ -260,7 +260,7 @@ keyDown = function($el, which) {
       }
     }));
   });
-  return it('takes defaultData from the make options', function() {
+  it('takes defaultData from the make options', function() {
     var data, schema, treema;
     data = {};
     schema = {};
@@ -273,6 +273,28 @@ keyDown = function($el, which) {
     });
     treema.build();
     return expect(treema.childrenTreemas.key).toBeDefined();
+  });
+  return it('does not set defaults just by opening a collection', function() {
+    var data, schema, treema;
+    data = {};
+    schema = {
+      "default": {
+        inventory: {
+          prop1: 'test',
+          prop2: 'test'
+        }
+      }
+    };
+    treema = TreemaNode.make(null, {
+      data: data,
+      schema: schema,
+      defaultData: {
+        key: 'value'
+      }
+    });
+    treema.build();
+    treema.open(2);
+    return expect($.isEmptyObject(treema.data)).toBe(true);
   });
 });
 ;describe('Children Filter', function() {

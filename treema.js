@@ -1456,7 +1456,7 @@ TreemaNode = (function() {
           data: child.value,
           defaultData: child.defaultData
         }, this, child.key);
-        if (treema.data !== void 0) {
+        if (!(treema.data === void 0 || (this.data === void 0 && !this.integrated))) {
           this.integrateChildTreema(treema);
         }
         this.childrenTreemas[treema.keyForParent] = treema;

@@ -50,3 +50,11 @@ describe 'defaults', ->
     treema = TreemaNode.make(null, {data: data, schema: schema, defaultData: { key: 'value' }})
     treema.build()
     expect(treema.childrenTreemas.key).toBeDefined()
+
+  it 'does not set defaults just by opening a collection', ->
+    data = { }
+    schema = { default: { inventory: { prop1: 'test', prop2: 'test' } } }
+    treema = TreemaNode.make(null, {data: data, schema: schema, defaultData: { key: 'value' }})
+    treema.build()
+    treema.open(2)
+    expect($.isEmptyObject(treema.data)).toBe(true)

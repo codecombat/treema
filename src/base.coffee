@@ -681,7 +681,7 @@ class TreemaNode
           data:child.value
           defaultData: child.defaultData
         }, @, child.key)
-        @integrateChildTreema(treema) unless treema.data is undefined
+        @integrateChildTreema(treema) unless treema.data is undefined or (@data is undefined and not @integrated)
         @childrenTreemas[treema.keyForParent] = treema
         childNode = @createChildNode(treema)
         childrenContainer.append(childNode)
