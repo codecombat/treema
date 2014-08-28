@@ -302,6 +302,7 @@ class TreemaNode
         e.preventDefault()
     else if e.shiftKey
       # Get ready for a possible Shift+Ctrl+V paste (hacky, I know)
+      return unless @$clipboardContainer
       @saveScrolls()
       @$clipboardContainer.find('.treema-clipboard').focus().select()
       @loadScrolls()
