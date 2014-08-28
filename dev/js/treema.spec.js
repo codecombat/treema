@@ -2168,5 +2168,28 @@ describe('utilities', function() {
     });
   });
 });
+;describe('showing errors', function() {
+  return it('does not go away when you close and open a collection', function() {
+    var data, schema, treema;
+    schema = {
+      type: 'object',
+      additionalProperties: false
+    };
+    data = {
+      someProp: ['test', 1, 2, 3]
+    };
+    treema = $('<div></div>').treema({
+      schema: schema,
+      data: data
+    });
+    treema.build();
+    expect(treema.$el.find('.treema-error').length).toBe(1);
+    window.treema = treema;
+    treema.childrenTreemas.someProp.open();
+    expect(treema.$el.find('.treema-error').length).toBe(1);
+    treema.childrenTreemas.someProp.close();
+    return expect(treema.$el.find('.treema-error').length).toBe(1);
+  });
+});
 ;
 //# sourceMappingURL=treema.spec.js.map

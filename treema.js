@@ -354,7 +354,11 @@ TreemaNode = (function() {
     })();
     for (_i = 0, _len = errors.length; _i < _len; _i++) {
       e = errors[_i];
-      e.dataPath = e.dataPath.slice(0, +my_path.length + 1 || 9e9);
+      if (e.dataPath === my_path) {
+        e.subDataPath = '';
+      } else {
+        e.subDataPath = e.dataPath.slice(0, +my_path.length + 1 || 9e9);
+      }
     }
     if (this.workingSchema) {
       moreErrors = this.tv4.validateMultiple(this.data, this.workingSchema).errors;
@@ -1905,7 +1909,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.showErrors = function() {
-    var childErrors, deepestTreema, e, error, erroredTreemas, errors, message, messages, ownErrors, path, subpath, treema, _i, _j, _k, _len, _len1, _len2, _ref, _results;
+    var childErrors, deepestTreema, e, error, erroredTreemas, errors, message, messages, ownErrors, path, subpath, treema, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _results;
     if (this.parent && !this.integrated) {
       return;
     }
@@ -1913,7 +1917,7 @@ TreemaNode = (function() {
     erroredTreemas = [];
     for (_i = 0, _len = errors.length; _i < _len; _i++) {
       error = errors[_i];
-      path = error.dataPath.slice(1);
+      path = ((_ref = error.subDataPath) != null ? _ref : error.dataPath).slice(1);
       path = path ? path.split('/') : [];
       deepestTreema = this;
       for (_j = 0, _len1 = path.length; _j < _len1; _j++) {
@@ -1937,16 +1941,16 @@ TreemaNode = (function() {
       deepestTreema._errors.push(error);
       erroredTreemas.push(deepestTreema);
     }
-    _ref = $.unique(erroredTreemas);
+    _ref1 = $.unique(erroredTreemas);
     _results = [];
-    for (_k = 0, _len2 = _ref.length; _k < _len2; _k++) {
-      treema = _ref[_k];
+    for (_k = 0, _len2 = _ref1.length; _k < _len2; _k++) {
+      treema = _ref1[_k];
       childErrors = (function() {
-        var _l, _len3, _ref1, _results1;
-        _ref1 = treema._errors;
+        var _l, _len3, _ref2, _results1;
+        _ref2 = treema._errors;
         _results1 = [];
-        for (_l = 0, _len3 = _ref1.length; _l < _len3; _l++) {
-          e = _ref1[_l];
+        for (_l = 0, _len3 = _ref2.length; _l < _len3; _l++) {
+          e = _ref2[_l];
           if (e.forChild) {
             _results1.push(e);
           }
@@ -1954,11 +1958,11 @@ TreemaNode = (function() {
         return _results1;
       })();
       ownErrors = (function() {
-        var _l, _len3, _ref1, _results1;
-        _ref1 = treema._errors;
+        var _l, _len3, _ref2, _results1;
+        _ref2 = treema._errors;
         _results1 = [];
-        for (_l = 0, _len3 = _ref1.length; _l < _len3; _l++) {
-          e = _ref1[_l];
+        for (_l = 0, _len3 = _ref2.length; _l < _len3; _l++) {
+          e = _ref2[_l];
           if (!e.forChild) {
             _results1.push(e);
           }

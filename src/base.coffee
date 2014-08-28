@@ -55,7 +55,11 @@ class TreemaNode
     errors = root.getErrors()
     my_path = @getPath()
     errors = (e for e in errors when e.dataPath[..my_path.length] is my_path)
-    e.dataPath = e.dataPath[..my_path.length] for e in errors
+    for e in errors
+      if e.dataPath is my_path
+        e.subDataPath = ''
+      else
+        e.subDataPath = e.dataPath[..my_path.length] 
 
     if @workingSchema
       moreErrors = @tv4.validateMultiple(@data, @workingSchema).errors
@@ -1004,7 +1008,7 @@ class TreemaNode
     errors = @getErrors()
     erroredTreemas = []
     for error in errors
-      path = error.dataPath[1..]
+      path = (error.subDataPath ? error.dataPath)[1..]
       path = if path then path.split('/') else []
       deepestTreema = @
       for subpath in path

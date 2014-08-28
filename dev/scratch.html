@@ -33,9 +33,9 @@
     var el = $('#scratch');
     var schema = {
       type: 'object',
-      default: { inventory: { prop1: 'test', prop2: 'test' } },
+      additionalProperties: false
     };
-    var data = { };
+    var data = { someProp: ['test', 1, 2, 3] };
     var options = { schema:schema, data:data };
     var treema = el.treema(options);
     treema.build();
