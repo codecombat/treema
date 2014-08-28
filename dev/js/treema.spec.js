@@ -126,11 +126,7 @@ keyDown = function($el, which) {
     return expect(fired.f).toBe(false);
   });
   it('fires when you add a new property to an object', function() {
-    treema.$el.find('.treema-add-child').click();
-    expect(fired.f).toBe(false);
-    tabKeyPress(treema.$el.find('input').val('red'));
-    expect(fired.f).toBe(false);
-    tabKeyPress(treema.$el.find('input').val('blue'));
+    treema.set('/blue', 'red');
     return expect(fired.f).toBe(true);
   });
   it('fires when you add an object to an array', function() {
