@@ -31,16 +31,7 @@
   $(document).ready(function () {
 
     var el = $('#scratch');
-    var schema = {
-      $ref: '#/definitions/objectOfObjects',
-      
-      definitions: {
-        objectOfObjects: {
-          type: 'object',
-          additionalProperties: { $ref: '#/definitions/objectOfObjects' }
-        }
-      }
-    };
+    var schema = { type: 'object' };
     var data = { obj1: { one: {}, two: {} }, obj2: {} };
     var options = { schema:schema, data:data };
     var treema = el.treema(options);

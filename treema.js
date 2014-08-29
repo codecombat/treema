@@ -2540,9 +2540,7 @@ TreemaNode = (function() {
 
   TreemaNode.massageData = function(options, workingSchema) {
     var dataType, defaultDataType, schemaTypes;
-    if (!(schemaTypes = workingSchema.type)) {
-      return;
-    }
+    schemaTypes = workingSchema.type || ['string', 'number', 'integer', 'object', 'array', 'boolean', 'null'];
     if ($.type(schemaTypes) !== 'array') {
       schemaTypes = [schemaTypes];
     }

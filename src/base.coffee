@@ -1353,15 +1353,17 @@ class TreemaNode
     
   @massageData: (options, workingSchema) ->
     # do not allow data or default data to start out invalid with the working schema type, if possible
-    return unless schemaTypes = workingSchema.type
+    schemaTypes = workingSchema.type or ['string', 'number', 'integer', 'object', 'array', 'boolean', 'null']
     schemaTypes = [schemaTypes] unless $.type(schemaTypes) is 'array'
 
     dataType = $.type(options.data)
     defaultDataType = $.type(options.defaultData)
 
+    # if the data does not match the schema types
     if dataType isnt 'undefined' and dataType not in schemaTypes
       options.data = @defaultForType(schemaTypes[0])
       
+    # if there's no data or default data that works for the schema, reset it
     if dataType is 'undefined' and (defaultDataType is 'undefined' or defaultDataType not in schemaTypes)
       options.data = @defaultForType(schemaTypes[0])
               
