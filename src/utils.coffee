@@ -10,7 +10,8 @@ TreemaUtils = (->
       def = schema.default
       return unless @type(def) is 'object' and @type(data) is 'object'
       for key, value of def
-        data[key] ?= @cloneDeep(value)
+        if data[key] is undefined
+          data[key] = @cloneDeep(value)
         
     rootData
     

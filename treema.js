@@ -3770,7 +3770,11 @@ TreemaUtils = (function() {
       _results = [];
       for (key in def) {
         value = def[key];
-        _results.push(data[key] != null ? data[key] : data[key] = _this.cloneDeep(value));
+        if (data[key] === void 0) {
+          _results.push(data[key] = _this.cloneDeep(value));
+        } else {
+          _results.push(void 0);
+        }
       }
       return _results;
     });
