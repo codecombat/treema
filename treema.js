@@ -2544,12 +2544,15 @@ TreemaNode = (function() {
     if ($.type(schemaTypes) !== 'array') {
       schemaTypes = [schemaTypes];
     }
+    if (__indexOf.call(schemaTypes, 'integer') >= 0 && __indexOf.call(schemaTypes, 'number') < 0) {
+      schemaTypes.push('number');
+    }
     dataType = $.type(options.data);
     defaultDataType = $.type(options.defaultData);
     if (dataType !== 'undefined' && __indexOf.call(schemaTypes, dataType) < 0) {
       options.data = this.defaultForType(schemaTypes[0]);
     }
-    if (dataType === 'undefined' && (defaultDataType === 'undefined' || __indexOf.call(schemaTypes, defaultDataType) < 0)) {
+    if (dataType === 'undefined' && __indexOf.call(schemaTypes, defaultDataType) < 0) {
       return options.data = this.defaultForType(schemaTypes[0]);
     }
   };

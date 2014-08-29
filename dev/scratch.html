@@ -31,12 +31,38 @@
   $(document).ready(function () {
 
     var el = $('#scratch');
-    var schema = { type: 'object' };
-    var data = { obj1: { one: {}, two: {} }, obj2: {} };
+    var schema = {
+      "properties": {
+        "lifespan": {
+          "type": "integer",
+          "minimum": 0,
+          "exclusiveMinimum": true,
+        },
+        "frameRate": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "randomSeed": {
+          "type": "string",
+          "enum": [
+            "zero",
+            "playerCode",
+            "playerSession"
+          ],
+        }
+      },
+      "default": {
+        "lifespan": 60,
+        "frameRate": 30,
+        "randomSeed": "zero"
+      },
+      "additionalProperties": false,
+      "type": "object"
+    };
+    var data = { };
     var options = { schema:schema, data:data };
     var treema = el.treema(options);
     treema.build();
-    treema.open(2);
     window.treema = treema;
     window.schema = schema;
   });

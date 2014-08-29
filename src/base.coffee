@@ -1355,6 +1355,10 @@ class TreemaNode
     # do not allow data or default data to start out invalid with the working schema type, if possible
     schemaTypes = workingSchema.type or ['string', 'number', 'integer', 'object', 'array', 'boolean', 'null']
     schemaTypes = [schemaTypes] unless $.type(schemaTypes) is 'array'
+    
+    # type can't tell between number and integer, so just treat them as the same
+    if 'integer' in schemaTypes and 'number' not in schemaTypes
+      schemaTypes.push 'number'
 
     dataType = $.type(options.data)
     defaultDataType = $.type(options.defaultData)
@@ -1364,7 +1368,7 @@ class TreemaNode
       options.data = @defaultForType(schemaTypes[0])
       
     # if there's no data or default data that works for the schema, reset it
-    if dataType is 'undefined' and (defaultDataType is 'undefined' or defaultDataType not in schemaTypes)
+    if dataType is 'undefined' and defaultDataType not in schemaTypes
       options.data = @defaultForType(schemaTypes[0])
               
   @defaultForType: (type) -> TreemaNode.utils.defaultForType(type)
