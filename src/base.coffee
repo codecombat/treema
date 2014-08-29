@@ -80,7 +80,7 @@ class TreemaNode
   saveChanges: (oldData)-> 
     return if oldData is @data
     @addTrackedAction {'oldData':oldData, 'newData':@data, 'path':@getPath(), 'action':'edit'}
-  getChildSchema: (key) -> TreemaNode.utils.getChildSchema(key, @schema)
+  getChildSchema: (key) -> TreemaNode.utils.getChildSchema(key, @workingSchema)
   buildValueForDisplay: -> console.error('"buildValueForDisplay" has not been overridden.')
   buildValueForEditing: ->
     return unless @editable and @directlyEditable
@@ -154,6 +154,9 @@ class TreemaNode
     callbacks: {}
 
   constructor: (@$el, options, @parent) ->
+    @setWorkingSchema(options.workingSchema, options.workingSchemas)
+    delete options.workingSchema
+    delete options.workingSchemas
     @$el = @$el or $('<div></div>')
     @settings = $.extend {}, defaults, options
     @schema = $.extend {}, @settings.schema
@@ -174,8 +177,8 @@ class TreemaNode
 
   unloadNodeSpecificSettings: ->
     # moves node-specific data from the options dict to the node itself, removing them from the options.
-    for key in ['data', 'defaultData', 'schema', 'workingSchemas', 'workingSchema', 'type']
-      @[key] = @settings[key]
+    for key in ['data', 'defaultData', 'schema', 'type']
+      @[key] = @settings[key] if @settings[key]?
       delete @settings[key]
         
   build: ->
@@ -558,7 +561,7 @@ class TreemaNode
 
   # Editing values ------------------------------------------------------------
   canEdit: ->
-    return false if @schema.readOnly or @parent?.schema.readOnly
+    return false if @workingSchema.readOnly or @parent?.schema.readOnly
     return false if @settings.readOnly
     return false if not @editable
     return false if not @directlyEditable
@@ -644,14 +647,14 @@ class TreemaNode
       @$el.prepend(tempError)
       return false
 
-    readOnly = @schema.readOnly or @parent?.schema.readOnly
+    readOnly = @workingSchema.readOnly or @parent?.schema.readOnly
     if readOnly
       tempError = @createTemporaryError('read only')
       @$el.prepend(tempError)
       return false
       
     if @defaultData isnt undefined
-      options = $.extend({}, @settings, { defaultData: @defaultData, schema: @schema }, )
+      options = $.extend({}, @settings, { defaultData: @defaultData, schema: @workingSchema }, )
       newNode = TreemaNode.make(null, options, @parent, @keyForParent)
       @parent.segregateChildTreema(@) if @parent
       @replaceNode(newNode)
@@ -989,7 +992,7 @@ class TreemaNode
     row = childNode.find('.treema-row')
     if @collection and @keyed
       name = treema.schema.title or treema.keyForParent
-      required = @schema.required or []
+      required = @workingSchema.required or []
       suffix = ': '
       suffix = '*'+suffix if treema.keyForParent in required
       keyEl = $(@keyTemplate).text(name + suffix)
@@ -1313,21 +1316,26 @@ class TreemaNode
   @setNodeSubclass: (key, NodeClass) -> @nodeMap[key] = NodeClass
 
   @make: (element, options, parent, keyForParent) ->
-    if options.schema.$ref
+    schema = options.schema or {}
+    if schema.$ref
       tv4 = options.tv4 or parent?.tv4
-      options.schema = @utils.resolveReference(options.schema, tv4)
+      if not tv4
+        tv4 = TreemaUtils.getGlobalTv4().freshApi()
+        tv4.addSchema('#', schema)
+      schema = @utils.resolveReference(schema, tv4)
     
-    if options.schema.default? and not (options.data? or options.defaultData?)
-      if $.type(options.schema.default) is 'object'
-        options.data = {}
+    if schema.default? and not (options.data? or options.defaultData?)
+      if $.type(schema.default) is 'object'
+        options.data = {} # objects handle defaults uniquely
       else
-        options.data = @utils.cloneDeep(options.schema.default)
+        options.data = @utils.cloneDeep(schema.default)
       
     workingData = options.data or options.defaultData
-    workingSchemas = options.workingSchemas or @utils.buildWorkingSchemas(options.schema, parent?.tv4)
+    workingSchemas = options.workingSchemas or @utils.buildWorkingSchemas(schema, parent?.tv4)
     workingSchema = options.workingSchema or @utils.chooseWorkingSchema(workingData, workingSchemas, options.tv4)
     @massageData(options, workingSchema) # make sure the data at least meshes with the working schema type
     type = options.type or $.type(options.data ? options.defaultData)
+    type = 'null' if type is 'undefined'
     localClasses = if parent then parent.settings.nodeClasses else options.nodeClasses
     NodeClass = @getNodeClassForSchema(workingSchema, type, localClasses)
     
@@ -1336,9 +1344,11 @@ class TreemaNode
       for key, value of parent.settings
         continue if key in ['data', 'defaultData', 'schema']
         options[key] = value
+      
+    options.workingSchema = workingSchema
+    options.workingSchemas = workingSchemas
     newNode = new NodeClass(element, options, parent)
     newNode.keyForParent = keyForParent if keyForParent?
-    newNode.setWorkingSchema(workingSchema, workingSchemas)
     newNode
     
   @massageData: (options, workingSchema) ->
