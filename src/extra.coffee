@@ -170,6 +170,11 @@ do ->
 
     onTabPressed: ->
     onEnterPressed: ->
+    destroy: ->
+      if @editor
+        session = @editor.getSession()
+        session.setMode('')
+        @editor.destroy()
 
   TreemaNode.setNodeSubclass 'long-string', class LongStringNode extends TreemaNode
     valueClass: 'treema-long-string treema-multiline'

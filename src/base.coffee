@@ -658,11 +658,13 @@ class TreemaNode
       newNode = TreemaNode.make(null, options, @parent, @keyForParent)
       @parent.segregateChildTreema(@) if @parent
       @replaceNode(newNode)
+      @destroy()
       return true
 
     @$el.remove()
     @keepFocus() if document.activeElement is $('body')[0]
     @parent.segregateChildTreema(@) if @parent
+    @destroy()
     return true
 
   # Managing defaults
@@ -723,6 +725,7 @@ class TreemaNode
       @data[key] = treema.data for key, treema of @childrenTreemas when treema.integrated
     @$el.find('.treema-children').empty()
     @$el.addClass('treema-closed').removeClass('treema-open')
+    @childrenTreemas[child].destroy() for child of @childrenTreemas
     @childrenTreemas = null
     @refreshErrors()
     @buildValueForDisplay(@getValEl().empty(), @getData())
@@ -1413,3 +1416,8 @@ class TreemaNode
   clearFilter: ->
     for keyForParent, treemaNode of @childrenTreemas
       treemaNode.setFilterVisible true
+
+  destroy: ->
+    for child of @childrenTreemas
+      @childrenTreemas[child].destroy()
+    @$el.remove()

@@ -1154,6 +1154,7 @@ TreemaNode = (function() {
         this.parent.segregateChildTreema(this);
       }
       this.replaceNode(newNode);
+      this.destroy();
       return true;
     }
     this.$el.remove();
@@ -1163,6 +1164,7 @@ TreemaNode = (function() {
     if (this.parent) {
       this.parent.segregateChildTreema(this);
     }
+    this.destroy();
     return true;
   };
 
@@ -1261,7 +1263,7 @@ TreemaNode = (function() {
   };
 
   TreemaNode.prototype.close = function(saveChildData) {
-    var key, treema, _ref;
+    var child, key, treema, _ref;
     if (saveChildData == null) {
       saveChildData = true;
     }
@@ -1279,6 +1281,9 @@ TreemaNode = (function() {
     }
     this.$el.find('.treema-children').empty();
     this.$el.addClass('treema-closed').removeClass('treema-open');
+    for (child in this.childrenTreemas) {
+      this.childrenTreemas[child].destroy();
+    }
     this.childrenTreemas = null;
     this.refreshErrors();
     return this.buildValueForDisplay(this.getValEl().empty(), this.getData());
@@ -2379,6 +2384,14 @@ TreemaNode = (function() {
     return _results;
   };
 
+  TreemaNode.prototype.destroy = function() {
+    var child;
+    for (child in this.childrenTreemas) {
+      this.childrenTreemas[child].destroy();
+    }
+    return this.$el.remove();
+  };
+
   return TreemaNode;
 
 })();
@@ -3442,6 +3455,15 @@ TreemaNode = (function() {
     AceNode.prototype.onTabPressed = function() {};
 
     AceNode.prototype.onEnterPressed = function() {};
+
+    AceNode.prototype.destroy = function() {
+      var session;
+      if (this.editor) {
+        session = this.editor.getSession();
+        session.setMode('');
+        return this.editor.destroy();
+      }
+    };
 
     return AceNode;
 
