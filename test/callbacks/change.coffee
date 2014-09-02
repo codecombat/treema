@@ -28,47 +28,48 @@ describe 'Change callback', ->
       schema: schema
       callbacks:
         change: ->
-          fired.f = true
+          console.log 'change callback', arguments
+          fired.f += 1
     })
     treema.build()
     nameTreema = treema.childrenTreemas.name
     numbersTreema = treema.childrenTreemas.numbers
     tagsTreema = treema.childrenTreemas.tags
-    fired.f = false
+    fired.f = 0
   
   it 'fires when editing a field', ->
     valEl = nameTreema.getValEl()
     valEl.click()
     valEl.find('input').val('Boom').blur()
-    expect(fired.f).toBe(true)
+    expect(fired.f).toBeGreaterThan(0)
     
   it 'fires when you use set()', ->
     nameTreema.set('/', 'Foo')
-    expect(fired.f).toBe(true)
+    expect(fired.f).toBeGreaterThan(0)
     
   it 'fires when you use insert()', ->
     treema.insert('/numbers', {})
-    expect(fired.f).toBe(true)
+    expect(fired.f).toBeGreaterThan(0)
     
   it 'fires when you use delete()', ->
     treema.delete('/numbers/2') 
-    expect(fired.f).toBe(true)
+    expect(fired.f).toBeGreaterThan(0)
     
   it 'does not fire when set() fails', ->
     nameTreema.set('/a/b/c/d/e', 'Foo')
-    expect(fired.f).toBe(false)
+    expect(fired.f).toBe(0)
 
   it 'does not fire when insert() fails', ->
     treema.insert('//a/b/c/d/e', {})
-    expect(fired.f).toBe(false)
+    expect(fired.f).toBe(0)
 
   it 'does not fire when delete() fails', ->
     treema.delete('//a/b/c/d/e')
-    expect(fired.f).toBe(false)
+    expect(fired.f).toBe(0)
     
   it 'fires when you add a new property to an object', ->
     treema.set('/blue', 'red')
-    expect(fired.f).toBe(true)
+    expect(fired.f).toBeGreaterThan(0)
     
   it 'fires when you add an object to an array', ->
     oldDataLength = numbersTreema.data.length
@@ -76,14 +77,14 @@ describe 'Change callback', ->
     numbersTreema.$el.find('.treema-add-child').click()
     newDataLength = numbersTreema.data.length
     expect(oldDataLength).not.toBe(newDataLength)
-    expect(fired.f).toBe(true)
+    expect(fired.f).toBeGreaterThan(0)
     
   it 'fires when you add a non-collection to an array', ->
     tagsTreema.open()
     tagsTreema.$el.find('.treema-add-child').click()
-    expect(fired.f).toBe(false)
+    expect(fired.f).toBe(0)
     tabKeyPress(treema.$el.find('input').val('Star'))
-    expect(fired.f).toBe(true)
+    expect(fired.f).toBeGreaterThan(0)
  
   it 'fires when you delete an element in an array', ->
     tagsTreema.open()
@@ -93,11 +94,16 @@ describe 'Change callback', ->
     tagTreema = tagsTreema.childrenTreemas[0]
     tagTreema.select()
     deleteKeyPress(treema.$el)
-    expect(fired.f).toBe(true)
+    expect(fired.f).toBeGreaterThan(0)
 
   it 'fires when you delete a property in an object', ->
     nameTreema.select()
     deleteKeyPress(treema.$el)
-    expect(fired.f).toBe(true)
+    expect(fired.f).toBeGreaterThan(0)
     
+  it 'fires only once when you delete a selection of nodes', ->
+    nameTreema.select()
+    numbersTreema.shiftSelect()
+    deleteKeyPress(treema.$el)
+    expect(fired.f).toBe(1)
    

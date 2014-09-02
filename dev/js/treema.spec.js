@@ -84,7 +84,8 @@ keyDown = function($el, which) {
       schema: schema,
       callbacks: {
         change: function() {
-          return fired.f = true;
+          console.log('change callback', arguments);
+          return fired.f += 1;
         }
       }
     });
@@ -92,42 +93,42 @@ keyDown = function($el, which) {
     nameTreema = treema.childrenTreemas.name;
     numbersTreema = treema.childrenTreemas.numbers;
     tagsTreema = treema.childrenTreemas.tags;
-    return fired.f = false;
+    return fired.f = 0;
   });
   it('fires when editing a field', function() {
     var valEl;
     valEl = nameTreema.getValEl();
     valEl.click();
     valEl.find('input').val('Boom').blur();
-    return expect(fired.f).toBe(true);
+    return expect(fired.f).toBeGreaterThan(0);
   });
   it('fires when you use set()', function() {
     nameTreema.set('/', 'Foo');
-    return expect(fired.f).toBe(true);
+    return expect(fired.f).toBeGreaterThan(0);
   });
   it('fires when you use insert()', function() {
     treema.insert('/numbers', {});
-    return expect(fired.f).toBe(true);
+    return expect(fired.f).toBeGreaterThan(0);
   });
   it('fires when you use delete()', function() {
     treema["delete"]('/numbers/2');
-    return expect(fired.f).toBe(true);
+    return expect(fired.f).toBeGreaterThan(0);
   });
   it('does not fire when set() fails', function() {
     nameTreema.set('/a/b/c/d/e', 'Foo');
-    return expect(fired.f).toBe(false);
+    return expect(fired.f).toBe(0);
   });
   it('does not fire when insert() fails', function() {
     treema.insert('//a/b/c/d/e', {});
-    return expect(fired.f).toBe(false);
+    return expect(fired.f).toBe(0);
   });
   it('does not fire when delete() fails', function() {
     treema["delete"]('//a/b/c/d/e');
-    return expect(fired.f).toBe(false);
+    return expect(fired.f).toBe(0);
   });
   it('fires when you add a new property to an object', function() {
     treema.set('/blue', 'red');
-    return expect(fired.f).toBe(true);
+    return expect(fired.f).toBeGreaterThan(0);
   });
   it('fires when you add an object to an array', function() {
     var newDataLength, oldDataLength;
@@ -136,14 +137,14 @@ keyDown = function($el, which) {
     numbersTreema.$el.find('.treema-add-child').click();
     newDataLength = numbersTreema.data.length;
     expect(oldDataLength).not.toBe(newDataLength);
-    return expect(fired.f).toBe(true);
+    return expect(fired.f).toBeGreaterThan(0);
   });
   it('fires when you add a non-collection to an array', function() {
     tagsTreema.open();
     tagsTreema.$el.find('.treema-add-child').click();
-    expect(fired.f).toBe(false);
+    expect(fired.f).toBe(0);
     tabKeyPress(treema.$el.find('input').val('Star'));
-    return expect(fired.f).toBe(true);
+    return expect(fired.f).toBeGreaterThan(0);
   });
   it('fires when you delete an element in an array', function() {
     var tagTreema;
@@ -154,12 +155,18 @@ keyDown = function($el, which) {
     tagTreema = tagsTreema.childrenTreemas[0];
     tagTreema.select();
     deleteKeyPress(treema.$el);
-    return expect(fired.f).toBe(true);
+    return expect(fired.f).toBeGreaterThan(0);
   });
-  return it('fires when you delete a property in an object', function() {
+  it('fires when you delete a property in an object', function() {
     nameTreema.select();
     deleteKeyPress(treema.$el);
-    return expect(fired.f).toBe(true);
+    return expect(fired.f).toBeGreaterThan(0);
+  });
+  return it('fires only once when you delete a selection of nodes', function() {
+    nameTreema.select();
+    numbersTreema.shiftSelect();
+    deleteKeyPress(treema.$el);
+    return expect(fired.f).toBe(1);
   });
 });
 ;describe('defaults', function() {

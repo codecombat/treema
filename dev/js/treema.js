@@ -545,6 +545,9 @@ TreemaNode = (function() {
 
   TreemaNode.prototype.broadcastChanges = function(e) {
     var changes, t, _base;
+    if (this.hush) {
+      return;
+    }
     if (this.callbacks.select && TreemaNode.didSelect) {
       TreemaNode.didSelect = false;
       this.callbacks.select(e, this.getSelectedTreemas());
@@ -1109,6 +1112,7 @@ TreemaNode = (function() {
     data = [];
     paths = [];
     parentPaths = [];
+    this.hush = true;
     for (_i = 0, _len = selected.length; _i < _len; _i++) {
       treema = selected[_i];
       data.push(treema.data);
@@ -1126,8 +1130,10 @@ TreemaNode = (function() {
       treema.remove();
     }
     if (toSelect && !this.getSelectedTreemas().length) {
-      return toSelect.select();
+      toSelect.select();
     }
+    this.hush = false;
+    return this.broadcastChanges();
   };
 
   TreemaNode.prototype.remove = function() {

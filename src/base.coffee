@@ -318,6 +318,7 @@ class TreemaNode
       @loadScrolls()
 
   broadcastChanges: (e) ->
+    return if @hush
     if @callbacks.select and TreemaNode.didSelect
       TreemaNode.didSelect = false
       @callbacks.select(e, @getSelectedTreemas())
@@ -631,6 +632,7 @@ class TreemaNode
     data = []
     paths = []
     parentPaths = []
+    @hush = true
     for treema in selected
       data.push treema.data
       paths.push treema.getPath()
@@ -639,6 +641,8 @@ class TreemaNode
     for treema in selected
       treema.remove() 
     toSelect.select() if toSelect and not @getSelectedTreemas().length
+    @hush = false
+    @broadcastChanges()
 
   remove: ->
     required = @parent and @parent.schema.required? and @keyForParent in @parent.schema.required
