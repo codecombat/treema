@@ -1932,6 +1932,9 @@ TreemaNode = (function() {
     if (this.parent && !this.integrated) {
       return;
     }
+    if (this.settings.skipValidation) {
+      return;
+    }
     errors = this.getErrors();
     erroredTreemas = [];
     for (_i = 0, _len = errors.length; _i < _len; _i++) {

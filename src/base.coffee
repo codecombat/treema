@@ -1016,6 +1016,7 @@ class TreemaNode
 
   showErrors: ->
     return if @parent and not @integrated
+    return if @settings.skipValidation
     errors = @getErrors()
     erroredTreemas = []
     for error in errors
