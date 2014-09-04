@@ -163,8 +163,9 @@ keyDown = function($el, which) {
     return expect(fired.f).toBeGreaterThan(0);
   });
   return it('fires only once when you delete a selection of nodes', function() {
-    nameTreema.select();
-    numbersTreema.shiftSelect();
+    numbersTreema.open();
+    numbersTreema.childrenTreemas[0].select();
+    numbersTreema.childrenTreemas[1].shiftSelect();
     deleteKeyPress(treema.$el);
     return expect(fired.f).toBe(1);
   });

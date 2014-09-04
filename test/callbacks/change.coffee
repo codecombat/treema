@@ -102,8 +102,9 @@ describe 'Change callback', ->
     expect(fired.f).toBeGreaterThan(0)
     
   it 'fires only once when you delete a selection of nodes', ->
-    nameTreema.select()
-    numbersTreema.shiftSelect()
+    numbersTreema.open()
+    numbersTreema.childrenTreemas[0].select()
+    numbersTreema.childrenTreemas[1].shiftSelect()
     deleteKeyPress(treema.$el)
     expect(fired.f).toBe(1)
    
