@@ -633,7 +633,6 @@ class TreemaNode
     paths = []
     parentPaths = []
     @getRoot().hush = true
-    console.log 'root?', @getRoot()
     for treema in selected
       data.push treema.data
       paths.push treema.getPath()
