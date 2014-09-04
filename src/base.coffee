@@ -160,7 +160,6 @@ class TreemaNode
     @$el = @$el or $('<div></div>')
     @settings = $.extend {}, defaults, options
     @schema = $.extend {}, @settings.schema
-    @schema.id = '__base__' unless (@schema.id or @parent)
     @data = options.data
     @defaultData = options.defaultData
     @patches = []

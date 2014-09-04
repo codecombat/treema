@@ -555,9 +555,6 @@ TreemaNode = (function() {
     this.$el = this.$el || $('<div></div>');
     this.settings = $.extend({}, defaults, options);
     this.schema = $.extend({}, this.settings.schema);
-    if (!(this.schema.id || this.parent)) {
-      this.schema.id = '__base__';
-    }
     this.data = options.data;
     this.defaultData = options.defaultData;
     this.patches = [];
@@ -1371,7 +1368,6 @@ TreemaNode = (function() {
     paths = [];
     parentPaths = [];
     this.getRoot().hush = true;
-    console.log('root?', this.getRoot());
     for (_i = 0, _len = selected.length; _i < _len; _i++) {
       treema = selected[_i];
       data.push(treema.data);
