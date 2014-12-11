@@ -299,6 +299,7 @@ TreemaNode = (function() {
     this.schema = $.extend({}, this.settings.schema);
     this.data = options.data;
     this.defaultData = options.defaultData;
+    this.keyForParent = options.keyForParent;
     this.patches = [];
     this.trackedActions = [];
     this.currentStateIndex = 0;
@@ -2284,10 +2285,10 @@ TreemaNode = (function() {
     }
     options.workingSchema = workingSchema;
     options.workingSchemas = workingSchemas;
-    newNode = new NodeClass(element, options, parent);
     if (keyForParent != null) {
-      newNode.keyForParent = keyForParent;
+      options.keyForParent = keyForParent;
     }
+    newNode = new NodeClass(element, options, parent);
     return newNode;
   };
 

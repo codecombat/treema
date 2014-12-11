@@ -162,6 +162,7 @@ class TreemaNode
     @schema = $.extend {}, @settings.schema
     @data = options.data
     @defaultData = options.defaultData
+    @keyForParent = options.keyForParent
     @patches = []
     @trackedActions = []
     @currentStateIndex = 0
@@ -1354,8 +1355,8 @@ class TreemaNode
       
     options.workingSchema = workingSchema
     options.workingSchemas = workingSchemas
+    options.keyForParent = keyForParent if keyForParent?
     newNode = new NodeClass(element, options, parent)
-    newNode.keyForParent = keyForParent if keyForParent?
     newNode
     
   @massageData: (options, workingSchema) ->
