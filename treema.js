@@ -3363,7 +3363,9 @@ TreemaNode = (function() {
           if (children.length) {
             newTreema.open();
             child = newTreema.childrenTreemas[children[0]['key']];
-            child.select();
+            if (child != null) {
+              child.select();
+            }
           } else {
             newTreema.addNewChild();
           }
