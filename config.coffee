@@ -10,8 +10,8 @@ exports.config =
     javascripts:
       defaultExtension: 'coffee'
       joinTo:
-        'treema.js': /^src/
         'dev/js/treema.js': /^src/
+        'treema.js': /^src/
         'dev/js/treema.spec.js': /^test/
         'treema-utils.js': /^src\/utils/
       order:
