@@ -84,7 +84,6 @@ keyDown = function($el, which) {
       schema: schema,
       callbacks: {
         change: function() {
-          console.log('change callback', arguments);
           return fired.f += 1;
         }
       }
@@ -1409,11 +1408,19 @@ describe('Schemaless', function() {
     expect(phoneTreema.childrenTreemas[1].isDisplaying()).toBeTruthy();
     return expect(phoneTreema.childrenTreemas[0].isEditing()).toBeTruthy();
   });
-  return it('edits the first child in a collection if a collection is selected', function() {
+  it('edits the first child in a collection if a collection is selected', function() {
     phoneTreema.open();
     phoneTreema.select();
     tabKeyPress(phoneTreema.$el);
     return expect(phoneTreema.childrenTreemas[0].isEditing()).toBeTruthy();
+  });
+  return xit('goes around in a loop', function() {
+    $('body').append(treema.$el);
+    addressTreema.select();
+    tabKeyPress(treema.$el);
+    tabKeyPress($(document.activeElement));
+    expect(nameTreema.isEditing()).toBeTruthy();
+    return treema.$el.remove();
   });
 });
 ;describe('Mouse click behavior', function() {

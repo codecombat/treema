@@ -492,8 +492,7 @@ class TreemaNode
     selected = $(ctx.origin).data('instance')
     # Super defensive, this happens when an outside force removes this treema in a callback
     # Need to have Treema send out events only after everything else is done. 
-    return unless selected 
-    if offset > 0 and aggressive and selected.collection and selected.isClosed()
+    if offset > 0 and aggressive and selected and selected.collection and selected.isClosed()
       return selected.open()
 
     targetEl = if offset > 0 then ctx.next else ctx.prev

@@ -28,7 +28,6 @@ describe 'Change callback', ->
       schema: schema
       callbacks:
         change: ->
-          console.log 'change callback', arguments
           fired.f += 1
     })
     treema.build()

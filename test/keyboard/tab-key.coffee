@@ -80,3 +80,13 @@ describe 'Tab key press', ->
     phoneTreema.select()
     tabKeyPress(phoneTreema.$el)
     expect(phoneTreema.childrenTreemas[0].isEditing()).toBeTruthy()
+    
+  xit 'goes around in a loop', ->
+    # this test doesn't work because focus on the add button doesn't work in a testing condition...
+    $('body').append(treema.$el)
+    addressTreema.select()
+    tabKeyPress(treema.$el) # editing address
+    tabKeyPress($(document.activeElement)) # selecting add button
+    expect(nameTreema.isEditing()).toBeTruthy()
+    treema.$el.remove()
+    

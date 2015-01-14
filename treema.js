@@ -861,10 +861,7 @@ TreemaNode = (function() {
       return;
     }
     selected = $(ctx.origin).data('instance');
-    if (!selected) {
-      return;
-    }
-    if (offset > 0 && aggressive && selected.collection && selected.isClosed()) {
+    if (offset > 0 && aggressive && selected && selected.collection && selected.isClosed()) {
       return selected.open();
     }
     targetEl = offset > 0 ? ctx.next : ctx.prev;
