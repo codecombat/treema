@@ -59,7 +59,7 @@ class TreemaNode
       if e.dataPath is my_path
         e.subDataPath = ''
       else
-        e.subDataPath = e.dataPath[..my_path.length] 
+        e.subDataPath = e.dataPath[..my_path.length]
 
     if @workingSchema
       moreErrors = @tv4.validateMultiple(@data, @workingSchema).errors
@@ -77,7 +77,7 @@ class TreemaNode
       @tv4 = root.tv4
 
   # Abstract functions --------------------------------------------------------
-  saveChanges: (oldData)-> 
+  saveChanges: (oldData) ->
     return if oldData is @data
     @addTrackedAction {'oldData':oldData, 'newData':@data, 'path':@getPath(), 'action':'edit'}
   getChildSchema: (key) -> TreemaNode.utils.getChildSchema(key, @workingSchema)
@@ -180,7 +180,7 @@ class TreemaNode
     for key in ['data', 'defaultData', 'schema', 'type']
       @[key] = @settings[key] if @settings[key]?
       delete @settings[key]
-        
+
   build: ->
     @$el.addClass('treema-node').addClass('treema-clearfix')
     @$el.empty().append($(@nodeTemplate))
@@ -242,7 +242,7 @@ class TreemaNode
       select.append(option)
     select.change(@onSelectType)
     @$el.find('> .treema-row').prepend(select)
-    
+
   getTypeName: (type) ->
     {
       null: 'null',
@@ -464,7 +464,7 @@ class TreemaNode
         @getRoot().redo()
       else
         @getRoot().undo()
-        
+
   # Tree traversing/navigation ------------------------------------------------
   # (traversing means editing and adding fields, pressing enter and tab)
   # (navigation means selecting fields, pressing arrow keys)
@@ -491,7 +491,7 @@ class TreemaNode
     return unless ctx?.origin
     selected = $(ctx.origin).data('instance')
     # Super defensive, this happens when an outside force removes this treema in a callback
-    # Need to have Treema send out events only after everything else is done. 
+    # Need to have Treema send out events only after everything else is done.
     if offset > 0 and aggressive and selected and selected.collection and selected.isClosed()
       return selected.open()
 
@@ -638,7 +638,7 @@ class TreemaNode
       parentPaths.push treema.parent?.getPath()
     @addTrackedAction { 'data':data, 'path':paths, 'parentPath':parentPaths, 'action':'delete' }
     for treema in selected
-      treema.remove() 
+      treema.remove()
     toSelect.select() if toSelect and not @getSelectedTreemas().length
     @getRoot().hush = false
     @broadcastChanges()
@@ -655,7 +655,7 @@ class TreemaNode
       tempError = @createTemporaryError('read only')
       @$el.prepend(tempError)
       return false
-      
+
     if @defaultData isnt undefined
       options = $.extend({}, @settings, { defaultData: @defaultData, schema: @workingSchema }, )
       newNode = TreemaNode.make(null, options, @parent, @keyForParent)
@@ -676,7 +676,7 @@ class TreemaNode
     @$el.removeClass('treema-default-stub')
     @$el.addClass('treema-default-stub') if @isDefaultStub() and not @parent.isDefaultStub()
     child.updateDefaultClass() for key, child of @childrenTreemas
-    
+
   # Opening/closing collections -----------------------------------------------
   toggleOpen: ->
     if @isClosed() then @open() else @close()
@@ -716,9 +716,13 @@ class TreemaNode
     for child in children
       treema = $(child).data('instance')
       continue unless treema?.data
-      treema.keyForParent = index
-      @childrenTreemas[index] = treema
-      @data[index] = treema.data
+      if $.isArray @data
+        treema.keyForParent = index
+        @childrenTreemas[index] = treema
+        @data[index] = treema.data
+      else
+        @childrenTreemas[treema.keyForParent] = treema
+        @data[treema.keyForParent] = treema.data
       index += 1
     @flushChanges()
 
@@ -774,19 +778,19 @@ class TreemaNode
       if not started
         if node in endNodes
           node.$el.addClass('treema-selected')
-          started = true 
+          started = true
         continue
       node.$el.addClass('treema-selected')
       if started and (node in endNodes)
-        break 
+        break
     lastSelected.removeClass('treema-last-selected')
     @$el.addClass('treema-last-selected')
     TreemaNode.didSelect = true
 
   #Save/restore state
-  addTrackedAction: (action)->
+  addTrackedAction: (action) ->
     root = @getRoot()
-    return if root.trackingDisabled 
+    return if root.trackingDisabled
     root.trackedActions.splice root.currentStateIndex, root.trackedActions.length - root.currentStateIndex
     root.trackedActions.push action
     root.currentStateIndex++
@@ -796,7 +800,7 @@ class TreemaNode
 
   enableTracking: ->
     @getRoot().trackingDisabled = false
-    
+
   canUndo: ->
     return @getCurrentStateIndex() isnt 0
 
@@ -919,9 +923,9 @@ class TreemaNode
     @getRoot().trackedActions
   getCurrentStateIndex: ->
     @getRoot().currentStateIndex
-  
+
   # Switching types or working schemas
-  
+
   onSelectSchema: (e) =>
     index = parseInt($(e.target).val())
     workingSchema = @workingSchemas[index]
@@ -951,7 +955,7 @@ class TreemaNode
 
     newNode = TreemaNode.make(null, settings, @parent, @keyForParent)
     @replaceNode(newNode)
-    
+
   replaceNode: (newNode) ->
     newNode.tv4 = @tv4
     newNode.keyForParent = @keyForParent if @keyForParent?
@@ -980,7 +984,7 @@ class TreemaNode
       @buildValueForDisplay(@getValEl().empty(), @getData())
       @broadcastChanges()
     treema
-    
+
   segregateChildTreema: (treema) ->
     treema.integrated = false
     delete @childrenTreemas[treema.keyForParent]
@@ -1135,7 +1139,7 @@ class TreemaNode
   deleteRecursive: (path) ->
     path = @normalizePath(path)
     if path.length is 0
-      return @remove() 
+      return @remove()
     return @digDeeper(path, 'deleteRecursive', false, []) if @childrenTreemas?
 
     data = @data
@@ -1156,7 +1160,7 @@ class TreemaNode
       parentPath = path
       parentData = @get parentPath
       childPath = parentPath
-      childPath += '/' unless parentPath is '/' 
+      childPath += '/' unless parentPath is '/'
 
       if parentData[parentData.length-1] isnt newData
         for key, val of parentData
@@ -1247,10 +1251,10 @@ class TreemaNode
     node
   getInputs: -> @getValEl().find('input, textarea')
   getSelectedTreemas: -> ($(el).data('instance') for el in @getRootEl().find('.treema-selected'))
-  getLastSelectedTreema: -> 
+  getLastSelectedTreema: ->
     @getRoot().lastSelectedTreema
 
-  setLastSelectedTreema: (node) -> 
+  setLastSelectedTreema: (node) ->
     @getRoot().lastSelectedTreema = node
     node?.$el.addClass('treema-last-selected')
 
@@ -1282,13 +1286,13 @@ class TreemaNode
   rootSelected: -> $(document.activeElement).hasClass('treema-root')
 
   # to avoid naming conflict with "visible", "displaying". Visibility related to filter is denoted to "filterVisible"
-  setFilterVisible: (isFilterVisible)->    
-    if isFilterVisible 
-      @$el.find('.treema-node').andSelf().removeClass(@treemaFilterHiddenClass) 
-    else 
+  setFilterVisible: (isFilterVisible) ->
+    if isFilterVisible
+      @$el.find('.treema-node').andSelf().removeClass(@treemaFilterHiddenClass)
+    else
       @$el.find('.treema-node').andSelf().addClass(@treemaFilterHiddenClass)
 
-  getFilterVisibleTreemas: -> 
+  getFilterVisibleTreemas: ->
     ($(el).data('instance') for el in @getRootEl().find('.treema-node').not('.' + @treemaFilterHiddenClass))
   isFilterVisible: -> !@$el.hasClass(@treemaFilterHiddenClass)
 
@@ -1300,7 +1304,7 @@ class TreemaNode
       @scrolls.push {el: parent, scrollTop: parent.scrollTop(), scrollLeft: parent.scrollLeft()}
       break if parent.prop('tagName').toLowerCase() is 'body'
       parent = parent.parent()
-  
+
   loadScrolls: ->
     return unless @scrolls
     for scroll in @scrolls
@@ -1312,7 +1316,7 @@ class TreemaNode
     @saveScrolls()
     @getRootEl().focus()
     @loadScrolls()
-    
+
   copyData: -> $.extend(null, {}, {'d': @data})['d']
   updateMyAddButton: ->
     @$el.removeClass('treema-full')
@@ -1330,13 +1334,13 @@ class TreemaNode
         tv4 = TreemaUtils.getGlobalTv4().freshApi()
         tv4.addSchema('#', schema)
       schema = @utils.resolveReference(schema, tv4)
-    
+
     if schema.default? and not (options.data? or options.defaultData?)
       if $.type(schema.default) is 'object'
         options.data = {} # objects handle defaults uniquely
       else
         options.data = @utils.cloneDeep(schema.default)
-      
+
     workingData = options.data or options.defaultData
     workingSchemas = options.workingSchemas or @utils.buildWorkingSchemas(schema, parent?.tv4)
     workingSchema = options.workingSchema or @utils.chooseWorkingSchema(workingData, workingSchemas, options.tv4)
@@ -1345,24 +1349,24 @@ class TreemaNode
     type = 'null' if type is 'undefined'
     localClasses = if parent then parent.settings.nodeClasses else options.nodeClasses
     NodeClass = @getNodeClassForSchema(workingSchema, type, localClasses)
-    
+
     # still to redo a bit...
     if parent
       for key, value of parent.settings
         continue if key in ['data', 'defaultData', 'schema']
         options[key] = value
-      
+
     options.workingSchema = workingSchema
     options.workingSchemas = workingSchemas
     options.keyForParent = keyForParent if keyForParent?
     newNode = new NodeClass(element, options, parent)
     newNode
-    
+
   @massageData: (options, workingSchema) ->
     # do not allow data or default data to start out invalid with the working schema type, if possible
     schemaTypes = workingSchema.type or ['string', 'number', 'integer', 'object', 'array', 'boolean', 'null']
     schemaTypes = [schemaTypes] unless $.type(schemaTypes) is 'array'
-    
+
     # type can't tell between number and integer, so just treat them as the same
     if 'integer' in schemaTypes and 'number' not in schemaTypes
       schemaTypes.push 'number'
@@ -1373,11 +1377,11 @@ class TreemaNode
     # if the data does not match the schema types
     if dataType isnt 'undefined' and dataType not in schemaTypes
       options.data = @defaultForType(schemaTypes[0])
-      
+
     # if there's no data or default data that works for the schema, reset it
     if dataType is 'undefined' and defaultDataType not in schemaTypes
       options.data = @defaultForType(schemaTypes[0])
-              
+
   @defaultForType: (type) -> TreemaNode.utils.defaultForType(type)
 
   @getNodeClassForSchema: (schema, def='string', localClasses=null) ->
@@ -1413,7 +1417,7 @@ class TreemaNode
   @didSelect = false
   @changedTreemas = []
 
-  filterChildren: (filter)->
+  filterChildren: (filter) ->
     for keyForParent, treemaNode of @childrenTreemas
       treemaNode.setFilterVisible(!filter || filter(treemaNode, keyForParent))
 

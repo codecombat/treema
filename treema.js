@@ -1255,9 +1255,14 @@ TreemaNode = (function() {
       if (!(treema != null ? treema.data : void 0)) {
         continue;
       }
-      treema.keyForParent = index;
-      this.childrenTreemas[index] = treema;
-      this.data[index] = treema.data;
+      if ($.isArray(this.data)) {
+        treema.keyForParent = index;
+        this.childrenTreemas[index] = treema;
+        this.data[index] = treema.data;
+      } else {
+        this.childrenTreemas[treema.keyForParent] = treema;
+        this.data[treema.keyForParent] = treema.data;
+      }
       index += 1;
     }
     return this.flushChanges();
