@@ -3438,8 +3438,9 @@ TreemaNode = (function() {
         maxLines: Infinity
       });
       if (this.schema.aceTheme != null) {
-        return this.editor.setTheme(this.schema.aceTheme);
+        this.editor.setTheme(this.schema.aceTheme);
       }
+      return this.editor.$blockScrolling = Infinity;
     };
 
     AceNode.prototype.toggleEdit = function() {

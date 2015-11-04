@@ -1,7 +1,7 @@
 do ->
   TreemaNode.setNodeSubclass 'point2d', class Point2DNode extends TreemaNode
     valueClass: 'treema-point2d'
-    
+
     buildValueForDisplay: (valEl, data) -> @buildValueForDisplaySimply(valEl, "(#{data.x}, #{data.y})")
 
     buildValueForEditing: (valEl, data) ->
@@ -17,7 +17,7 @@ do ->
 
   TreemaNode.setNodeSubclass 'point3d', class Point3DNode extends TreemaNode
     valueClass: 'treema-point3d'
-    
+
     buildValueForDisplay: (valEl, data) ->
       @buildValueForDisplaySimply(valEl, "(#{data.x}, #{data.y}, #{data.z})")
 
@@ -153,13 +153,14 @@ do ->
       session.on('change', @saveChanges)
       @editor.setOptions({ maxLines: Infinity })
       @editor.setTheme(@schema.aceTheme) if @schema.aceTheme?
+      @editor.$blockScrolling = Infinity
 
     # HACK: This gets the editor to be always on like I want, but which is unlike
     # most other nodes where there's an edit state and a view state.
-    toggleEdit: -> 
+    toggleEdit: ->
       @initEditor(@getValEl()) unless @editor
       @deselectAll()
-      
+
     buildValueForDisplay: (valEl) -> @initEditor(valEl) unless @editor
     buildValueForEditing: ->
 
