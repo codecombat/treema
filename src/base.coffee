@@ -702,7 +702,11 @@ class TreemaNode
       childrenContainer.append($(@addChildTemplate))
       # this tends to break ACE editors within
       if @ordered and childrenContainer.sortable and not @settings.noSortable
-        childrenContainer.sortable?(deactivate: @orderDataFromUI)
+        childrenContainer.sortable?({
+          deactivate: @orderDataFromUI
+          forcePlaceholderSize: true
+          placeholder: 'placeholder'
+        })
       @refreshErrors()
     depth -= 1
     if depth
@@ -724,7 +728,7 @@ class TreemaNode
         @childrenTreemas[treema.keyForParent] = treema
         @data[treema.keyForParent] = treema.data
       index += 1
-    @flushChanges()
+    @refreshDisplay()
 
   close: (saveChildData=true) ->
     return unless @isOpen()

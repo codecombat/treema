@@ -7,10 +7,10 @@
 
 /* Source: http://stackoverflow.com/questions/10434001/static-files-with-express-js */
 
-module.exports.startServer = startServer = function() {
+module.exports.startServer = startServer = function(port, path, callback) {
   var express = require('express');
   var app = express();
-  var path = require('path');
+  var Path = require('path');
   
   app.get('/db/fastfood', function(req, res) {
     // for testing the database search feature
@@ -34,11 +34,11 @@ module.exports.startServer = startServer = function() {
     
   });
   
-  app.use(express.static(__dirname)); // Current directory is root
+  app.use(express.static(Path.join(__dirname, path))); // Current directory is root
   //app.use(express.static(path.join(__dirname, 'test'))); //  "public" off of current is root
   
-  app.listen(9090);
-  console.log('Listening on port 9090');
+  app.listen(port, callback);
+  console.log("Listening on port " + port);
   return app;
 };
 

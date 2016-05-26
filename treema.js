@@ -1225,7 +1225,9 @@ TreemaNode = (function() {
       if (this.ordered && childrenContainer.sortable && !this.settings.noSortable) {
         if (typeof childrenContainer.sortable === "function") {
           childrenContainer.sortable({
-            deactivate: this.orderDataFromUI
+            deactivate: this.orderDataFromUI,
+            forcePlaceholderSize: true,
+            placeholder: 'placeholder'
           });
         }
       }
@@ -1265,7 +1267,7 @@ TreemaNode = (function() {
       }
       index += 1;
     }
-    return this.flushChanges();
+    return this.refreshDisplay();
   };
 
   TreemaNode.prototype.close = function(saveChildData) {
