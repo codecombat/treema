@@ -297,17 +297,17 @@ class TreemaNode
             newData = JSON.parse newData
           catch e
             @$el.trigger {
-              type: 'error'
+              type: 'treema-error'
               message: 'Could not parse pasted data as JSON.'
             }
             return
           result = target.tv4.validateMultiple(newData, target.schema)
           if result.valid
             target.set('/', newData)
-            @$el.trigger 'paste-json'
+            @$el.trigger 'treema-paste'
           else
             @$el.trigger {
-              type: 'error'
+              type: 'treema-error'
               message: 'Data provided is invalid according to schema.'
             }
             console.log "not pasting", newData, "because it's not valid:", result
@@ -329,7 +329,7 @@ class TreemaNode
         @$clipboardContainer.on 'paste', =>
           @targetOfCopyPaste?.removeClass('treema-target-of-copy-paste')
         @$clipboardContainer.on 'copy', =>
-          @$el.trigger 'copy-json'
+          @$el.trigger 'treema-copy'
           @targetOfCopyPaste?.removeClass('treema-target-of-copy-paste')
       @targetOfCopyPaste = target.$el
       @targetOfCopyPaste.addClass('treema-target-of-copy-paste')

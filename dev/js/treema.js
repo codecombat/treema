@@ -571,7 +571,7 @@ TreemaNode = (function() {
           } catch (_error) {
             e = _error;
             _this.$el.trigger({
-              type: 'error',
+              type: 'treema-error',
               message: 'Could not parse pasted data as JSON.'
             });
             return;
@@ -579,10 +579,10 @@ TreemaNode = (function() {
           result = target.tv4.validateMultiple(newData, target.schema);
           if (result.valid) {
             target.set('/', newData);
-            return _this.$el.trigger('paste-json');
+            return _this.$el.trigger('treema-paste');
           } else {
             _this.$el.trigger({
-              type: 'error',
+              type: 'treema-error',
               message: 'Data provided is invalid according to schema.'
             });
             return console.log("not pasting", newData, "because it's not valid:", result);
@@ -608,7 +608,7 @@ TreemaNode = (function() {
         });
         this.$clipboardContainer.on('copy', function() {
           var _ref1;
-          _this.$el.trigger('copy-json');
+          _this.$el.trigger('treema-copy');
           return (_ref1 = _this.targetOfCopyPaste) != null ? _ref1.removeClass('treema-target-of-copy-paste') : void 0;
         });
       }
