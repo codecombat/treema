@@ -44,6 +44,7 @@ function buildTreemaExample (el, schema, data) {
     }
     $(this).tab('show');
   });
+  el.on('error', function(e) { alert(e.message); });
   
   // so that each demo has unique ids
   demosMade += 1;
