@@ -334,7 +334,7 @@ class TreemaNode
       @targetOfCopyPaste = target.$el
       @targetOfCopyPaste.addClass('treema-target-of-copy-paste')
       @$clipboardContainer.empty().show()
-      @$clipboard = $('<textarea class="treema-clipboard"></textarea>').val(JSON.stringify(target.data, null, '  ')).appendTo(@$clipboardContainer).focus().select()
+      @$clipboard = $('<textarea class="treema-clipboard"></textarea>').val(JSON.stringify(target.getData(), null, '  ')).appendTo(@$clipboardContainer).focus().select()
       @loadScrolls()
 
   broadcastChanges: (e) ->

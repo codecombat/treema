@@ -563,7 +563,7 @@ TreemaNode = (function() {
       this.targetOfCopyPaste = target.$el;
       this.targetOfCopyPaste.addClass('treema-target-of-copy-paste');
       this.$clipboardContainer.empty().show();
-      this.$clipboard = $('<textarea class="treema-clipboard"></textarea>').val(JSON.stringify(target.data, null, '  ')).appendTo(this.$clipboardContainer).focus().select();
+      this.$clipboard = $('<textarea class="treema-clipboard"></textarea>').val(JSON.stringify(target.getData(), null, '  ')).appendTo(this.$clipboardContainer).focus().select();
       return this.loadScrolls();
     }
   };
