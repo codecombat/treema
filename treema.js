@@ -486,12 +486,19 @@ TreemaNode = (function() {
       }
     });
     return this.$el.keyup(function(e) {
+      var _ref, _ref1;
+      if ((_ref = e.which) === 17 || _ref === 91) {
+        if ((_ref1 = _this.targetOfCopyPaste) != null) {
+          _ref1.removeClass('treema-target-of-copy-paste');
+        }
+        _this.targetOfCopyPaste = null;
+      }
       return delete _this.keysPreviouslyDown[e.which];
     });
   };
 
   TreemaNode.prototype.manageCopyAndPaste = function(e) {
-    var el, target, _ref, _ref1, _ref2,
+    var el, target, _ref,
       _this = this;
     el = document.activeElement;
     if ((el != null) && (el.tagName.toLowerCase() === 'input' && el.type === 'text') || (el.tagName.toLowerCase() === 'textarea' && !$(el).hasClass('treema-clipboard'))) {
@@ -511,12 +518,21 @@ TreemaNode = (function() {
             newData = JSON.parse(newData);
           } catch (_error) {
             e = _error;
+            _this.$el.trigger({
+              type: 'treema-error',
+              message: 'Could not parse pasted data as JSON.'
+            });
             return;
           }
           result = target.tv4.validateMultiple(newData, target.schema);
           if (result.valid) {
-            return target.set('/', newData);
+            target.set('/', newData);
+            return _this.$el.trigger('treema-paste');
           } else {
+            _this.$el.trigger({
+              type: 'treema-error',
+              message: 'Data provided is invalid according to schema.'
+            });
             return console.log("not pasting", newData, "because it's not valid:", result);
           }
         }), 5);
@@ -530,13 +546,24 @@ TreemaNode = (function() {
       this.saveScrolls();
       this.$clipboardContainer.find('.treema-clipboard').focus().select();
       return this.loadScrolls();
-    } else if (!(((_ref1 = window.getSelection()) != null ? _ref1.toString() : void 0) || ((_ref2 = document.selection) != null ? _ref2.createRange().text : void 0))) {
+    } else {
       this.saveScrolls();
-      if (this.$clipboardContainer == null) {
+      if (!this.$clipboardContainer) {
         this.$clipboardContainer = $('<div class="treema-clipboard-container"></div>').appendTo(this.$el);
+        this.$clipboardContainer.on('paste', function() {
+          var _ref1;
+          return (_ref1 = _this.targetOfCopyPaste) != null ? _ref1.removeClass('treema-target-of-copy-paste') : void 0;
+        });
+        this.$clipboardContainer.on('copy', function() {
+          var _ref1;
+          _this.$el.trigger('treema-copy');
+          return (_ref1 = _this.targetOfCopyPaste) != null ? _ref1.removeClass('treema-target-of-copy-paste') : void 0;
+        });
       }
+      this.targetOfCopyPaste = target.$el;
+      this.targetOfCopyPaste.addClass('treema-target-of-copy-paste');
       this.$clipboardContainer.empty().show();
-      this.$clipboard = $('<textarea class="treema-clipboard"></textarea>').val(JSON.stringify(target.data)).appendTo(this.$clipboardContainer).focus().select();
+      this.$clipboard = $('<textarea class="treema-clipboard"></textarea>').val(JSON.stringify(target.getData(), null, '  ')).appendTo(this.$clipboardContainer).focus().select();
       return this.loadScrolls();
     }
   };
@@ -1225,7 +1252,9 @@ TreemaNode = (function() {
       if (this.ordered && childrenContainer.sortable && !this.settings.noSortable) {
         if (typeof childrenContainer.sortable === "function") {
           childrenContainer.sortable({
-            deactivate: this.orderDataFromUI
+            deactivate: this.orderDataFromUI,
+            forcePlaceholderSize: true,
+            placeholder: 'placeholder'
           });
         }
       }
@@ -1265,7 +1294,7 @@ TreemaNode = (function() {
       }
       index += 1;
     }
-    return this.flushChanges();
+    return this.refreshDisplay();
   };
 
   TreemaNode.prototype.close = function(saveChildData) {

@@ -274,6 +274,9 @@ class TreemaNode
       @manageCopyAndPaste e if e.ctrlKey or e.metaKey
 
     @$el.keyup (e) =>
+      if e.which in [17, 91] # ctrl, meta
+        @targetOfCopyPaste?.removeClass('treema-target-of-copy-paste')
+        @targetOfCopyPaste = null
       delete @keysPreviouslyDown[e.which]
 
   manageCopyAndPaste: (e) ->
@@ -293,11 +296,20 @@ class TreemaNode
           try
             newData = JSON.parse newData
           catch e
+            @$el.trigger {
+              type: 'treema-error'
+              message: 'Could not parse pasted data as JSON.'
+            }
             return
           result = target.tv4.validateMultiple(newData, target.schema)
           if result.valid
             target.set('/', newData)
+            @$el.trigger 'treema-paste'
           else
+            @$el.trigger {
+              type: 'treema-error'
+              message: 'Data provided is invalid according to schema.'
+            }
             console.log "not pasting", newData, "because it's not valid:", result
         ), 5
       else
@@ -309,12 +321,20 @@ class TreemaNode
       @saveScrolls()
       @$clipboardContainer.find('.treema-clipboard').focus().select()
       @loadScrolls()
-    else unless window.getSelection()?.toString() or document.selection?.createRange().text
+    else
       # Get ready for a possible Ctrl+C copy
       @saveScrolls()
-      @$clipboardContainer ?= $('<div class="treema-clipboard-container"></div>').appendTo(@$el)
+      if not @$clipboardContainer
+        @$clipboardContainer = $('<div class="treema-clipboard-container"></div>').appendTo(@$el)
+        @$clipboardContainer.on 'paste', =>
+          @targetOfCopyPaste?.removeClass('treema-target-of-copy-paste')
+        @$clipboardContainer.on 'copy', =>
+          @$el.trigger 'treema-copy'
+          @targetOfCopyPaste?.removeClass('treema-target-of-copy-paste')
+      @targetOfCopyPaste = target.$el
+      @targetOfCopyPaste.addClass('treema-target-of-copy-paste')
       @$clipboardContainer.empty().show()
-      @$clipboard = $('<textarea class="treema-clipboard"></textarea>').val(JSON.stringify(target.data)).appendTo(@$clipboardContainer).focus().select()
+      @$clipboard = $('<textarea class="treema-clipboard"></textarea>').val(JSON.stringify(target.getData(), null, '  ')).appendTo(@$clipboardContainer).focus().select()
       @loadScrolls()
 
   broadcastChanges: (e) ->
@@ -702,7 +722,11 @@ class TreemaNode
       childrenContainer.append($(@addChildTemplate))
       # this tends to break ACE editors within
       if @ordered and childrenContainer.sortable and not @settings.noSortable
-        childrenContainer.sortable?(deactivate: @orderDataFromUI)
+        childrenContainer.sortable?({
+          deactivate: @orderDataFromUI
+          forcePlaceholderSize: true
+          placeholder: 'placeholder'
+        })
       @refreshErrors()
     depth -= 1
     if depth
@@ -724,7 +748,7 @@ class TreemaNode
         @childrenTreemas[treema.keyForParent] = treema
         @data[treema.keyForParent] = treema.data
       index += 1
-    @flushChanges()
+    @refreshDisplay()
 
   close: (saveChildData=true) ->
     return unless @isOpen()
