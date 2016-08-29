@@ -10,9 +10,6 @@
     return url + (url.indexOf('?') >= 0 ? '&' : '?') +'cacheBuster=' + date;
   };
 
-  var browser = navigator.userAgent.toLowerCase();
-  var forceRepaint = ar.forceRepaint || browser.indexOf('chrome') > -1;
-
   var reloaders = {
     page: function(){
       window.location.reload(true);
@@ -20,17 +17,17 @@
 
     stylesheet: function(){
       [].slice
-        .call(document.querySelectorAll('link[rel="stylesheet"][href]:not([data-autoreload="false"]'))
+        .call(document.querySelectorAll('link[rel="stylesheet"]'))
+        .filter(function(link){
+          return (link != null && link.href != null);
+        })
         .forEach(function(link) {
           link.href = cacheBuster(link.href);
         });
-
-      // Hack to force page repaint after 25ms.
-      if (forceRepaint) setTimeout(function() { document.body.offsetHeight; }, 25);
     }
   };
   var port = ar.port || 9485;
-  var host = br.server || window.location.hostname || 'localhost';
+  var host = br.server || window.location.hostname;
 
   var connect = function(){
     var connection = new WebSocket('ws://' + host + ':' + port);
@@ -50,7 +47,7 @@
   connect();
 })();
 
-var TreemaNode,
+;var TreemaNode,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
   __slice = [].slice;
@@ -3142,23 +3139,18 @@ TreemaNode = (function() {
     };
 
     ObjectNode.prototype.canAddProperty = function(key) {
-      var pattern;
+      var pattern, _ref7;
       if (this.workingSchema.additionalProperties !== false) {
         return true;
       }
-      if (this.workingSchema.properties[key] != null) {
+      if (((_ref7 = this.workingSchema.properties) != null ? _ref7[key] : void 0) != null) {
         return true;
       }
       if (this.workingSchema.patternProperties != null) {
-        if ((function() {
-          var _results;
-          _results = [];
-          for (pattern in this.workingSchema.patternProperties) {
-            _results.push(RegExp(pattern).test(key));
+        for (pattern in this.workingSchema.patternProperties) {
+          if (RegExp(pattern).test(key)) {
+            return true;
           }
-          return _results;
-        }).call(this)) {
-          return true;
         }
       }
       return false;
