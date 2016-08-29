@@ -169,6 +169,26 @@ keyDown = function($el, which) {
     return expect(fired.f).toBe(1);
   });
 });
+;describe('canAddProperty', function() {
+  return it('works when properties is not defined, additionalProperties is false, and patternProperties is defined', function() {
+    var data, schema, treema;
+    schema = {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z]+$": {}
+      },
+      "additionalProperties": false
+    };
+    data = {};
+    treema = TreemaNode.make(null, {
+      data: data,
+      schema: schema
+    });
+    treema.build();
+    expect(treema.canAddProperty('test')).toBe(true);
+    return expect(treema.canAddProperty('1234')).toBe(false);
+  });
+});
 ;describe('defaults', function() {
   it('shows properties for object nodes which are specified in a default object that are not included in the data', function() {
     var data, schema, treema;

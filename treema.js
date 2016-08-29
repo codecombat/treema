@@ -3061,23 +3061,18 @@ TreemaNode = (function() {
     };
 
     ObjectNode.prototype.canAddProperty = function(key) {
-      var pattern;
+      var pattern, _ref7;
       if (this.workingSchema.additionalProperties !== false) {
         return true;
       }
-      if (this.workingSchema.properties[key] != null) {
+      if (((_ref7 = this.workingSchema.properties) != null ? _ref7[key] : void 0) != null) {
         return true;
       }
       if (this.workingSchema.patternProperties != null) {
-        if ((function() {
-          var _results;
-          _results = [];
-          for (pattern in this.workingSchema.patternProperties) {
-            _results.push(RegExp(pattern).test(key));
+        for (pattern in this.workingSchema.patternProperties) {
+          if (RegExp(pattern).test(key)) {
+            return true;
           }
-          return _results;
-        }).call(this)) {
-          return true;
         }
       }
       return false;

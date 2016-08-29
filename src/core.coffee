@@ -377,9 +377,10 @@ do __init = ->
 
     canAddProperty: (key) ->
       return true unless @workingSchema.additionalProperties is false
-      return true if @workingSchema.properties[key]?
+      return true if @workingSchema.properties?[key]?
       if @workingSchema.patternProperties?
-        return true if RegExp(pattern).test(key) for pattern of @workingSchema.patternProperties
+        for pattern of @workingSchema.patternProperties
+          return true if RegExp(pattern).test(key)
       return false
 
     showBadPropertyError: (keyInput) ->
