@@ -16,6 +16,7 @@ describe 'Delete key press', ->
     copy = $.extend(true, {}, original_data)
     treema = TreemaNode.make(null, {data: copy, schema: schema})
     treema.build()
+    
     nameTreema = treema.childrenTreemas.name
     addressTreema = treema.childrenTreemas.address
     phoneTreema = treema.childrenTreemas.numbers
@@ -49,7 +50,7 @@ describe 'Delete key press', ->
     expect(treema.childrenTreemas.name).toBeUndefined()
     expect(treema.childrenTreemas.address).toBeUndefined()
 
-  it 'removes single elements of a collection one at a time, then the collection itself', ->
+  xit 'removes single elements of a collection one at a time, then the collection itself', ->
     phoneTreema.open()
     phoneTreema.childrenTreemas[1].open()
     phoneTreema.childrenTreemas[0].select()
