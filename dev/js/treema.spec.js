@@ -1637,36 +1637,36 @@ describe('Schemaless', function() {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "0": {
+        "integer": {
           type: "integer"
         },
-        "1": {
+        "string": {
           type: "string"
         },
-        "2": {
+        "number": {
           type: "number"
         },
-        "3": {
+        "null": {
           type: "null"
         },
-        "4": {
+        "boolean": {
           type: "boolean"
         },
-        "5": {
+        "array": {
           type: "array",
           items: {
             type: 'number',
             "default": 42
           }
         },
-        "6": {
+        "object": {
           type: "object"
         },
-        "7": {
+        "def": {
           'default': 1337
         }
       },
-      "required": ['0', '1', '2', '3', '4', '5', '6', '7']
+      "required": ['integer', 'string', 'number', 'null', 'boolean', 'array', 'object', 'def']
     };
     data = {};
     treema = TreemaNode.make(null, {
@@ -1676,17 +1676,17 @@ describe('Schemaless', function() {
     return treema.build();
   });
   it('populates all required values with generic data', function() {
-    expect(treema.get('/0')).toBe(0);
-    expect(treema.get('/1')).toBe('');
-    expect(treema.get('/2')).toBe(0);
-    expect(treema.get('/3')).toBe(null);
-    expect(treema.get('/4')).toBe(false);
-    expect(JSON.stringify(treema.get('/5'))).toBe(JSON.stringify([]));
-    return expect(JSON.stringify(treema.get('/6'))).toBe(JSON.stringify({}));
+    expect(treema.get('/integer')).toBe(0);
+    expect(treema.get('/string')).toBe('');
+    expect(treema.get('/number')).toBe(0);
+    expect(treema.get('/null')).toBe(null);
+    expect(treema.get('/boolean')).toBe(false);
+    expect(JSON.stringify(treema.get('/array'))).toBe(JSON.stringify([]));
+    return expect(JSON.stringify(treema.get('/object'))).toBe(JSON.stringify({}));
   });
   return it('populates required values with defaults', function() {
-    expect(treema.get('/7')).toBe(1337);
-    treema.childrenTreemas['5'].addNewChild();
+    expect(treema.get('/def')).toBe(1337);
+    treema.childrenTreemas['array'].addNewChild();
     return expect(treema.$el.find('input').val()).toBe('42');
   });
 });
@@ -2014,7 +2014,7 @@ describe('utilities', function() {
     });
   });
   describe('walk', function() {
-    return it('calls a callback on every piece of data in a JSON object, providing path, data and working schema', function() {
+    it('calls a callback on every piece of data in a JSON object, providing path, data and working schema', function() {
       var data, paths, schema, values, _ref, _ref1;
       schema = {
         type: 'object',
@@ -2044,6 +2044,25 @@ describe('utilities', function() {
       expect(__indexOf.call(values, data) >= 0).toBe(true);
       expect((_ref = data.key1, __indexOf.call(values, _ref) >= 0)).toBe(true);
       return expect((_ref1 = data.key2, __indexOf.call(values, _ref1) >= 0)).toBe(true);
+    });
+    return it('traverses arrays', function() {
+      var data, foundIt, schema;
+      schema = {
+        type: 'array',
+        items: {
+          type: 'object',
+          marker: true
+        }
+      };
+      data = [{}];
+      foundIt = false;
+      TreemaNode.utils.walk(data, schema, null, function(path, data, schema) {
+        if (path === '0') {
+          expect(schema.marker).toBe(true);
+          return foundIt = true;
+        }
+      });
+      return expect(foundIt).toBe(true);
     });
   });
   describe('getChildSchema', function() {

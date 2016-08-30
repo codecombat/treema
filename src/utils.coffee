@@ -50,13 +50,23 @@ TreemaUtils = (->
     callback(path, data, workingSchema)
     
     # this actually works for both arrays and objects...
-    if @type(data) in ['array', 'object']
-      for key, value of data
+    dataType = @type(data)
+    
+    if dataType in ['array', 'object']
+      f = (key, value) =>
+        value = data[key]
         childPath = path.slice()
         childPath += '.' if childPath
         childPath += key
         childSchema = @getChildSchema(key, workingSchema)
         @walk(value, childSchema, tv4, callback, childPath)
+      
+      if dataType is 'array'
+        for value, key in data
+          f(key, value)
+      else
+        for key, value of data
+          f(key, value)
   
   utils.getChildSchema = (key, schema) ->
     if @type(key) is 'string'

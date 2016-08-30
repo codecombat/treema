@@ -69,7 +69,8 @@ TreemaUtils = (function() {
     return rootData;
   };
   utils.walk = function(data, schema, tv4, callback, path) {
-    var childPath, childSchema, key, value, workingSchema, workingSchemas, _ref, _results;
+    var dataType, f, key, value, workingSchema, workingSchemas, _i, _len, _results, _results1,
+      _this = this;
     if (path == null) {
       path = '';
     }
@@ -83,19 +84,34 @@ TreemaUtils = (function() {
     workingSchemas = this.buildWorkingSchemas(schema, tv4);
     workingSchema = this.chooseWorkingSchema(data, workingSchemas, tv4);
     callback(path, data, workingSchema);
-    if ((_ref = this.type(data)) === 'array' || _ref === 'object') {
-      _results = [];
-      for (key in data) {
+    dataType = this.type(data);
+    if (dataType === 'array' || dataType === 'object') {
+      f = function(key, value) {
+        var childPath, childSchema;
         value = data[key];
         childPath = path.slice();
         if (childPath) {
           childPath += '.';
         }
         childPath += key;
-        childSchema = this.getChildSchema(key, workingSchema);
-        _results.push(this.walk(value, childSchema, tv4, callback, childPath));
+        childSchema = _this.getChildSchema(key, workingSchema);
+        return _this.walk(value, childSchema, tv4, callback, childPath);
+      };
+      if (dataType === 'array') {
+        _results = [];
+        for (key = _i = 0, _len = data.length; _i < _len; key = ++_i) {
+          value = data[key];
+          _results.push(f(key, value));
+        }
+        return _results;
+      } else {
+        _results1 = [];
+        for (key in data) {
+          value = data[key];
+          _results1.push(f(key, value));
+        }
+        return _results1;
       }
-      return _results;
     }
   };
   utils.getChildSchema = function(key, schema) {

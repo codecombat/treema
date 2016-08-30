@@ -98,6 +98,25 @@ describe 'utilities', ->
       expect(data in values).toBe(true)
       expect(data.key1 in values).toBe(true)
       expect(data.key2 in values).toBe(true)
+      
+    it 'traverses arrays', ->
+      schema = {
+        type: 'array'
+        items: {
+          type: 'object'
+          marker: true
+        }
+      }
+      
+      data = [{}]
+      foundIt = false
+      
+      TreemaNode.utils.walk data, schema, null, (path, data, schema) ->
+        if path is '0'
+          expect(schema.marker).toBe(true)
+          foundIt = true
+          
+      expect(foundIt).toBe(true)
   
   describe 'getChildSchema', ->
     it 'returns child schemas from properties', ->
