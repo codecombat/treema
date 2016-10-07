@@ -1346,7 +1346,8 @@ TreemaNode = (function() {
       }
       index += 1;
     }
-    return this.refreshDisplay();
+    this.flushChanges();
+    return this.broadcastChanges();
   };
 
   TreemaNode.prototype.close = function(saveChildData) {

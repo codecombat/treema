@@ -748,7 +748,8 @@ class TreemaNode
         @childrenTreemas[treema.keyForParent] = treema
         @data[treema.keyForParent] = treema.data
       index += 1
-    @refreshDisplay()
+    @flushChanges()
+    @broadcastChanges()
 
   close: (saveChildData=true) ->
     return unless @isOpen()
