@@ -44,7 +44,7 @@
     
     "jasmine-node": "1.2.x"
   },
-  "license": "Copyright © 2013 Scott Erickson",
+  "license": "MIT",
   "private": false,
   "engines": {
     "node": "0.8.x"
